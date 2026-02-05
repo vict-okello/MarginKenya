@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { latestNewsArticles } from "../data/latestNewsArticles";
+import { technologyArticles } from "../data/technologyArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 
 const MotionSection = motion.section;
@@ -9,25 +9,24 @@ const MotionImage = motion.img;
 const MotionTitle = motion.h1;
 const MotionText = motion.p;
 
-function LatestNewsArticle() {
+function TechnologyArticle() {
   const { articleId } = useParams();
-  const article = latestNewsArticles.find((item) => item.id === articleId);
-  const isSportsImage = article?.category === "Sports";
+  const article = technologyArticles.find((item) => item.id === articleId);
 
   if (!article) {
-    return <NotFoundMessage backTo="/" backLabel="Back to Home" />;
+    return <NotFoundMessage backTo="/technology" backLabel="Back to Technology" />;
   }
 
   return (
     <MotionSection
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.55, ease: "easeOut" }}
       className="bg-[#d8d8dc] px-4 py-10"
     >
       <div className="mx-auto w-full max-w-5xl">
         <MotionWrap
-          className="overflow-hidden rounded bg-gradient-to-b from-[#e4e7ec] to-[#cfd4db]"
+          className="overflow-hidden rounded"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -35,42 +34,44 @@ function LatestNewsArticle() {
           <MotionImage
             src={article.image}
             alt={article.title}
-            className={`h-[260px] w-full md:h-[430px] ${
-              isSportsImage ? "object-contain p-3 md:p-6" : "object-cover"
-            }`}
+            className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[420px]"
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.35 }}
           />
         </MotionWrap>
-        <MotionText
-          className="pt-5 text-sm text-black/65"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.12 }}
-        >
-          {article.category} - {article.date}
-        </MotionText>
+
         <MotionTitle
-          className="pt-2 text-4xl font-semibold text-black"
-          initial={{ opacity: 0, y: 14 }}
+          className="pt-6 text-4xl font-semibold text-black"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
         >
           {article.title}
         </MotionTitle>
+
         <MotionText
-          className="pt-4 text-lg text-black/75"
-          initial={{ opacity: 0, y: 14 }}
+          className="pt-3 text-sm text-black/65"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.28 }}
+          transition={{ duration: 0.45, delay: 0.2, ease: "easeOut" }}
+        >
+          {article.author} - {article.date}
+        </MotionText>
+
+        <MotionText
+          className="pt-4 text-black/75"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.28, ease: "easeOut" }}
         >
           {article.summary}
         </MotionText>
+
         <MotionText
           className="pt-4 text-black/80"
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.36 }}
+          transition={{ duration: 0.45, delay: 0.36, ease: "easeOut" }}
         >
           {article.body}
         </MotionText>
@@ -79,4 +80,4 @@ function LatestNewsArticle() {
   );
 }
 
-export default LatestNewsArticle;
+export default TechnologyArticle;

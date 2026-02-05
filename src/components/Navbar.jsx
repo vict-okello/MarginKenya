@@ -15,7 +15,15 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-[#d8d8dc] px-4 py-4 md:py-3">
       <div className="mx-auto w-full max-w-5xl">
-        <Link to="/" className="flex items-end justify-center gap-1 pb-3 text-black">
+        <NavLink
+          to="/"
+          end
+          className={({ isActive }) =>
+            `flex items-end justify-center gap-1 pb-3 text-black transition ${
+              isActive ? "opacity-100" : "opacity-90 hover:opacity-100"
+            }`
+          }
+        >
           <span
             className="text-5xl leading-none md:text-6xl"
             style={{ fontFamily: "'Old English Text MT', 'Times New Roman', serif" }}
@@ -26,9 +34,10 @@ function Navbar() {
             className="text-5xl font-extrabold uppercase leading-none md:text-6xl"
             style={{ fontFamily: "Arial Black, Impact, sans-serif" }}
           >
-            Marginᵏᵉ
+            Margin
+            <span className="ml-1 align-super text-xs font-semibold tracking-wide md:text-sm">ke</span>
           </span>
-        </Link>
+        </NavLink>
 
         <nav className="border-y border-black/25 py-2">
           <ul className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm text-black/85">
@@ -36,8 +45,6 @@ function Navbar() {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={({ isActive }) =>
                     `transition ${
                       isActive
@@ -58,3 +65,4 @@ function Navbar() {
 }
 
 export default Navbar;
+

@@ -63,9 +63,14 @@ function Sports() {
 
   const handleSubscribe = (event) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
     const cleanEmail = email.trim().toLowerCase();
 
-    if (!cleanEmail || !cleanEmail.includes("@")) {
+    if (!cleanEmail) {
       setSubscribeMessage("Please enter a valid email.");
       return;
     }
@@ -77,7 +82,11 @@ function Sports() {
 
     const updatedSubscribers = [...subscribers, cleanEmail];
     setSubscribers(updatedSubscribers);
-    localStorage.setItem("sports_newsletter_emails", JSON.stringify(updatedSubscribers));
+    try {
+      localStorage.setItem("sports_newsletter_emails", JSON.stringify(updatedSubscribers));
+    } catch {
+      setSubscribeMessage("Subscribed, but storage is unavailable in this browser.");
+    }
     setEmail("");
     setSubscribeMessage("Subscribed successfully.");
   };
@@ -87,8 +96,17 @@ function Sports() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="bg-[#d8d8dc] px-4 py-8"
+      className="bg-[#d8d8dc] px-4 py-12"
     >
+      <div className="mx-auto w-full max-w-5xl pb-6">
+        <h1 className="text-5xl font-semibold uppercase tracking-wide text-black/85 md:text-6xl">
+          Sports
+        </h1>
+        <p className="pt-2 text-sm text-black/65">
+          Match highlights, athlete stories, and the moments that move fans.
+        </p>
+      </div>
+
       <MotionDiv
         className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]"
         variants={containerVariants}
@@ -134,8 +152,6 @@ function Sports() {
           <MotionDiv whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="inline-block">
             <Link
               to={`/sports/article/${topStory.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="relative z-10 mt-8 inline-block rounded bg-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white"
             >
               Continue Reading
@@ -152,7 +168,7 @@ function Sports() {
             <span className="inline-block rounded bg-[#d6dbe3] px-2 py-1 text-[10px] text-black/70">
               Today
             </span>
-            <Link to={`/sports/article/${sideStoryOne.id}`} target="_blank" rel="noopener noreferrer">
+            <Link to={`/sports/article/${sideStoryOne.id}`}>
               <div className="mt-2 overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
                 <img
                   src={sideStoryOne.image}
@@ -169,7 +185,7 @@ function Sports() {
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
           >
-            <Link to={`/sports/article/${sideStoryTwo.id}`} target="_blank" rel="noopener noreferrer">
+            <Link to={`/sports/article/${sideStoryTwo.id}`}>
               <div className="overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
                 <img
                   src={sideStoryTwo.image}
@@ -235,8 +251,6 @@ function Sports() {
               <Link
               key={category.id}
               to={`/sports/category/${category.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="overflow-hidden rounded bg-[#d0d3d8]"
             >
               <MotionImg
@@ -274,8 +288,6 @@ function Sports() {
             <MotionArticle key={article.id} variants={itemVariants} whileHover={{ y: -8 }}>
               <Link
                 to={`/sports/article/${article.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="relative block overflow-hidden rounded"
               >
                 <MotionImg
@@ -300,8 +312,6 @@ function Sports() {
                 <p className="pt-3 text-sm text-black/60">{article.date}</p>
                 <Link
                   to={`/sports/article/${article.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="block pt-3 text-[34px] font-semibold leading-tight text-black/85"
                 >
                   {article.title}
@@ -368,6 +378,7 @@ function Sports() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="example@gmail.com"
+                required
                 className="w-full bg-[#d8dbe0] px-4 py-3 text-base text-black/70 placeholder:text-black/35 focus:outline-none"
               />
               <button
@@ -399,3 +410,4 @@ function Sports() {
 }
 
 export default Sports;
+

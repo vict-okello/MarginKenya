@@ -5,7 +5,7 @@ function Footer() {
     <footer className="bg-[#d8d8dc] px-4 py-6">
       <div className="mx-auto w-full max-w-5xl">
         <div className="border-t-[3px] border-black/75 pt-3">
-          <Link to="/" className="flex items-end gap-1 text-black">
+          <Link to="/" className="flex items-end justify-center gap-1 text-black">
             <span
               className="text-4xl leading-none"
               style={{ fontFamily: "'Old English Text MT', 'Times New Roman', serif" }}
@@ -16,14 +16,19 @@ function Footer() {
               className="text-4xl font-extrabold uppercase leading-none"
               style={{ fontFamily: "Arial Black, Impact, sans-serif" }}
             >
-              Marginᵏᵉ
+              Margin
+              <span className="ml-1 align-super text-[10px] font-semibold tracking-wide">ke</span>
             </span>
           </Link>
         </div>
 
         <div className="mt-3 border-t border-black/35 pt-3">
           <div className="flex flex-col items-start justify-between gap-3 border-b border-black/35 pb-3 text-xs text-black/70 md:flex-row md:items-center">
-            <p>Copyright (c) 2026 - The News - All rights reserved</p>
+            <p>
+              Copyright (c) 2026 - Margin
+              <span className="ml-1 align-super text-[9px] font-semibold tracking-wide">ke</span> - All rights
+              reserved
+            </p>
 
             <div className="flex items-center gap-3 text-black/80">
               <a href="#" aria-label="Instagram" className="hover:text-black">
@@ -60,3 +65,4 @@ function Footer() {
 }
 
 export default Footer;
+

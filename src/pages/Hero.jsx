@@ -48,17 +48,22 @@ function Hero() {
           ))}
         </div>
 
-        <div className="relative overflow-hidden rounded-[2px] bg-white/70">
-          <span className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded bg-white px-2 py-1 text-[11px] text-black/80">
-            <span className="h-2 w-2 rounded-full bg-red-500" />
-            Live Updates
-          </span>
-          <img
-            src={heroImage}
-            alt="Featured cultural story"
-            className="h-[100px] w-full sm:h-[300px] md:h-[420px]"
-          />
-        </div>
+        <Link
+          to="/worldnews"
+          className="block"
+        >
+          <div className="relative overflow-hidden rounded-[2px] bg-white/70">
+            <span className="absolute left-4 top-4 z-10 inline-flex items-center gap-2 rounded bg-white px-2 py-1 text-[11px] text-black/80">
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              Live Updates
+            </span>
+            <img
+              src={heroImage}
+              alt="Featured cultural story"
+              className="h-[100px] w-full sm:h-[300px] md:h-[420px]"
+            />
+          </div>
+        </Link>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
           <div className="flex items-center gap-2">
@@ -73,10 +78,18 @@ function Hero() {
         </div>
 
         <div className="flex flex-col justify-between gap-4 pt-3 md:flex-row md:items-start">
-          <h1 className="max-w-3xl text-3xl leading-tight text-black/85 md:text-[42px]">
-            A deep dive into the influence of cultural movements on contemporary society
-          </h1>
-          <Link to="/worldnews" className="pt-1 text-sm text-black/75 transition hover:text-black">
+          <Link
+            to="/worldnews"
+            className="max-w-3xl"
+          >
+            <h1 className="text-3xl leading-tight text-black/85 transition hover:text-black md:text-[42px]">
+              A deep dive into the influence of cultural movements on contemporary society
+            </h1>
+          </Link>
+          <Link
+            to="/worldnews"
+            className="pt-1 text-sm text-black/75 transition hover:text-black"
+          >
             Read Article -&gt;
           </Link>
         </div>
@@ -86,3 +99,6 @@ function Hero() {
 }
 
 export default Hero;
+
+
+

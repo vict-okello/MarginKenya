@@ -23,48 +23,65 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-function LatestNews() {
+function LatestNews({ withSection = true, showHeader = true }) {
   const [visibleCount, setVisibleCount] = useState(3);
-  const featured = latestNewsArticles[0];
-  const sideOne = latestNewsArticles[1];
-  const sideTwo = latestNewsArticles[2];
+  const [featured, sideOne, sideTwo] = latestNewsArticles;
   const remainingArticles = latestNewsArticles.slice(3);
   const bottomRow = remainingArticles.slice(0, visibleCount);
   const canLoadMore = visibleCount < remainingArticles.length;
 
+  const Wrapper = withSection ? MotionSection : MotionDiv;
+
+  if (!featured) {
+    return (
+      <section className="bg-[#d8d8dc] px-4 pb-10">
+        <div className="mx-auto w-full max-w-5xl">
+          <h2 className="text-4xl font-semibold uppercase text-black/85">Latest News</h2>
+          <p className="pt-3 text-black/65">No articles available yet.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <MotionSection
+    <Wrapper
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="bg-[#d8d8dc] px-4 pb-10"
+      className={withSection ? "bg-[#d8d8dc] px-4 pb-10" : ""}
     >
       <div className="mx-auto w-full max-w-5xl">
-        <div className="flex items-center justify-between">
-          <motion.h2
-            initial={{ opacity: 0, x: -14 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45 }}
-            className="text-4xl font-semibold uppercase text-black/85"
-          >
-            Latest News
-          </motion.h2>
-          <MotionButton
-            type="button"
-            onClick={() => setVisibleCount((prev) => Math.min(prev + 3, remainingArticles.length))}
-            disabled={!canLoadMore}
-            className={`text-sm transition ${
-              canLoadMore
-                ? "text-black/70 hover:text-black"
-                : "cursor-not-allowed text-black/35"
-            }`}
-            whileHover={canLoadMore ? { y: -2, scale: 1.04 } : {}}
-            whileTap={canLoadMore ? { scale: 0.96 } : {}}
-          >
-            {canLoadMore ? "View All \u25cb" : "All Loaded"}
-          </MotionButton>
-        </div>
-        <div className="mt-3 h-px w-full bg-black/30" />
+        {showHeader ? (
+          <>
+            <div className="flex items-center justify-between">
+              <motion.h2
+                initial={{ opacity: 0, x: -14 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.45 }}
+                className="text-4xl font-semibold uppercase text-black/85"
+              >
+                Latest News
+              </motion.h2>
+              {remainingArticles.length > 0 ? (
+                <MotionButton
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => Math.min(prev + 3, remainingArticles.length))}
+                  disabled={!canLoadMore}
+                  className={`text-sm transition ${
+                    canLoadMore
+                      ? "text-black/70 hover:text-black"
+                      : "cursor-not-allowed text-black/35"
+                  }`}
+                  whileHover={canLoadMore ? { y: -2, scale: 1.04 } : {}}
+                  whileTap={canLoadMore ? { scale: 0.96 } : {}}
+                >
+                  {canLoadMore ? "Load More \u25cb" : "All Loaded"}
+                </MotionButton>
+              ) : null}
+            </div>
+            <div className="mt-3 h-px w-full bg-black/30" />
+          </>
+        ) : null}
 
         <MotionDiv
           variants={gridVariants}
@@ -75,8 +92,6 @@ function LatestNews() {
         >
           <Link
             to={`/latest-news/${featured.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
             className="group"
           >
             <MotionArticle variants={itemVariants} className="relative overflow-hidden rounded" whileHover={{ y: -6 }}>
@@ -97,51 +112,51 @@ function LatestNews() {
           </Link>
 
           <MotionDiv variants={itemVariants} className="grid gap-5">
-            <Link
-              to={`/latest-news/${sideOne.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group"
-            >
-              <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
-                <div className="my-auto">
-                  <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
-                    {sideOne.title}
-                  </p>
-                  <p className="pt-2 text-sm text-black/60">
-                    {sideOne.category} - {sideOne.date}
-                  </p>
-                </div>
-                <img
-                  src={sideOne.image}
-                  alt={sideOne.title}
-                  className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                />
-              </MotionArticle>
-            </Link>
+            {sideOne ? (
+              <Link
+                to={`/latest-news/${sideOne.id}`}
+                className="group"
+              >
+                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
+                  <div className="my-auto">
+                    <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
+                      {sideOne.title}
+                    </p>
+                    <p className="pt-2 text-sm text-black/60">
+                      {sideOne.category} - {sideOne.date}
+                    </p>
+                  </div>
+                  <img
+                    src={sideOne.image}
+                    alt={sideOne.title}
+                    className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                  />
+                </MotionArticle>
+              </Link>
+            ) : null}
 
-            <Link
-              to={`/latest-news/${sideTwo.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group"
-            >
-              <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
-                <div className="my-auto">
-                  <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
-                    {sideTwo.title}
-                  </p>
-                  <p className="pt-2 text-sm text-black/60">
-                    {sideTwo.category} - {sideTwo.date}
-                  </p>
-                </div>
-                <img
-                  src={sideTwo.image}
-                  alt={sideTwo.title}
-                  className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                />
-              </MotionArticle>
-            </Link>
+            {sideTwo ? (
+              <Link
+                to={`/latest-news/${sideTwo.id}`}
+                className="group"
+              >
+                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
+                  <div className="my-auto">
+                    <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
+                      {sideTwo.title}
+                    </p>
+                    <p className="pt-2 text-sm text-black/60">
+                      {sideTwo.category} - {sideTwo.date}
+                    </p>
+                  </div>
+                  <img
+                    src={sideTwo.image}
+                    alt={sideTwo.title}
+                    className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                  />
+                </MotionArticle>
+              </Link>
+            ) : null}
           </MotionDiv>
         </MotionDiv>
 
@@ -156,8 +171,6 @@ function LatestNews() {
             <Link
               key={article.id}
               to={`/latest-news/${article.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
               className="group"
             >
               <MotionArticle variants={itemVariants} whileHover={{ y: -8 }}>
@@ -178,8 +191,9 @@ function LatestNews() {
           ))}
         </MotionDiv>
       </div>
-    </MotionSection>
+    </Wrapper>
   );
 }
 
 export default LatestNews;
+

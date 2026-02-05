@@ -42,10 +42,13 @@ function Health() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          className="text-4xl font-semibold uppercase tracking-wide text-black/85 md:text-[40px]"
+          className="text-5xl font-semibold uppercase tracking-wide text-black/85 md:text-6xl"
         >
           Health News
         </MotionTitle>
+        <p className="pt-2 text-sm text-black/65">
+          Clinical breakthroughs, wellness insights, and the people advancing care.
+        </p>
         <div className="mt-4 h-px w-full bg-black/30" />
 
         <MotionGrid
@@ -63,8 +66,6 @@ function Health() {
             >
               <Link
                 to={`/health/article/${item.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="block"
               >
                 <MotionImage
@@ -111,3 +112,4 @@ function Health() {
 }
 
 export default Health;
+
