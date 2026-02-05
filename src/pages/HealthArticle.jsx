@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { sportsArticles } from "../data/sportsArticles";
+import { healthArticles } from "../data/healthArticles";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -8,9 +8,9 @@ const MotionImage = motion.img;
 const MotionTitle = motion.h1;
 const MotionText = motion.p;
 
-function SportsArticle() {
+function HealthArticle() {
   const { articleId } = useParams();
-  const article = Object.values(sportsArticles).find((item) => item.id === articleId);
+  const article = healthArticles.find((item) => item.id === articleId);
 
   if (!article) {
     return (
@@ -39,24 +39,32 @@ function SportsArticle() {
           <MotionImage
             src={article.image}
             alt={article.title}
-            className="w-full object-contain"
+            className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[390px]"
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.35 }}
           />
         </MotionWrap>
         <MotionTitle
           className="pt-6 text-4xl font-semibold text-black"
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
         >
           {article.title}
         </MotionTitle>
         <MotionText
-          className="pt-3 text-black/75"
+          className="pt-3 text-sm text-black/65"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.2, ease: "easeOut" }}
+        >
+          {article.author} - {article.date}
+        </MotionText>
+        <MotionText
+          className="pt-4 text-black/75"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.28, ease: "easeOut" }}
         >
           {article.summary}
         </MotionText>
@@ -64,7 +72,7 @@ function SportsArticle() {
           className="pt-4 text-black/80"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.28, ease: "easeOut" }}
+          transition={{ duration: 0.45, delay: 0.36, ease: "easeOut" }}
         >
           {article.body}
         </MotionText>
@@ -73,4 +81,4 @@ function SportsArticle() {
   );
 }
 
-export default SportsArticle;
+export default HealthArticle;

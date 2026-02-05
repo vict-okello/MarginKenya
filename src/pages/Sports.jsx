@@ -1,8 +1,33 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { sportsArticles, sportsCategories } from "../data/sportsArticles";
 import sportPhoto from "../assets/sport.jpg";
 import americanFootballImage from "../assets/american-football.png";
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
+const MotionSection = motion.section;
+const MotionDiv = motion.div;
+const MotionArticle = motion.article;
+const MotionAside = motion.aside;
+const MotionImg = motion.img;
+const MotionH2 = motion.h2;
+const MotionH3 = motion.h3;
+const MotionButton = motion.button;
+const MotionP = motion.p;
 
 function Sports() {
   const topStory = sportsArticles.topScorer;
@@ -58,80 +83,131 @@ function Sports() {
   };
 
   return (
-    <section className="bg-[#d8d8dc] px-4 py-8">
-      <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]">
-        <article className="relative overflow-hidden rounded bg-[#dfe0e2] p-6 md:p-8">
+    <MotionSection
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="bg-[#d8d8dc] px-4 py-8"
+    >
+      <MotionDiv
+        className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <MotionArticle
+          variants={itemVariants}
+          className="relative overflow-hidden rounded bg-[#dfe0e2] p-6 md:p-8"
+        >
           <div className="absolute -left-12 top-10 h-56 w-56 rounded-full border-[18px] border-black/5" />
 
           <div className="relative z-10">
-            <p className="text-5xl font-black uppercase leading-[0.95] text-black/70 md:text-7xl">
+            <MotionP
+              className="text-5xl font-black uppercase leading-[0.95] text-black/70 md:text-7xl"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               Top Scorer to the Final Match
-            </p>
+            </MotionP>
           </div>
 
-          <img
+          <MotionImg
             src={topStory.image}
             alt="Top scorer"
             className="mt-5 mx-auto h-auto w-auto max-h-[520px] max-w-full object-contain"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.12, ease: "easeOut" }}
+            whileHover={{ scale: 1.02 }}
           />
 
-          <p className="relative z-10 mt-4 max-w-md text-sm text-black/80">
-            {topStory.summary}
-          </p>
-
-          <Link
-            to={`/sports/article/${topStory.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative z-10 mt-8 inline-block rounded bg-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white"
+          <MotionP
+            className="relative z-10 mt-4 max-w-md text-sm text-black/80"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.2 }}
           >
-            Continue Reading
-          </Link>
-        </article>
+            {topStory.summary}
+          </MotionP>
 
-        <aside className="space-y-4">
-          <article className="rounded bg-[#e4e5e7] p-2">
+          <MotionDiv whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="inline-block">
+            <Link
+              to={`/sports/article/${topStory.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-10 mt-8 inline-block rounded bg-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white"
+            >
+              Continue Reading
+            </Link>
+          </MotionDiv>
+        </MotionArticle>
+
+        <MotionAside variants={itemVariants} className="space-y-4">
+          <MotionArticle
+            className="rounded bg-[#e4e5e7] p-2"
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+          >
             <span className="inline-block rounded bg-[#d6dbe3] px-2 py-1 text-[10px] text-black/70">
               Today
             </span>
             <Link to={`/sports/article/${sideStoryOne.id}`} target="_blank" rel="noopener noreferrer">
-              <img
-                src={sideStoryOne.image}
-                alt="Sports update"
-                className="mt-2 h-32 w-full rounded object-cover"
-              />
+              <div className="mt-2 overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
+                <img
+                  src={sideStoryOne.image}
+                  alt="Sports update"
+                  className="h-40 w-full object-contain object-center p-2 drop-shadow-[0_8px_12px_rgba(0,0,0,0.18)]"
+                />
+              </div>
             </Link>
             <p className="pt-2 text-xs text-black/80">{sideStoryOne.title}</p>
-          </article>
+          </MotionArticle>
 
-          <article className="rounded bg-[#e4e5e7] p-2">
+          <MotionArticle
+            className="rounded bg-[#e4e5e7] p-2"
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+          >
             <Link to={`/sports/article/${sideStoryTwo.id}`} target="_blank" rel="noopener noreferrer">
-              <img
-                src={sideStoryTwo.image}
-                alt="Sports headline"
-                className="h-32 w-full rounded object-cover brightness-90"
-              />
+              <div className="overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
+                <img
+                  src={sideStoryTwo.image}
+                  alt="Sports headline"
+                  className="h-40 w-full object-contain object-center p-2 drop-shadow-[0_8px_12px_rgba(0,0,0,0.18)]"
+                />
+              </div>
             </Link>
             <p className="pt-2 text-xs text-black/80">{sideStoryTwo.title}</p>
-          </article>
-        </aside>
-      </div>
+          </MotionArticle>
+        </MotionAside>
+      </MotionDiv>
 
-      <div className="mx-auto mt-10 w-full max-w-5xl">
+      <MotionDiv
+        className="mx-auto mt-10 w-full max-w-5xl"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="flex items-center justify-between pb-4">
-          <h2 className="text-3xl font-semibold text-black/80">Category</h2>
+          <MotionH2 className="text-3xl font-semibold text-black/80" whileInView={{ opacity: [0, 1], y: [12, 0] }}>
+            Category
+          </MotionH2>
           <div className="flex gap-2">
-            <button
+            <MotionButton
               type="button"
               onClick={() => setCategoryPage((prev) => Math.max(prev - 1, 0))}
               disabled={categoryPage === 0}
               className={`rounded border border-black/30 px-3 py-1 text-sm ${
                 categoryPage === 0 ? "cursor-not-allowed text-black/30" : "text-black hover:bg-white/70"
               }`}
+              whileHover={categoryPage === 0 ? {} : { y: -2 }}
+              whileTap={categoryPage === 0 ? {} : { scale: 0.96 }}
             >
               Back
-            </button>
-            <button
+            </MotionButton>
+            <MotionButton
               type="button"
               onClick={() => setCategoryPage((prev) => Math.min(prev + 1, totalCategoryPages - 1))}
               disabled={categoryPage >= totalCategoryPages - 1}
@@ -140,41 +216,75 @@ function Sports() {
                   ? "cursor-not-allowed text-black/30"
                   : "text-black hover:bg-white/70"
               }`}
+              whileHover={categoryPage >= totalCategoryPages - 1 ? {} : { y: -2 }}
+              whileTap={categoryPage >= totalCategoryPages - 1 ? {} : { scale: 0.96 }}
             >
               Next
-            </button>
+            </MotionButton>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MotionDiv
+          key={categoryPage}
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
           {visibleCategories.map((category) => (
-            <Link
+            <MotionDiv key={category.id} variants={itemVariants} whileHover={{ y: -6 }}>
+              <Link
               key={category.id}
               to={`/sports/category/${category.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="overflow-hidden rounded bg-[#d0d3d8]"
             >
-              <img src={category.image} alt={category.name} className="h-40 w-full bg-[#cfd2d7] p-1 object-contain" />
+              <MotionImg
+                src={category.image}
+                alt={category.name}
+                className="h-40 w-full bg-[#cfd2d7] p-1 object-contain"
+                whileHover={{ scale: 1.04 }}
+                transition={{ duration: 0.25 }}
+              />
               <p className="px-3 py-3 text-center text-2xl font-extrabold uppercase text-black/55">
                 {category.name}
               </p>
             </Link>
+            </MotionDiv>
           ))}
-        </div>
-      </div>
+        </MotionDiv>
+      </MotionDiv>
 
-      <div className="mx-auto mt-12 w-full max-w-5xl">
-        <h2 className="pb-4 text-4xl font-semibold text-black/80">Sports Article</h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <MotionDiv
+        className="mx-auto mt-12 w-full max-w-5xl"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.5 }}
+      >
+        <MotionH2 className="pb-4 text-4xl font-semibold text-black/80">Sports Article</MotionH2>
+        <MotionDiv
+          key={articleStart}
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 gap-6 md:grid-cols-3"
+        >
           {visibleArticleCards.map((article) => (
-            <article key={article.id}>
+            <MotionArticle key={article.id} variants={itemVariants} whileHover={{ y: -8 }}>
               <Link
                 to={`/sports/article/${article.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="relative block overflow-hidden rounded"
               >
-                <img src={article.image} alt={article.title} className="h-64 w-full object-cover" />
+                <MotionImg
+                  src={article.image}
+                  alt={article.title}
+                  className="h-64 w-full object-cover"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                />
                 <span className="absolute right-3 top-3 rounded border border-white/70 px-2 py-1 text-[10px] text-white">
                   {article.tag}
                 </span>
@@ -198,40 +308,56 @@ function Sports() {
                 </Link>
                 <p className="pt-3 text-lg text-black/65">{article.summary}</p>
               </div>
-            </article>
+            </MotionArticle>
           ))}
-        </div>
+        </MotionDiv>
 
         <div className="mt-6 flex gap-3">
-          <button
+          <MotionButton
             type="button"
             onClick={() =>
               setArticleStart((prev) => (prev - 1 + articleCards.length) % articleCards.length)
             }
             className="rounded bg-[#c0c4ca] px-5 py-3 text-xl text-white"
             aria-label="Back"
+            whileHover={{ y: -2, scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
           >
             &larr;
-          </button>
-          <button
+          </MotionButton>
+          <MotionButton
             type="button"
             onClick={() => setArticleStart((prev) => (prev + 1) % articleCards.length)}
             className="rounded bg-[#2f3135] px-5 py-3 text-xl text-white"
             aria-label="Next"
+            whileHover={{ y: -2, scale: 1.03 }}
+            whileTap={{ scale: 0.95 }}
           >
             &rarr;
-          </button>
+          </MotionButton>
         </div>
-      </div>
+      </MotionDiv>
 
-      <div className="mx-auto mt-12 w-full max-w-5xl overflow-hidden rounded bg-[#d1d4d9]">
+      <MotionDiv
+        className="mx-auto mt-12 w-full max-w-5xl overflow-hidden rounded bg-[#d1d4d9]"
+        initial={{ opacity: 0, y: 26 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.6 }}
+      >
         <div className="relative grid gap-4 px-6 py-8 md:grid-cols-[1fr_320px] md:px-10">
           <div className="relative z-10 max-w-xl">
-            <h3 className="text-5xl font-extrabold uppercase leading-[0.9] text-black/70">
+            <MotionH3
+              className="text-5xl font-extrabold uppercase leading-[0.9] text-black/70"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45 }}
+            >
               Newsletter
               <br />
               Subscription
-            </h3>
+            </MotionH3>
 
             <form
               onSubmit={handleSubscribe}
@@ -267,8 +393,8 @@ function Sports() {
             />
           </div>
         </div>
-      </div>
-    </section>
+      </MotionDiv>
+    </MotionSection>
   );
 }
 

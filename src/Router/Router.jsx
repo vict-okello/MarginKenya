@@ -6,6 +6,9 @@ import CategoryPage from "../pages/CategoryPage.jsx";
 import Sports from "../pages/Sports.jsx";
 import SportsArticle from "../pages/SportsArticle.jsx";
 import SportsCategory from "../pages/SportsCategory.jsx";
+import Health from "../pages/Health.jsx";
+import HealthArticle from "../pages/HealthArticle.jsx";
+import LatestNewsArticle from "../pages/LatestNewsArticle.jsx";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +24,10 @@ const router = createBrowserRouter([
         element: <Worldnews />,
       },
       {
+        path: "latest-news/:articleId",
+        element: <LatestNewsArticle />,
+      },
+      {
         path: "politics",
         element: <CategoryPage title="Politics" />,
       },
@@ -34,7 +41,11 @@ const router = createBrowserRouter([
       },
       {
         path: "health",
-        element: <CategoryPage title="Health" />,
+        element: <Health />,
+      },
+      {
+        path: "health/article/:articleId",
+        element: <HealthArticle />,
       },
       {
         path: "sports",
