@@ -1,6 +1,19 @@
 import worldImage from "../assets/world.jpg";
+import heroImage from "../assets/hero1.png";
 
 export const worldNewsArticles = [
+  {
+    id: "cultural-movements-deep-dive",
+    title: "A deep dive into the influence of cultural movements on contemporary society",
+    category: "World News",
+    author: "Guy Hawkins",
+    date: "Sep 9, 2024",
+    image: heroImage,
+    summary:
+      "Cultural movements are reshaping how communities express identity, participate in public discourse, and influence policy conversations.",
+    body:
+      "From local art scenes to global online communities, cultural movements now travel faster and reach broader audiences than ever before. Researchers note that these movements influence language, education priorities, media framing, and even economic behavior through consumer values. While some trends are short-lived, others create lasting shifts in civic engagement and social expectations. Understanding their trajectory helps leaders, creators, and institutions respond more effectively to social change.",
+  },
   {
     id: "manufacturing-emerging-trends",
     title: "Revolutionizing manufacturing emerging trends shaping the industry",

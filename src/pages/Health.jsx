@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { healthArticles } from "../data/healthArticles";
@@ -26,9 +26,18 @@ const MotionWrap = motion.div;
 const MotionButton = motion.button;
 
 function Health() {
+  const batchSize = 3;
   const [visibleCount, setVisibleCount] = useState(3);
   const visibleNews = healthArticles.slice(0, visibleCount);
   const canLoadMore = visibleCount < healthArticles.length;
+
+  useEffect(() => {
+    const upcoming = healthArticles.slice(visibleCount, visibleCount + batchSize);
+    upcoming.forEach((item) => {
+      const img = new Image();
+      img.src = item.image;
+    });
+  }, [visibleCount]);
 
   return (
     <MotionSection
@@ -42,13 +51,17 @@ function Health() {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          className="text-5xl font-semibold uppercase tracking-wide text-black/85 md:text-6xl"
+          className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl"
         >
           Health News
         </MotionTitle>
-        <p className="pt-2 text-sm text-black/65">
+        <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
+        <p className="pt-3 text-sm text-black/65">
           Clinical breakthroughs, wellness insights, and the people advancing care.
         </p>
+        <div className="mt-4 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
+          Health Pulse: care access, policy reform, and prevention trends shaping outcomes now.
+        </div>
         <div className="mt-4 h-px w-full bg-black/30" />
 
         <MotionGrid
@@ -71,6 +84,8 @@ function Health() {
                 <MotionImage
                   src={item.image}
                   alt={item.title}
+                  loading="eager"
+                  decoding="async"
                   className="h-52 w-full rounded object-cover object-center"
                   whileHover={{ scale: 1.04 }}
                   transition={{ duration: 0.35, ease: "easeOut" }}
@@ -97,7 +112,7 @@ function Health() {
           >
             <MotionButton
               type="button"
-              onClick={() => setVisibleCount((prev) => Math.min(prev + 3, healthArticles.length))}
+              onClick={() => setVisibleCount((prev) => Math.min(prev + batchSize, healthArticles.length))}
               className="rounded bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-black/80"
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.96 }}

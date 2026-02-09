@@ -40,12 +40,16 @@ function Technology() {
     >
       <div className="mx-auto w-full max-w-5xl">
         <div className="pb-5">
-          <h1 className="text-5xl font-semibold uppercase tracking-wide text-black/85 md:text-6xl">
+          <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
             Technology
           </h1>
-          <p className="pt-2 text-sm text-black/65">
+          <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
+          <p className="pt-3 text-sm text-black/65">
             Product launches, AI shifts, and the ideas shaping what comes next.
           </p>
+        </div>
+        <div className="rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
+          Tech Pulse: platform releases, AI policy updates, and infrastructure signals to watch this week.
         </div>
 
         <MotionDiv

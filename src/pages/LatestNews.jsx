@@ -36,7 +36,8 @@ function LatestNews({ withSection = true, showHeader = true }) {
     return (
       <section className="bg-[#d8d8dc] px-4 pb-10">
         <div className="mx-auto w-full max-w-5xl">
-          <h2 className="text-4xl font-semibold uppercase text-black/85">Latest News</h2>
+          <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">Latest News</h2>
+          <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
           <p className="pt-3 text-black/65">No articles available yet.</p>
         </div>
       </section>
@@ -58,7 +59,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
                 initial={{ opacity: 0, x: -14 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.45 }}
-                className="text-4xl font-semibold uppercase text-black/85"
+                className="text-4xl font-black uppercase tracking-[0.05em] text-black/90"
               >
                 Latest News
               </motion.h2>

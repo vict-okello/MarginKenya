@@ -1,0 +1,152 @@
+import worldImage from "../assets/world.jpg";
+import heroImage from "../assets/hero1.png";
+import technologyImage from "../assets/technology.jpg";
+import sportImage from "../assets/sport.jpg";
+import healthImage from "../assets/health.jpg";
+
+export const businessArticles = [
+  {
+    id: "biz-local-fx-risk",
+    scope: "Local",
+    tag: "Markets",
+    title: "Exporters hedge currency risk as shilling volatility tightens margins",
+    summary:
+      "Mid-size manufacturers are increasing forward-cover positions to protect quarterly cash flow.",
+    body:
+      "Treasury teams are shifting to shorter hedge windows while renegotiating supplier terms. Industry groups say firms with clearer FX policy frameworks are absorbing price swings with less operational disruption.",
+    date: "Feb 9, 2026",
+    image: heroImage,
+  },
+  {
+    id: "biz-local-logistics-cluster",
+    scope: "Local",
+    tag: "Industry",
+    title: "Nairobi logistics cluster expands warehousing near key transport corridors",
+    summary:
+      "Operators are adding temperature-controlled space and faster cross-docking capacity.",
+    body:
+      "The expansion reflects rising demand from e-commerce and agribusiness exporters. Analysts expect reduced turnaround times and better inventory reliability for regional distribution.",
+    date: "Feb 8, 2026",
+    image: worldImage,
+  },
+  {
+    id: "biz-local-sme-credit",
+    scope: "Local",
+    tag: "Policy",
+    title: "SME credit reform package targets lower collateral barriers",
+    summary:
+      "Lenders are piloting risk-scoring models that prioritize cash flow over fixed-asset security.",
+    body:
+      "Banking regulators are reviewing disclosure standards and default-resolution timelines. Business associations say the reforms could unlock working capital for growth-stage firms.",
+    date: "Feb 7, 2026",
+    image: technologyImage,
+  },
+  {
+    id: "biz-local-retail-omnichannel",
+    scope: "Local",
+    tag: "Retail",
+    title: "Retail chains accelerate omnichannel upgrades ahead of holiday demand",
+    summary:
+      "Store networks are integrating mobile checkout and real-time stock visibility.",
+    body:
+      "Executives are prioritizing inventory accuracy and faster fulfillment to reduce abandoned carts. Early pilots show stronger conversion where pickup and delivery options are unified.",
+    date: "Feb 6, 2026",
+    image: healthImage,
+  },
+  {
+    id: "biz-local-agri-processing",
+    scope: "Local",
+    tag: "Industry",
+    title: "Agri-processors scale contract farming to stabilize export volumes",
+    summary:
+      "Processors are aligning seasonal purchasing with quality incentives for smallholder suppliers.",
+    body:
+      "Operators are investing in collection hubs, traceability workflows, and working-capital support to reduce post-harvest losses. The model is improving consistency for buyers and price visibility for farmers.",
+    date: "Feb 5, 2026",
+    image: sportImage,
+  },
+  {
+    id: "biz-local-fintech-settlement",
+    scope: "Local",
+    tag: "Finance",
+    title: "Fintech platforms pilot near-instant settlement rails for SME payments",
+    summary:
+      "Payment providers are testing lower-fee cross-bank transfers for high-volume merchants.",
+    body:
+      "The pilot combines fraud monitoring with real-time reconciliation tools to reduce settlement delays. Merchant associations report stronger cash-flow predictability where instant settlement is enabled.",
+    date: "Feb 4, 2026",
+    image: technologyImage,
+  },
+  {
+    id: "biz-intl-chip-cycle",
+    scope: "International",
+    tag: "Technology",
+    title: "Semiconductor cycle rebounds as enterprise AI infrastructure spending rises",
+    summary:
+      "Cloud vendors and device makers are booking long-term capacity to stabilize supply.",
+    body:
+      "Procurement leaders are balancing multi-year agreements with inventory discipline after prior oversupply phases. Analysts expect margin recovery for firms with differentiated packaging capabilities.",
+    date: "Feb 9, 2026",
+    image: technologyImage,
+  },
+  {
+    id: "biz-intl-shipping-rates",
+    scope: "International",
+    tag: "Trade",
+    title: "Container shipping rates cool, but insurers keep premiums elevated",
+    summary:
+      "Freight contracts are easing while geopolitical risk keeps route protection costs high.",
+    body:
+      "Importers are redesigning sourcing calendars and corridor mix to limit cost shocks. Brokers note that premium normalization may lag freight-rate declines by several quarters.",
+    date: "Feb 8, 2026",
+    image: worldImage,
+  },
+  {
+    id: "biz-intl-private-credit",
+    scope: "International",
+    tag: "Finance",
+    title: "Private credit funds compete aggressively for infrastructure debt mandates",
+    summary:
+      "Institutional capital is rotating into long-duration assets with inflation-linked returns.",
+    body:
+      "Deal teams are tightening covenants and security packages as transaction sizes increase. Pension allocators continue to favor funds with operational oversight in core sectors.",
+    date: "Feb 7, 2026",
+    image: sportImage,
+  },
+  {
+    id: "biz-intl-energy-transition",
+    scope: "International",
+    tag: "Energy",
+    title: "Industrial groups revise capex plans around transition-fuel economics",
+    summary:
+      "Executives are sequencing investments to balance decarbonization goals and near-term profitability.",
+    body:
+      "Boards are prioritizing projects with clear offtake agreements and policy certainty. Advisory firms report stronger demand for blended-finance structures to de-risk execution.",
+    date: "Feb 6, 2026",
+    image: heroImage,
+  },
+  {
+    id: "biz-intl-mna-recovery",
+    scope: "International",
+    tag: "Finance",
+    title: "Cross-border M&A pipeline recovers as financing conditions improve",
+    summary:
+      "Strategic buyers are returning to deals in infrastructure, digital services, and healthcare.",
+    body:
+      "Advisory firms report wider interest in bolt-on acquisitions that improve margin resilience. Sponsors remain selective, favoring targets with strong recurring revenue and regulatory clarity.",
+    date: "Feb 5, 2026",
+    image: healthImage,
+  },
+  {
+    id: "biz-intl-air-cargo",
+    scope: "International",
+    tag: "Trade",
+    title: "Air cargo operators add dedicated routes for high-value electronics",
+    summary:
+      "Freight planners are prioritizing speed-sensitive lanes to reduce inventory risk.",
+    body:
+      "Logistics carriers are rebalancing network schedules around manufacturing cycles and customs throughput. Exporters say predictable air capacity is critical for launch-window commitments.",
+    date: "Feb 4, 2026",
+    image: worldImage,
+  },
+];

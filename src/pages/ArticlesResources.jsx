@@ -14,7 +14,10 @@ function ArticlesResources({ withSection = true, showHeader = true }) {
     <Wrapper className={wrapperClassName}>
       <div className="mx-auto w-full max-w-5xl">
         {showHeader ? (
-          <h2 className="text-4xl font-semibold text-black/85">Articles & Resources</h2>
+          <div>
+            <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">Articles & Resources</h2>
+            <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
+          </div>
         ) : null}
 
         <div className={showHeader ? "pt-6" : ""}>

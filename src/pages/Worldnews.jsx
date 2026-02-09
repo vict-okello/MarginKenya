@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import worldImage from "../assets/world.jpg";
@@ -23,6 +24,15 @@ const itemVariants = {
 };
 
 const leadArticleId = "manufacturing-emerging-trends";
+const regionOptions = ["all", "africa", "europe", "asia", "americas", "middle-east"];
+const regionBriefing = {
+  all: { title: "Global Blend", signal: "5 tracked stories", risk: "Mixed", tempo: "High" },
+  africa: { title: "Africa Desk", signal: "Policy + growth shift", risk: "Moderate", tempo: "Rising" },
+  europe: { title: "Europe Desk", signal: "Culture + markets", risk: "Low", tempo: "Stable" },
+  asia: { title: "Asia Desk", signal: "Tech acceleration", risk: "Moderate", tempo: "High" },
+  americas: { title: "Americas Desk", signal: "Health + AI policy", risk: "Moderate", tempo: "Rising" },
+  "middle-east": { title: "Middle East Desk", signal: "Sports + civic momentum", risk: "Low", tempo: "Steady" },
+};
 
 const sideStories = [
   {
@@ -32,6 +42,7 @@ const sideStories = [
     title: "Adapting business strategies to meet changing demands",
     to: "/business",
     color: "bg-[#d8b73a]",
+    region: "africa",
   },
   {
     id: "technology",
@@ -40,6 +51,7 @@ const sideStories = [
     title: "Smart homes revolution how IoT is transforming living spaces",
     to: "/technology",
     color: "bg-[#ee5b45]",
+    region: "asia",
   },
   {
     id: "culture",
@@ -48,6 +60,7 @@ const sideStories = [
     title: "The power of art in connecting and expressing cultural identity",
     to: "/culture",
     color: "bg-[#3da5d9]",
+    region: "europe",
   },
   {
     id: "health",
@@ -56,6 +69,7 @@ const sideStories = [
     title: "How artificial intelligence and machine learning are changing the field",
     to: "/health",
     color: "bg-[#2ec86b]",
+    region: "americas",
   },
   {
     id: "sports",
@@ -64,11 +78,18 @@ const sideStories = [
     title: "The influence of youth sports programs on developing future champions",
     to: "/sports",
     color: "bg-[#f0503a]",
+    region: "middle-east",
   },
 ];
 
 function Worldnews({ showViewAll = true, variant = "home" }) {
   const isPage = variant === "page";
+  const [activeRegion, setActiveRegion] = useState("all");
+  const visibleSideStories = useMemo(
+    () => (activeRegion === "all" ? sideStories : sideStories.filter((story) => story.region === activeRegion)),
+    [activeRegion]
+  );
+  const activeBriefing = regionBriefing[activeRegion];
 
   return (
     <MotionSection
@@ -81,12 +102,13 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
         <div className="flex flex-wrap items-end justify-between gap-3 pb-5">
           <div>
             {isPage ? (
-              <h1 className="text-5xl font-semibold uppercase text-black/85 md:text-6xl">World News</h1>
+              <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">World News</h1>
             ) : (
-              <h2 className="text-4xl font-semibold uppercase text-black/85">World News</h2>
+              <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">World News</h2>
             )}
+            <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
             {isPage ? (
-              <p className="pt-2 text-sm text-black/65">
+              <p className="pt-3 text-sm text-black/65">
                 Global headlines, analysis, and the stories shaping markets and policy.
               </p>
             ) : null}
@@ -97,12 +119,41 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
             </Link>
           ) : null}
         </div>
+        <div className="rounded border border-black/20 bg-[#dfe3e8] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.14em] text-black/55">Global Focus</p>
+              <p className="pt-1 text-sm text-black/75">{activeBriefing.title}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {regionOptions.map((region) => (
+                <button
+                  key={region}
+                  type="button"
+                  onClick={() => setActiveRegion(region)}
+                  className={`rounded border px-2 py-1 text-[11px] uppercase tracking-[0.12em] transition ${
+                    activeRegion === region
+                      ? "border-black bg-black text-white"
+                      : "border-black/25 text-black/65 hover:bg-black/10"
+                  }`}
+                >
+                  {region.replace("-", " ")}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3 grid gap-2 text-xs text-black/70 sm:grid-cols-3">
+            <p className="rounded border border-black/15 bg-white/40 px-2 py-1">Signal: {activeBriefing.signal}</p>
+            <p className="rounded border border-black/15 bg-white/40 px-2 py-1">Risk: {activeBriefing.risk}</p>
+            <p className="rounded border border-black/15 bg-white/40 px-2 py-1">Tempo: {activeBriefing.tempo}</p>
+          </div>
+        </div>
 
         <MotionDiv
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="grid gap-6 lg:grid-cols-[1.65fr_0.95fr]"
+          className="mt-5 grid gap-6 lg:grid-cols-[1.65fr_0.95fr]"
         >
           <MotionArticle variants={itemVariants}>
             <Link
@@ -142,7 +193,7 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
           </MotionArticle>
 
           <MotionAside variants={itemVariants} className="rounded-[2px] bg-[#d8d8dc]">
-            {sideStories.map((story, index) => (
+            {visibleSideStories.map((story, index) => (
               <motion.div
                 key={story.id}
                 initial={{ opacity: 0, y: 12 }}
@@ -166,6 +217,11 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
                 </Link>
               </motion.div>
             ))}
+            {visibleSideStories.length === 0 ? (
+              <div className="rounded border border-black/15 bg-white/30 p-4 text-sm text-black/65">
+                No stories for this region yet.
+              </div>
+            ) : null}
           </MotionAside>
         </MotionDiv>
       </div>

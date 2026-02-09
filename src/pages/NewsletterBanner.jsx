@@ -2,9 +2,21 @@ import { useState } from "react";
 
 function NewsletterBanner() {
   const [email, setEmail] = useState("");
+  const [feedback, setFeedback] = useState({ type: "idle", message: "" });
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setFeedback({ type: "error", message: "Please enter an email address." });
+      return;
+    }
+
+    setFeedback({
+      type: "success",
+      message: `Thanks, ${trimmedEmail} is now subscribed to updates.`,
+    });
     setEmail("");
   };
 
@@ -22,11 +34,16 @@ function NewsletterBanner() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
             <input
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (feedback.message) {
+                  setFeedback({ type: "idle", message: "" });
+                }
+              }}
               placeholder="Enter your email"
               className="w-full rounded border border-black/25 bg-white px-3 py-2.5 text-sm text-black/80 placeholder:text-black/35 focus:outline-none"
               required
@@ -37,6 +54,18 @@ function NewsletterBanner() {
             >
               Sign Up
             </button>
+
+            {feedback.message ? (
+              <p
+                role="status"
+                aria-live="polite"
+                className={`text-xs ${
+                  feedback.type === "success" ? "text-white" : "text-yellow-100"
+                }`}
+              >
+                {feedback.message}
+              </p>
+            ) : null}
           </form>
         </div>
 
