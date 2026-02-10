@@ -3,7 +3,7 @@
 Monorepo structure:
 
 - `frontend/` - React + Vite client app
-- `backend/` - Backend service (to be implemented)
+- `backend/` - Express API
 
 ## Frontend
 
@@ -25,7 +25,17 @@ npm run preview
 
 ## Backend
 
-Backend folder exists at `backend/` and is ready for implementation/deployment setup.
+From the project root:
+
+```powershell
+cd backend
+npm install
+npm run dev
+```
+
+Health endpoint:
+
+- `GET http://localhost:4000/api/health`
 
 ## Suggested Deployment Layout
 

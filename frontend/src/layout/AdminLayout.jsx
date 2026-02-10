@@ -1,0 +1,220 @@
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+
+const THEME_KEY = "admin_dashboard_theme";
+
+const navItems = [
+  { to: "/admin", label: "Dashboard", icon: "dashboard" },
+  { to: "/admin/hero", label: "Hero", icon: "hero" },
+  { to: "/admin/world", label: "World", icon: "world" },
+  { to: "/admin/technology", label: "Technology", icon: "technology" },
+  { to: "/admin/health", label: "Health", icon: "health" },
+  { to: "/admin/sports", label: "Sports", icon: "sports" },
+  { to: "/admin/settings", label: "Settings", icon: "settings" },
+];
+
+export default function AdminLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const navRef = useRef(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(THEME_KEY);
+    setIsDark(saved === "dark");
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+  }, [isDark]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/admin-login", {
+        replace: true,
+        state: { from: location.pathname },
+      });
+    }
+  }, [location.pathname, navigate]);
+
+  useEffect(() => {
+    const items = navRef.current?.querySelectorAll("[data-nav-item]");
+    if (!items?.length) return;
+
+    items.forEach((item, index) => {
+      item.animate(
+        [
+          { opacity: 0, transform: "translateX(-10px)" },
+          { opacity: 1, transform: "translateX(0)" },
+        ],
+        {
+          duration: 260,
+          delay: index * 45,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "both",
+        }
+      );
+    });
+  }, []);
+
+  // Later: fetch from /api/admin/me
+  const admin = {
+    name: "Admin",
+    role: "Editor",
+    avatarUrl: "https://api.dicebear.com/9.x/thumbs/svg?seed=VeloraAdmin",
+  };
+
+  return (
+    <div className={["min-h-screen transition-colors", isDark ? "bg-zinc-950 text-zinc-100" : "bg-[#d8d8dc] text-zinc-900"].join(" ")}>
+      <div className="mx-auto grid max-w-7xl grid-cols-1 md:grid-cols-[280px_1fr]">
+        {/* Sidebar */}
+        <aside
+          className={[
+            "border-b p-4 md:min-h-screen md:border-b-0 md:border-r transition-colors",
+            isDark ? "border-white/10 bg-zinc-950/80" : "border-zinc-300 bg-white/70",
+          ].join(" ")}
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold tracking-wide">Admin Panel</p>
+              <p className={["text-xs", isDark ? "text-white/60" : "text-zinc-600"].join(" ")}>Content & Analytics</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsDark((v) => !v)}
+              className={[
+                "rounded-lg border px-3 py-1.5 text-xs font-medium transition",
+                isDark
+                  ? "border-white/15 bg-white/5 text-white hover:bg-white/10"
+                  : "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100",
+              ].join(" ")}
+            >
+              {isDark ? "Dark" : "Light"}
+            </button>
+          </div>
+
+          <div
+            className={[
+              "mb-6 flex items-center gap-3 rounded-2xl border p-3",
+              isDark ? "border-white/10 bg-white/5" : "border-zinc-300 bg-white/80",
+            ].join(" ")}
+          >
+            <img
+              src={admin.avatarUrl}
+              alt="Admin avatar"
+              className={["h-10 w-10 rounded-full border", isDark ? "border-white/10" : "border-zinc-300"].join(" ")}
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{admin.name}</p>
+              <p className={["text-xs", isDark ? "text-white/60" : "text-zinc-600"].join(" ")}>{admin.role}</p>
+            </div>
+          </div>
+
+          <nav ref={navRef} className="space-y-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/admin"}
+                data-nav-item
+                className={({ isActive }) =>
+                  [
+                    "group block rounded-xl px-3 py-2 text-sm transition duration-200",
+                    isActive
+                      ? isDark
+                        ? "bg-white/10 text-white"
+                        : "bg-zinc-900 text-white"
+                      : isDark
+                        ? "text-white/70 hover:bg-white/5 hover:text-white"
+                        : "text-zinc-700 hover:bg-white hover:text-zinc-900",
+                  ].join(" ")
+                }
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="transition-transform duration-200 group-hover:scale-110 group-hover:translate-x-0.5">
+                    <NavIcon name={item.icon} />
+                  </span>
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5">{item.label}</span>
+                </span>
+              </NavLink>
+            ))}
+          </nav>
+
+        </aside>
+
+        {/* Main */}
+        <main className="p-4 md:p-6">
+          <Outlet context={{ isDark }} />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function NavIcon({ name }) {
+  const common = {
+    className: "h-4 w-4 shrink-0",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+  };
+
+  switch (name) {
+    case "dashboard":
+      return (
+        <svg {...common}>
+          <rect x="3" y="3" width="8" height="8" rx="2" />
+          <rect x="13" y="3" width="8" height="5" rx="2" />
+          <rect x="13" y="10" width="8" height="11" rx="2" />
+          <rect x="3" y="13" width="8" height="8" rx="2" />
+        </svg>
+      );
+    case "hero":
+      return (
+        <svg {...common}>
+          <path d="M12 3l2.7 5.5L21 9.3l-4.5 4.3L17.6 20 12 17.1 6.4 20l1.1-6.4L3 9.3l6.3-.8L12 3z" />
+        </svg>
+      );
+    case "world":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+        </svg>
+      );
+    case "technology":
+      return (
+        <svg {...common}>
+          <rect x="4" y="5" width="16" height="11" rx="2" />
+          <path d="M9 19h6M12 16v3" />
+        </svg>
+      );
+    case "health":
+      return (
+        <svg {...common}>
+          <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+        </svg>
+      );
+    case "sports":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M8 8c2 2 6 2 8 0M8 16c2-2 6-2 8 0M12 4v16" />
+        </svg>
+      );
+    case "settings":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1 1 0 0 1 0 1.4l-1.1 1.1a1 1 0 0 1-1.4 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1 1 0 0 1-1.4 0l-1.1-1.1a1 1 0 0 1 0-1.4l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1 1 0 0 1 0-1.4L5.9 4a1 1 0 0 1 1.4 0l.1.1a1 1 0 0 0 1.1.2H8.6a1 1 0 0 0 .6-.9V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6H20a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-.2a1 1 0 0 0-.9.6V15z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
