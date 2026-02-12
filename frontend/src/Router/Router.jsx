@@ -39,6 +39,7 @@ import AdminSettings from "../pages/admin/AdminSettings.jsx";
 import AdminPodcast from "../pages/admin/AdminPodcast.jsx";
 import AdminLatestNews from "../pages/admin/AdminLatestNews.jsx";
 import AdminResources from "../pages/admin/AdminResources.jsx";
+import AdminNewsletter from "../pages/admin/AdminNewsletter.jsx";
 
 const router = createBrowserRouter([
   {
@@ -100,6 +101,7 @@ const router = createBrowserRouter([
       { path: "culture", element: <AdminCulture /> },
       { path: "sports", element: <AdminSports /> },
       { path: "podcast", element: <AdminPodcast /> },
+      { path: "newsletter", element: <AdminNewsletter /> },
       { path: "settings", element: <AdminSettings /> },
     ],
   },

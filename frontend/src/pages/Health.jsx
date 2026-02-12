@@ -1,130 +1,229 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { healthArticles } from "../data/healthArticles";
+import NewsletterBanner from "./NewsletterBanner";
+
+const MotionSection = motion.section;
+const MotionDiv = motion.div;
+const MotionArticle = motion.article;
+const MotionImage = motion.img;
+const MotionButton = motion.button;
 
 const containerVariants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 20 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.12 },
+    transition: { duration: 0.55, ease: "easeOut", staggerChildren: 0.1 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-const MotionSection = motion.section;
-const MotionTitle = motion.h1;
-const MotionGrid = motion.div;
-const MotionCard = motion.article;
-const MotionImage = motion.img;
-const MotionWrap = motion.div;
-const MotionButton = motion.button;
-
 function Health() {
+  const API = import.meta.env.VITE_API_URL;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const batchSize = 3;
   const [visibleCount, setVisibleCount] = useState(3);
-  const visibleNews = healthArticles.slice(0, visibleCount);
-  const canLoadMore = visibleCount < healthArticles.length;
+  const [stories, setStories] = useState(healthArticles);
+  const [publishedCount, setPublishedCount] = useState(null);
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^\/?uploads\//i.test(url)) {
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      return base ? `${base}${normalized}` : normalized;
+    }
+    return url;
+  }
 
   useEffect(() => {
-    const upcoming = healthArticles.slice(visibleCount, visibleCount + batchSize);
+    let mounted = true;
+
+    async function loadHealth() {
+      try {
+        const res = await fetch(`${API}/api/health-news`);
+        const json = await res.json();
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        const liveCount = next.filter((item) => String(item?.title || "").trim().length > 0).length;
+        if (mounted) {
+          setPublishedCount(liveCount);
+          if (next.length > 0) setStories(next);
+        }
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadHealth();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const lead = stories[0];
+  const secondary = stories.slice(1, 3);
+  const rest = stories.slice(3);
+  const visibleRest = rest.slice(0, visibleCount);
+  const canLoadMore = visibleCount < rest.length;
+
+  useEffect(() => {
+    const upcoming = rest.slice(visibleCount, visibleCount + batchSize);
     upcoming.forEach((item) => {
       const img = new Image();
-      img.src = item.image;
+      img.src = resolveImageUrl(item.image);
     });
-  }, [visibleCount]);
+  }, [visibleCount, rest, base]);
+
+  const quickStats = useMemo(
+    () => [
+      { label: "Focus", value: "Public Health" },
+      { label: "Coverage", value: `${publishedCount ?? stories.length} stories` },
+      { label: "Update Cycle", value: "Daily" },
+    ],
+    [publishedCount, stories.length]
+  );
 
   return (
     <MotionSection
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.45 }}
-      className="bg-[#d8d8dc] px-4 py-12"
+      className="relative overflow-hidden bg-[#d7dddf] px-4 py-12"
     >
-      <div className="mx-auto w-full max-w-5xl">
-        <MotionTitle
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
-          className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl"
-        >
-          Health News
-        </MotionTitle>
-        <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-        <p className="pt-3 text-sm text-black/65">
-          Clinical breakthroughs, wellness insights, and the people advancing care.
-        </p>
-        <div className="mt-4 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
-          Health Pulse: care access, policy reform, and prevention trends shaping outcomes now.
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#7ec8c4]/30 blur-2xl" />
+        <div className="absolute -right-20 top-24 h-72 w-72 rounded-full bg-[#0f766e]/15 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-5xl">
+        <div className="rounded-2xl border border-black/15 bg-gradient-to-r from-[#eaf3f2] via-[#d9e8e6] to-[#d4e1df] p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Health Desk</p>
+          <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
+            Health News
+          </h1>
+          <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
+            Clinical breakthroughs, policy shifts, and practical wellness intelligence for communities and decision-makers.
+          </p>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            {quickStats.map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-black/15 bg-white/60 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-black/55">{stat.label}</p>
+                <p className="pt-1 text-sm font-semibold text-black/85">{stat.value}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="mt-4 h-px w-full bg-black/30" />
 
-        <MotionGrid
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3"
-        >
-          {visibleNews.map((item) => (
-            <MotionCard
-              key={item.id}
-              variants={itemVariants}
-              whileHover={{ y: -8, transition: { duration: 0.22 } }}
-              className="will-change-transform"
-            >
-              <Link
-                to={`/health/article/${item.id}`}
-                className="block"
-              >
+        {lead ? (
+          <MotionDiv
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="mt-6 grid gap-5 lg:grid-cols-[1.25fr_1fr]"
+          >
+            <MotionArticle variants={itemVariants} className="overflow-hidden rounded-2xl border border-black/15 bg-white/55">
+              <Link to={`/health/article/${lead.id}`} className="group block">
                 <MotionImage
-                  src={item.image}
-                  alt={item.title}
-                  loading="eager"
-                  decoding="async"
-                  className="h-52 w-full rounded object-cover object-center"
-                  whileHover={{ scale: 1.04 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  src={resolveImageUrl(lead.image)}
+                  alt={lead.title}
+                  className="h-[300px] w-full object-cover md:h-[430px]"
+                  whileHover={{ scale: 1.03 }}
+                  transition={{ duration: 0.32 }}
                 />
-
-                <p className="pt-3 text-[32px] leading-tight text-black/85 md:text-[31px]">{item.title}</p>
-
-                <div className="pt-2 text-sm text-black/65">
-                  <span>{item.author}</span>
-                  <span className="px-3">-</span>
-                  <span>{item.date}</span>
+                <div className="p-5">
+                  <p className="text-xs uppercase tracking-[0.13em] text-black/55">
+                    Lead Story <span className="px-2">-</span> {lead.date}
+                  </p>
+                  <h2 className="pt-3 text-4xl leading-tight text-black/90 md:text-[44px] [font-family:Georgia,Times,serif]">
+                    {lead.title}
+                  </h2>
+                  <p className="pt-4 text-black/75">{lead.summary}</p>
+                  <p className="pt-3 text-sm text-black/60">{lead.author}</p>
                 </div>
               </Link>
-            </MotionCard>
-          ))}
-        </MotionGrid>
+            </MotionArticle>
+
+            <div className="grid gap-5">
+              {secondary.map((story) => (
+                <MotionArticle
+                  key={story.id}
+                  variants={itemVariants}
+                  className="grid gap-4 rounded-2xl border border-black/15 bg-white/45 p-4 sm:grid-cols-[150px_1fr]"
+                >
+                  <Link to={`/health/article/${story.id}`} className="group contents">
+                    <img
+                      src={resolveImageUrl(story.image)}
+                      alt={story.title}
+                      className="h-36 w-full rounded-xl object-cover transition duration-300 group-hover:scale-[1.03]"
+                    />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.13em] text-black/55">{story.date}</p>
+                      <h3 className="pt-2 text-2xl leading-tight text-black/85">{story.title}</h3>
+                      <p className="pt-2 text-sm text-black/70">{story.summary}</p>
+                    </div>
+                  </Link>
+                </MotionArticle>
+              ))}
+            </div>
+          </MotionDiv>
+        ) : null}
+
+        {visibleRest.length > 0 ? (
+          <MotionDiv
+            key={visibleCount}
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {visibleRest.map((story) => (
+              <MotionArticle
+                key={story.id}
+                variants={itemVariants}
+                whileHover={{ y: -6 }}
+                className="rounded-2xl border border-black/15 bg-white/45 p-3"
+              >
+                <Link to={`/health/article/${story.id}`} className="group block">
+                  <img
+                    src={resolveImageUrl(story.image)}
+                    alt={story.title}
+                    className="h-48 w-full rounded-xl object-cover transition duration-300 group-hover:scale-[1.03]"
+                  />
+                  <p className="pt-3 text-xs uppercase tracking-[0.13em] text-black/55">{story.date}</p>
+                  <h3 className="pt-2 text-[30px] leading-tight text-black/85">{story.title}</h3>
+                  <p className="pt-2 text-sm text-black/65">{story.author}</p>
+                </Link>
+              </MotionArticle>
+            ))}
+          </MotionDiv>
+        ) : null}
 
         {canLoadMore ? (
-          <MotionWrap
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="mt-8 flex justify-center"
-          >
+          <div className="mt-8 text-center">
             <MotionButton
               type="button"
-              onClick={() => setVisibleCount((prev) => Math.min(prev + batchSize, healthArticles.length))}
-              className="rounded bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-black/80"
-              whileHover={{ scale: 1.06 }}
+              onClick={() => setVisibleCount((prev) => Math.min(prev + batchSize, rest.length))}
+              className="rounded-xl bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-black/80"
+              whileHover={{ y: -2, scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >
-              Load more
+              Load More
             </MotionButton>
-          </MotionWrap>
+          </div>
         ) : null}
       </div>
+
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }
 
 export default Health;
-

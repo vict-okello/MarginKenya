@@ -51,6 +51,9 @@ export default function AdminHero() {
 
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [openHeroArticle, setOpenHeroArticle] = useState(true);
+  const [openFeaturedEditor, setOpenFeaturedEditor] = useState(true);
+  const [openTopStories, setOpenTopStories] = useState(true);
 
   const featuredFileRef = useRef(null);
   const storyFileRefs = useRef([]);
@@ -505,6 +508,47 @@ export default function AdminHero() {
         </div>
       ) : null}
 
+      {/* PREVIEW (TOP) */}
+      <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-zinc-900">Preview</h2>
+          {featuredArticlePath ? (
+            <Link
+              to={featuredArticlePath}
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-800 hover:bg-zinc-100"
+            >
+              Open
+            </Link>
+          ) : null}
+        </div>
+
+        <Link to={featuredArticlePath || "#"} className={featuredArticlePath ? "block" : "block pointer-events-none"}>
+          <div className="mt-4 overflow-hidden rounded-xl border border-zinc-300 bg-zinc-100">
+            <div className="h-40 w-full bg-zinc-200">
+              {form.featured.imageUrl ? (
+                <img src={resolveUrl(form.featured.imageUrl)} alt="Featured preview" className="h-40 w-full object-cover" />
+              ) : (
+                <div className="flex h-40 items-center justify-center text-xs text-zinc-500">No image set</div>
+              )}
+            </div>
+            <div className="p-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded border border-zinc-300 px-2 py-1 text-[10px] uppercase text-zinc-700">
+                  {form.featured.category || "Category"}
+                </span>
+                <span className="rounded border border-zinc-300 px-2 py-1 text-[10px] uppercase text-zinc-700">
+                  {form.featured.author || "Author"}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-zinc-600">
+                {(form.featured.date || "Date")} | {(form.featured.readTime || "Read time")}
+              </p>
+              <p className="mt-3 text-sm font-semibold text-zinc-900">{form.featured.headline || "Headline"}</p>
+            </div>
+          </div>
+        </Link>
+      </div>
+
       {/* HERO ARTICLE EDITOR (content that should NOT show in Hero section) */}
       <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -515,19 +559,29 @@ export default function AdminHero() {
             </p>
           </div>
 
-          {featuredArticlePath ? (
-            <Link
-              to={featuredArticlePath}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setOpenHeroArticle((v) => !v)}
               className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
             >
-              View Article
-            </Link>
-          ) : (
-            <span className="text-xs text-zinc-500">Save Article to generate an ID</span>
-          )}
+              {openHeroArticle ? "Collapse" : "Expand"}
+            </button>
+            {featuredArticlePath ? (
+              <Link
+                to={featuredArticlePath}
+                className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
+              >
+                View Article
+              </Link>
+            ) : (
+              <span className="text-xs text-zinc-500">Save Article to generate an ID</span>
+            )}
+          </div>
         </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {openHeroArticle ? (
+          <>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field
             label="Title"
             value={heroArticle.title}
@@ -602,37 +656,52 @@ export default function AdminHero() {
               />
             </div>
           </div>
-        </div>
+            </div>
 
-        <div className="mt-4">
-          <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Summary</label>
-          <textarea
-            value={heroArticle.summary}
-            onChange={(e) => setHeroArticle((p) => ({ ...p, summary: e.target.value }))}
-            rows={3}
-            className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
-            placeholder="Short summary shown near the top of the article page"
-          />
-        </div>
+            <div className="mt-4">
+              <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Summary</label>
+              <textarea
+                value={heroArticle.summary}
+                onChange={(e) => setHeroArticle((p) => ({ ...p, summary: e.target.value }))}
+                rows={3}
+                className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                placeholder="Short summary shown near the top of the article page"
+              />
+            </div>
 
-        <div className="mt-4">
-          <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Body</label>
-          <textarea
-            value={heroArticle.body}
-            onChange={(e) => setHeroArticle((p) => ({ ...p, body: e.target.value }))}
-            rows={10}
-            className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
-            placeholder="Full article body (this should only appear on the article page)"
-          />
-        </div>
+            <div className="mt-4">
+              <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Body</label>
+              <textarea
+                value={heroArticle.body}
+                onChange={(e) => setHeroArticle((p) => ({ ...p, body: e.target.value }))}
+                rows={10}
+                className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                placeholder="Full article body (this should only appear on the article page)"
+              />
+            </div>
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-zinc-600">Hero Article editor collapsed.</p>
+        )}
       </div>
 
       {/* FEATURED (hero display fields only) */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-zinc-900">Hero Featured Display</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-zinc-900">Hero Featured Display</h2>
+            <button
+              type="button"
+              onClick={() => setOpenFeaturedEditor((v) => !v)}
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
+            >
+              {openFeaturedEditor ? "Collapse" : "Expand"}
+            </button>
+          </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {openFeaturedEditor ? (
+            <>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field
               label="Featured Article ID"
               value={form.featuredArticleId}
@@ -669,67 +738,71 @@ export default function AdminHero() {
               onChange={(v) => updateFeatured({ readTime: v })}
               placeholder="10 min read"
             />
-          </div>
-
-          <div className="mt-4">
-            <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Headline (Hero only)</label>
-            <textarea
-              value={form.featured.headline}
-              onChange={(e) => updateFeatured({ headline: e.target.value.slice(0, 140) })}
-              rows={3}
-              className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
-              placeholder="Short headline (max 140 chars)"
-            />
-            <p className="mt-1 text-xs text-zinc-500">{(form.featured.headline || "").length}/140</p>
-          </div>
-
-          <div className="mt-4">
-            <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Featured Image (Hero)</label>
-
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div
-                onClick={pickFeatured}
-                role="button"
-                tabIndex={0}
-                className="group flex h-24 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-zinc-400 bg-white text-sm text-zinc-700 hover:bg-zinc-50"
-              >
-                <div className="text-center">
-                  <div className="font-semibold">{uploading ? "Uploading..." : "Click to upload"}</div>
-                  <div className="text-xs text-zinc-500">PNG / JPG / WEBP</div>
-                </div>
               </div>
 
-              {form.featured.imageUrl ? (
-                <button
-                  onClick={removeFeaturedImage}
-                  disabled={uploading}
-                  className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
-                >
-                  Remove
-                </button>
-              ) : null}
+              <div className="mt-4">
+                <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Headline (Hero only)</label>
+                <textarea
+                  value={form.featured.headline}
+                  onChange={(e) => updateFeatured({ headline: e.target.value.slice(0, 140) })}
+                  rows={3}
+                  className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                  placeholder="Short headline (max 140 chars)"
+                />
+                <p className="mt-1 text-xs text-zinc-500">{(form.featured.headline || "").length}/140</p>
+              </div>
 
-              <input
-                ref={featuredFileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                onChange={onFeaturedFile}
-              />
-            </div>
+              <div className="mt-4">
+                <label className="text-xs font-medium uppercase tracking-wide text-zinc-700">Featured Image (Hero)</label>
 
-            <div className="mt-2">
-              <input
-                value={form.featured.imageUrl}
-                onChange={(e) => updateFeatured({ imageUrl: e.target.value })}
-                className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
-                placeholder="/uploads/your-image.png or https://..."
-              />
-            </div>
-          </div>
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <div
+                    onClick={pickFeatured}
+                    role="button"
+                    tabIndex={0}
+                    className="group flex h-24 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-zinc-400 bg-white text-sm text-zinc-700 hover:bg-zinc-50"
+                  >
+                    <div className="text-center">
+                      <div className="font-semibold">{uploading ? "Uploading..." : "Click to upload"}</div>
+                      <div className="text-xs text-zinc-500">PNG / JPG / WEBP</div>
+                    </div>
+                  </div>
+
+                  {form.featured.imageUrl ? (
+                    <button
+                      onClick={removeFeaturedImage}
+                      disabled={uploading}
+                      className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
+                    >
+                      Remove
+                    </button>
+                  ) : null}
+
+                  <input
+                    ref={featuredFileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={onFeaturedFile}
+                  />
+                </div>
+
+                <div className="mt-2">
+                  <input
+                    value={form.featured.imageUrl}
+                    onChange={(e) => updateFeatured({ imageUrl: e.target.value })}
+                    className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                    placeholder="/uploads/your-image.png or https://..."
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="mt-4 text-sm text-zinc-600">Hero Featured editor collapsed.</p>
+          )}
         </div>
 
-        <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
+        <div className="hidden rounded-2xl border border-zinc-300 bg-white/70 p-5">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-zinc-900">Preview</h2>
             {featuredArticlePath ? (
@@ -761,7 +834,7 @@ export default function AdminHero() {
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-zinc-600">
-                  {(form.featured.date || "Date")} • {(form.featured.readTime || "Read time")}
+                  {(form.featured.date || "Date")} | {(form.featured.readTime || "Read time")}
                 </p>
                 <p className="mt-3 text-sm font-semibold text-zinc-900">{form.featured.headline || "Headline"}</p>
               </div>
@@ -772,10 +845,21 @@ export default function AdminHero() {
 
       {/* TOP STORIES */}
       <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
-        <h2 className="text-sm font-semibold text-zinc-900">Top Stories</h2>
-        <p className="mt-1 text-xs text-zinc-600">Exactly 4 items, matching your Hero.jsx layout.</p>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-zinc-900">Top Stories</h2>
+          <button
+            type="button"
+            onClick={() => setOpenTopStories((v) => !v)}
+            className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-800 hover:bg-zinc-100"
+          >
+            {openTopStories ? "Collapse" : "Expand"}
+          </button>
+        </div>
+        {openTopStories ? (
+          <>
+            <p className="mt-1 text-xs text-zinc-600">Exactly 4 items, matching your Hero.jsx layout.</p>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {form.topStories.map((story, i) => (
             <div key={i} className="rounded-2xl border border-zinc-300 bg-zinc-100 p-4">
               <div className="flex items-start justify-between gap-3">
@@ -857,7 +941,11 @@ export default function AdminHero() {
               </div>
             </div>
           ))}
-        </div>
+            </div>
+          </>
+        ) : (
+          <p className="mt-4 text-sm text-zinc-600">Top Stories editor collapsed.</p>
+        )}
       </div>
     </div>
   );
@@ -876,3 +964,4 @@ function Field({ label, value, onChange, placeholder }) {
     </div>
   );
 }
+

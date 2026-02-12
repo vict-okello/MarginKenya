@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useReadTracker from "../hooks/useReadTracker";
+import useArticleViewTracker from "../hooks/useArticleViewTracker";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -20,6 +22,13 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
     section: sectionName,
     minSeconds: 20,
     minScrollPercent: 60,
+  });
+
+  useArticleViewTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: article?.category || sectionName,
+    section: sectionName,
   });
 
   if (!article) {
@@ -60,6 +69,7 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
         <MotionText className="pt-4 text-black/75">{article.summary}</MotionText>
         <MotionText className="pt-4 text-black/80">{article.body}</MotionText>
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }

@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import worldImage from "../assets/world.jpg";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -82,12 +83,118 @@ const sideStories = [
   },
 ];
 
+const fallbackLead = {
+  articleId: leadArticleId,
+  label: "World News",
+  date: "Jan 25, 2025",
+  title: "Revolutionizing manufacturing emerging trends shaping the industry",
+  image: "",
+};
+
+const categoryByPath = [
+  { key: "sports", match: "/sports", label: "Sports", color: "bg-[#f0503a]" },
+  { key: "business", match: "/business", label: "Business", color: "bg-[#d8b73a]" },
+  { key: "technology", match: "/technology", label: "Technology", color: "bg-[#ee5b45]" },
+  { key: "health", match: "/health", label: "Health News", color: "bg-[#2ec86b]" },
+  { key: "culture", match: "/culture", label: "Culture", color: "bg-[#3da5d9]" },
+  { key: "politics", match: "/politics", label: "Politics", color: "bg-[#6358e8]" },
+];
+
+function inferCategoryFromTo(to) {
+  const path = String(to || "").toLowerCase();
+  return categoryByPath.find((item) => path.startsWith(item.match)) || null;
+}
+
+function normalizeWorld(payload) {
+  const leadRaw = payload?.lead && typeof payload.lead === "object" ? payload.lead : null;
+  const storiesRaw = Array.isArray(payload?.stories) ? payload.stories : [];
+
+  const lead = leadRaw
+    ? {
+        articleId: leadRaw.articleId || leadRaw.id || leadArticleId,
+        label: leadRaw.label || "World News",
+        date: leadRaw.date || "Jan 25, 2025",
+        title: leadRaw.title || "",
+        image: leadRaw.image || "",
+        status: leadRaw.status || "published",
+      }
+    : null;
+
+  const stories = storiesRaw.map((story, idx) => ({
+    id: story?.id || `world-side-${idx}`,
+    label: story?.label || "World News",
+    date: story?.date || "",
+    title: story?.title || "",
+    to: story?.to || "/worldnews",
+    color: story?.color || "bg-[#6358e8]",
+    region: story?.region || "all",
+    status: story?.status || "published",
+  })).map((story) => {
+    const inferred = inferCategoryFromTo(story.to);
+    const keepWorldLabel = String(story.label || "").trim().toLowerCase() === "world news";
+    const usingDefaultWorldColor = String(story.color || "").trim() === "bg-[#6358e8]";
+
+    if (!inferred || !keepWorldLabel) return story;
+
+    return {
+      ...story,
+      label: inferred.label,
+      color: usingDefaultWorldColor ? inferred.color : story.color,
+    };
+  });
+
+  return { lead, stories };
+}
+
+function getStoryHref(story) {
+  const raw = String(story?.to || "").trim();
+  if (!raw || raw === "/worldnews") return `/worldnews/article/${story.id}`;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith("/")) return raw;
+  return `/${raw}`;
+}
+
 function Worldnews({ showViewAll = true, variant = "home" }) {
+  const API = import.meta.env.VITE_API_URL;
   const isPage = variant === "page";
   const [activeRegion, setActiveRegion] = useState("all");
+  const [worldData, setWorldData] = useState({ lead: null, stories: sideStories });
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadWorld() {
+      try {
+        const res = await fetch(`${API}/api/worldnews`);
+        const data = await res.json();
+        if (!res.ok) return;
+        const next = normalizeWorld(data);
+        if (alive) setWorldData(next);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadWorld();
+    return () => {
+      alive = false;
+    };
+  }, [API]);
+
+  const lead = useMemo(() => worldData.lead || fallbackLead, [worldData.lead]);
+  const leadImage = useMemo(() => {
+    if (!lead?.image) return worldImage;
+    if (/^https?:\/\//i.test(lead.image)) return lead.image;
+    return API ? `${API}${lead.image}` : lead.image;
+  }, [lead, API]);
+
   const visibleSideStories = useMemo(
-    () => (activeRegion === "all" ? sideStories : sideStories.filter((story) => story.region === activeRegion)),
-    [activeRegion]
+    () =>
+      (activeRegion === "all"
+        ? worldData.stories
+        : worldData.stories.filter((story) => story.region === activeRegion)
+      ).filter((story) => story.status === "published"),
+    [activeRegion, worldData.stories]
   );
   const activeBriefing = regionBriefing[activeRegion];
 
@@ -99,19 +206,21 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
       className={`bg-[#d8d8dc] px-4 ${isPage ? "py-12" : "py-10"}`}
     >
       <div className="mx-auto w-full max-w-5xl">
-        <div className="flex flex-wrap items-end justify-between gap-3 pb-5">
+        <div className={`flex flex-wrap items-end justify-between gap-3 ${isPage ? "rounded-2xl border border-black/15 bg-gradient-to-r from-[#e6ebf3] via-[#d9e2ef] to-[#d0dceb] p-6" : "pb-5"}`}>
           <div>
             {isPage ? (
-              <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">World News</h1>
+              <>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">World Desk</p>
+                <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
+                  World News
+                </h1>
+                <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
+                  Global headlines, analysis, and the stories shaping markets and policy.
+                </p>
+              </>
             ) : (
               <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">World News</h2>
             )}
-            <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-            {isPage ? (
-              <p className="pt-3 text-sm text-black/65">
-                Global headlines, analysis, and the stories shaping markets and policy.
-              </p>
-            ) : null}
           </div>
           {showViewAll ? (
             <Link to="/worldnews" className="text-sm text-black/70 transition hover:text-black">
@@ -119,7 +228,7 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
             </Link>
           ) : null}
         </div>
-        <div className="rounded border border-black/20 bg-[#dfe3e8] p-4">
+        <div className={`rounded border border-black/20 bg-[#dfe3e8] p-4 ${isPage ? "mt-5" : ""}`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-black/55">Global Focus</p>
@@ -157,12 +266,12 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
         >
           <MotionArticle variants={itemVariants}>
             <Link
-              to={`/worldnews/article/${leadArticleId}`}
+              to={`/worldnews/article/${lead.articleId || leadArticleId}`}
               className="group block"
             >
               <div className="overflow-hidden rounded-[2px]">
                 <MotionImage
-                  src={worldImage}
+                  src={leadImage}
                   alt="Manufacturing and industrial landscape"
                   className="h-[250px] w-full object-cover sm:h-[360px] lg:h-[460px]"
                   whileHover={{ scale: 1.03 }}
@@ -176,7 +285,7 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.42, delay: 0.08, ease: "easeOut" }}
               >
-                Revolutionizing manufacturing emerging trends shaping the industry
+                {lead.title}
               </motion.h2>
 
               <motion.div
@@ -187,7 +296,7 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
               >
                 <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">World News</span>
                 <span className="px-3">-</span>
-                <span>Jan 25, 2025</span>
+                <span>{lead.date}</span>
               </motion.div>
             </Link>
           </MotionArticle>
@@ -200,21 +309,41 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.34, delay: 0.12 + index * 0.055, ease: "easeOut" }}
               >
-                <Link
-                  to={story.to}
-                  className="block border-b border-black/15 py-5 first:pt-0"
-                >
-                  <div className="text-xs uppercase tracking-wide text-black/60">
-                    <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
-                      {story.label}
-                    </span>
-                    <span className="px-3">-</span>
-                    <span>{story.date}</span>
-                  </div>
-                  <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
-                    {story.title}
-                  </h2>
-                </Link>
+                {/^https?:\/\//i.test(getStoryHref(story)) ? (
+                  <a
+                    href={getStoryHref(story)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block border-b border-black/15 py-5 first:pt-0"
+                  >
+                    <div className="text-xs uppercase tracking-wide text-black/60">
+                      <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
+                        {story.label}
+                      </span>
+                      <span className="px-3">-</span>
+                      <span>{story.date}</span>
+                    </div>
+                    <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
+                      {story.title}
+                    </h2>
+                  </a>
+                ) : (
+                  <Link
+                    to={getStoryHref(story)}
+                    className="block border-b border-black/15 py-5 first:pt-0"
+                  >
+                    <div className="text-xs uppercase tracking-wide text-black/60">
+                      <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
+                        {story.label}
+                      </span>
+                      <span className="px-3">-</span>
+                      <span>{story.date}</span>
+                    </div>
+                    <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
+                      {story.title}
+                    </h2>
+                  </Link>
+                )}
               </motion.div>
             ))}
             {visibleSideStories.length === 0 ? (
@@ -225,11 +354,13 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
           </MotionAside>
         </MotionDiv>
       </div>
+      {isPage ? <NewsletterBanner variant="sports" /> : null}
     </MotionSection>
   );
 }
 
 export default Worldnews;
+
 
 
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { latestNewsArticles } from "../data/latestNewsArticles";
@@ -23,10 +23,64 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
+function normalizeLatestNews(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+  return list.map((item, idx) => ({
+    id: item?.id || `${Date.now()}-${idx}`,
+    title: item?.title || "",
+    category: item?.category || "Latest News",
+    date: item?.date || new Date().toISOString().slice(0, 10),
+    image: item?.image || "",
+    summary: item?.summary || "",
+    body: item?.body || item?.content || "",
+  }));
+}
+
 function LatestNews({ withSection = true, showHeader = true }) {
+  const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [featured, sideOne, sideTwo] = latestNewsArticles;
-  const remainingArticles = latestNewsArticles.slice(3);
+  const [articles, setArticles] = useState(latestNewsArticles);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadLatestNews() {
+      try {
+        const res = await fetch(`${API}/api/latest-news`);
+        const data = await res.json();
+        if (!res.ok) return;
+        const list = normalizeLatestNews(data);
+        if (mounted && list.length > 0) setArticles(list);
+      } catch {
+        // Keep static fallback data when API is unavailable.
+      }
+    }
+
+    if (API) loadLatestNews();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const resolvedArticles = useMemo(() => {
+    return articles.map((item) => ({
+      ...item,
+      image:
+        item?.image && /^https?:\/\//i.test(item.image)
+          ? item.image
+          : item?.image && API
+            ? `${API}${item.image}`
+            : item?.image || "",
+    }));
+  }, [articles, API]);
+
+  const [featured, sideOne, sideTwo] = resolvedArticles;
+  const remainingArticles = resolvedArticles.slice(3);
   const bottomRow = remainingArticles.slice(0, visibleCount);
   const canLoadMore = visibleCount < remainingArticles.length;
 

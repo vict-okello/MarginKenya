@@ -1,7 +1,11 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { healthArticles } from "../data/healthArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
+import useArticleViewTracker from "../hooks/useArticleViewTracker";
+import useReadTracker from "../hooks/useReadTracker";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -10,8 +14,55 @@ const MotionTitle = motion.h1;
 const MotionText = motion.p;
 
 function HealthArticle() {
+  const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
-  const article = healthArticles.find((item) => item.id === articleId);
+  const [articles, setArticles] = useState(healthArticles);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadHealth() {
+      try {
+        const res = await fetch(`${API}/api/health-news`);
+        const json = await res.json();
+        if (!res.ok) return;
+        if (mounted && Array.isArray(json) && json.length > 0) setArticles(json);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadHealth();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const article = articles.find((item) => String(item.id) === String(articleId));
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^\/?uploads\//i.test(url)) {
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      return base ? `${base}${normalized}` : normalized;
+    }
+    return url;
+  }
+
+  useArticleViewTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: "Health",
+    section: "Health",
+  });
+  useReadTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: "Health",
+    section: "Health",
+  });
 
   if (!article) {
     return <NotFoundMessage backTo="/health" backLabel="Back to Health" />;
@@ -32,7 +83,7 @@ function HealthArticle() {
           transition={{ duration: 0.65, ease: "easeOut" }}
         >
           <MotionImage
-            src={article.image}
+            src={resolveImageUrl(article.image)}
             alt={article.title}
             className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[390px]"
             whileHover={{ scale: 1.03 }}
@@ -72,6 +123,7 @@ function HealthArticle() {
           {article.body}
         </MotionText>
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }

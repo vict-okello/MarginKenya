@@ -5,7 +5,7 @@ const EventSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["page_view", "click", "read", "edit"],
+      enum: ["page_view", "article_view", "click", "read", "edit"],
     },
 
     sessionId: {

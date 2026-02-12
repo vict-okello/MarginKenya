@@ -2,6 +2,9 @@ import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import NotFoundMessage from "../../components/NotFoundMessage";
+import useArticleViewTracker from "../../hooks/useArticleViewTracker";
+import useReadTracker from "../../hooks/useReadTracker";
+import NewsletterBanner from "../NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -19,6 +22,19 @@ export default function HeroArticlePage() {
 
   const [article, setArticle] = useState(null);
   const [notFound, setNotFound] = useState(false);
+
+  useArticleViewTracker({
+    articleId: article?._id || article?.id || id,
+    title: article?.title,
+    category: article?.category || "World News",
+    section: "World",
+  });
+  useReadTracker({
+    articleId: article?._id || article?.id || id,
+    title: article?.title,
+    category: article?.category || "World News",
+    section: "World",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -108,6 +124,7 @@ export default function HeroArticlePage() {
           </MotionText>
         ) : null}
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }

@@ -2,6 +2,9 @@ import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { technologyArticles } from "../data/technologyArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
+import useArticleViewTracker from "../hooks/useArticleViewTracker";
+import useReadTracker from "../hooks/useReadTracker";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -12,6 +15,19 @@ const MotionText = motion.p;
 function TechnologyArticle() {
   const { articleId } = useParams();
   const article = technologyArticles.find((item) => item.id === articleId);
+
+  useArticleViewTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: "Technology",
+    section: "Technology",
+  });
+  useReadTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: "Technology",
+    section: "Technology",
+  });
 
   if (!article) {
     return <NotFoundMessage backTo="/technology" backLabel="Back to Technology" />;
@@ -76,6 +92,7 @@ function TechnologyArticle() {
           {article.body}
         </MotionText>
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }

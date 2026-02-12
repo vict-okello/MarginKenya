@@ -1,36 +1,67 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { cultureArticles } from "../data/cultureArticles";
+import NewsletterBanner from "./NewsletterBanner";
 
 function Culture() {
+  const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const topStories = cultureArticles.slice(0, 2);
-  const bottomStories = cultureArticles.slice(2);
+  const [stories, setStories] = useState(cultureArticles);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCulture() {
+      try {
+        const res = await fetch(`${API}/api/culture`);
+        const json = await res.json();
+        if (!res.ok) return;
+        if (mounted && Array.isArray(json) && json.length > 0) setStories(json);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadCulture();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const topStories = stories.slice(0, 2);
+  const bottomStories = stories.slice(2);
   const visibleBottomStories = bottomStories.slice(0, visibleCount);
   const canLoadMore = visibleCount < bottomStories.length;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    return base ? `${base}${url}` : url;
+  }
 
   return (
     <section className="bg-[#d8d8dc] px-4 py-12">
       <div className="mx-auto w-full max-w-5xl">
-        <div className="pb-5">
-          <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
+        <div className="rounded-2xl border border-black/15 bg-gradient-to-r from-[#ece9f1] via-[#e2dce9] to-[#d9d5e2] p-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Culture Desk</p>
+          <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
             Culture
           </h1>
-          <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-          <p className="pt-3 text-sm text-black/65">
-            Art, identity, and the creative forces shaping our time.
+          <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
+            Art, identity, and the creative forces shaping public conversation.
           </p>
-          <div className="mt-4 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
-            Culture Pulse: creative voices, identity shifts, and ideas redefining public conversation.
+          <div className="mt-5 rounded-xl border border-black/15 bg-white/60 px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
+            Culture Pulse: creative voices, identity shifts, and emerging ideas.
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {topStories.map((story) => (
             <article key={story.id} className="rounded border border-black/10 bg-[#d8d8dc] p-3">
               <Link to={`/culture/article/${story.id}`} className="block overflow-hidden rounded-[2px]">
                 <img
-                  src={story.image}
+                  src={resolveImageUrl(story.image)}
                   alt={story.title}
                   className="h-[270px] w-full object-cover transition duration-300 hover:scale-[1.02]"
                 />
@@ -53,7 +84,7 @@ function Culture() {
             <article key={story.id} className="rounded border border-black/10 bg-[#d8d8dc] p-3">
               <Link to={`/culture/article/${story.id}`} className="block overflow-hidden rounded-[2px]">
                 <img
-                  src={story.image}
+                  src={resolveImageUrl(story.image)}
                   alt={story.title}
                   className="h-[170px] w-full object-cover transition duration-300 hover:scale-[1.02]"
                 />
@@ -82,8 +113,10 @@ function Culture() {
           </div>
         ) : null}
       </div>
+      <NewsletterBanner variant="sports" />
     </section>
   );
 }
 
 export default Culture;
+

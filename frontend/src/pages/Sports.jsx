@@ -30,6 +30,7 @@ const MotionButton = motion.button;
 const MotionP = motion.p;
 
 function Sports() {
+  const API = import.meta.env.VITE_API_URL;
   const topStory = sportsArticles.topScorer;
   const sideStoryOne = sportsArticles.runners;
   const sideStoryTwo = sportsArticles.indycar;
@@ -52,16 +53,9 @@ function Sports() {
   );
   const [email, setEmail] = useState("");
   const [subscribeMessage, setSubscribeMessage] = useState("");
-  const [subscribers, setSubscribers] = useState(() => {
-    try {
-      const saved = localStorage.getItem("sports_newsletter_emails");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [subscribers, setSubscribers] = useState(0);
 
-  const handleSubscribe = (event) => {
+  const handleSubscribe = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (form && !form.checkValidity()) {
@@ -75,20 +69,21 @@ function Sports() {
       return;
     }
 
-    if (subscribers.includes(cleanEmail)) {
-      setSubscribeMessage("This email is already subscribed.");
-      return;
-    }
-
-    const updatedSubscribers = [...subscribers, cleanEmail];
-    setSubscribers(updatedSubscribers);
     try {
-      localStorage.setItem("sports_newsletter_emails", JSON.stringify(updatedSubscribers));
-    } catch {
-      setSubscribeMessage("Subscribed, but storage is unavailable in this browser.");
+      if (!API) throw new Error("API is unavailable.");
+      const res = await fetch(`${API}/api/subscribers/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, source: "sports_page" }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.message || "Subscription failed.");
+      setSubscribeMessage(json?.message || "Subscribed successfully.");
+      setSubscribers((n) => n + 1);
+      setEmail("");
+    } catch (err) {
+      setSubscribeMessage(err?.message || "Subscription failed.");
     }
-    setEmail("");
-    setSubscribeMessage("Subscribed successfully.");
   };
 
   return (
@@ -98,21 +93,21 @@ function Sports() {
       transition={{ duration: 0.4 }}
       className="bg-[#d8d8dc] px-4 py-12"
     >
-      <div className="mx-auto w-full max-w-5xl pb-6">
-        <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
+      <div className="mx-auto w-full max-w-5xl rounded-2xl border border-black/15 bg-gradient-to-r from-[#eceef2] via-[#dee2ea] to-[#d6dce7] p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Sports Desk</p>
+        <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
           Sports
         </h1>
-        <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-        <p className="pt-3 text-sm text-black/65">
+        <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
           Match highlights, athlete stories, and the moments that move fans.
         </p>
-        <div className="mt-4 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
+        <div className="mt-5 rounded-xl border border-black/15 bg-white/60 px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
           Sports Pulse: fixtures, form, and momentum shifts ahead of the next gameweek.
         </div>
       </div>
 
       <MotionDiv
-        className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]"
+        className="mx-auto mt-5 grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]"
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -394,7 +389,7 @@ function Sports() {
               </button>
             </form>
             <p className="pt-3 text-sm text-black/70">
-              {subscribeMessage || `Subscribers recorded: ${subscribers.length}`}
+              {subscribeMessage || `Subscribers recorded: ${subscribers}`}
             </p>
           </div>
 

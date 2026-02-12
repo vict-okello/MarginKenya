@@ -1,0 +1,50 @@
+{
+  "lead": {
+    "id": "dbdb2286-4e04-4dee-9f43-c439951203be",
+    "type": "lead",
+    "label": "World News",
+    "date": "2026-02-12",
+    "title": "US AI fight",
+    "image": "/uploads/worldnews/60313d4b485fc3575aee67b426df4c46.png",
+    "articleId": "lead-worldnews",
+    "status": "draft"
+  },
+  "stories": [
+    {
+      "id": "7cc9bf0f-6bf4-4da2-ae5c-61a41d6c6223",
+      "type": "side",
+      "label": "World News",
+      "date": "2026-02-12",
+      "title": "AI fight again",
+      "to": "/sports",
+      "color": "bg-[#6358e8]",
+      "region": "all",
+      "image": "",
+      "status": "published"
+    },
+    {
+      "id": "c4fdf99b-2f9e-4d9d-b66b-e903f1a2e54c",
+      "type": "side",
+      "label": "World News",
+      "date": "2026-02-12",
+      "title": "Sports",
+      "to": "/sport",
+      "color": "bg-[#6358e8]",
+      "region": "all",
+      "image": "",
+      "status": "published"
+    },
+    {
+      "id": "6725eb3d-cea0-4163-8b82-a59473ac60fa",
+      "type": "side",
+      "label": "World News",
+      "date": "2026-02-12",
+      "title": "US ",
+      "to": "/worldnews",
+      "color": "bg-[#6358e8]",
+      "region": "all",
+      "image": "/uploads/worldnews/adf32796125005153660540e036a86c7.png",
+      "status": "published"
+    }
+  ]
+}

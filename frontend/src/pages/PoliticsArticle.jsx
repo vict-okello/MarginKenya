@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import NotFoundMessage from "../components/NotFoundMessage";
+import useArticleViewTracker from "../hooks/useArticleViewTracker";
+import useReadTracker from "../hooks/useReadTracker";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionImage = motion.img;
@@ -71,6 +74,19 @@ function PoliticsArticle() {
     );
   }, [articleId, deskData]);
 
+  useArticleViewTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: article?.tag || "Politics",
+    section: article?.scope || "Politics",
+  });
+  useReadTracker({
+    articleId: article?.id,
+    title: article?.title,
+    category: article?.tag || "Politics",
+    section: article?.scope || "Politics",
+  });
+
   if (loading) {
     return (
       <MotionSection className="bg-[#d8d8dc] px-4 py-10">
@@ -105,7 +121,7 @@ function PoliticsArticle() {
           {article.scope} - {article.tag} - {article.date}
         </MotionText>
 
-        <MotionTitle className="pt-2 text-4xl font-semibold text-black">
+        <MotionTitle className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl">
           {article.title}
         </MotionTitle>
 
@@ -125,11 +141,11 @@ function PoliticsArticle() {
           />
 
           {/* Text wraps to right and continues below */}
-          <MotionText className="text-[1.05rem] leading-relaxed text-black/75 md:text-[1.1rem]">
+          <MotionText className="pt-5 text-lg leading-relaxed text-black/75 md:text-xl">
             {article.summary}
           </MotionText>
 
-          <MotionText className="whitespace-pre-line pt-4 text-[1.05rem] leading-relaxed text-black/80 md:text-[1.1rem]">
+          <MotionText className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg">
             {bodyText}
           </MotionText>
 
@@ -138,6 +154,7 @@ function PoliticsArticle() {
         </div>
 
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }

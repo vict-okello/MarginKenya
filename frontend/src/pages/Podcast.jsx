@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -320,8 +321,10 @@ function Podcast() {
           </div>
         ) : null}
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }
 
 export default Podcast;
+

@@ -7,6 +7,8 @@ export default function usePageViewTracker() {
   const location = useLocation();
 
   useEffect(() => {
+    if (!API) return;
+
     fetch(`${API}/api/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -15,6 +17,7 @@ export default function usePageViewTracker() {
         sessionId: getSessionId(),
         path: location.pathname, // tracks every page
       }),
+      keepalive: true,
     }).catch(() => {});
   }, [API, location.pathname]);
 }

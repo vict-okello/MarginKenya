@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { businessArticles } from "../data/businessArticles";
+import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -70,13 +71,13 @@ function Business() {
       className="bg-[#d8d8dc] px-4 py-12"
     >
       <div className="mx-auto w-full max-w-5xl">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-black/15 bg-gradient-to-r from-[#f0ece6] via-[#e7dfd2] to-[#ddd6c8] p-6">
           <div>
-            <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Business Desk</p>
+            <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
               Business
             </h1>
-            <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-            <p className="max-w-2xl pt-3 text-sm text-black/65">
+            <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
               Follow money, markets, and enterprise strategy with local and international lenses.
             </p>
           </div>
@@ -289,8 +290,10 @@ function Business() {
           </div>
         )}
       </div>
+      <NewsletterBanner variant="sports" />
     </MotionSection>
   );
 }
 
 export default Business;
+

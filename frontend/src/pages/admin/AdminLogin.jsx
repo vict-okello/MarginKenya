@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import usePageViewTracker from "../../hooks/usePageViewTracker";
 
 export default function AdminLogin() {
+  usePageViewTracker();
+
   const API = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const location = useLocation();

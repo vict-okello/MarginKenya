@@ -1,11 +1,68 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { articlesResourcesArticles } from "../data/articlesResourcesArticles";
 
+function normalizeResources(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.resources)
+      ? payload.resources
+      : [];
+
+  return list.map((item, idx) => ({
+    id: item?.id || `${Date.now()}-${idx}`,
+    title: item?.title || "",
+    category: item?.category || "Guide",
+    date: (item?.publishedAt || "").slice(0, 10) || "",
+    image: item?.image || "",
+    summary: item?.summary || "",
+    body: item?.content || item?.body || "",
+    status: item?.status || "draft",
+  }));
+}
+
 function ArticlesResources({ withSection = true, showHeader = true }) {
+  const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const visibleArticles = articlesResourcesArticles.slice(0, visibleCount);
-  const canLoadMore = visibleCount < articlesResourcesArticles.length;
+  const [articles, setArticles] = useState(articlesResourcesArticles);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadResources() {
+      try {
+        const res = await fetch(`${API}/api/resources`);
+        const data = await res.json();
+        if (!res.ok) return;
+        const next = normalizeResources(data).filter((item) => item.status === "published");
+        if (alive && next.length > 0) setArticles(next);
+      } catch {
+        // Keep static fallback if API is unavailable.
+      }
+    }
+
+    if (API) loadResources();
+    return () => {
+      alive = false;
+    };
+  }, [API]);
+
+  const resolvedArticles = useMemo(
+    () =>
+      articles.map((item) => ({
+        ...item,
+        image:
+          item?.image && /^https?:\/\//i.test(item.image)
+            ? item.image
+            : item?.image && API
+              ? `${API}${item.image}`
+              : item?.image || "",
+      })),
+    [articles, API]
+  );
+
+  const visibleArticles = resolvedArticles.slice(0, visibleCount);
+  const canLoadMore = visibleCount < resolvedArticles.length;
 
   const Wrapper = withSection ? "section" : "div";
   const wrapperClassName = withSection ? "bg-[#d8d8dc] px-4 pb-12 pt-6" : "";
@@ -63,7 +120,7 @@ function ArticlesResources({ withSection = true, showHeader = true }) {
           <div className="pt-7 text-center">
             <button
               type="button"
-              onClick={() => setVisibleCount((prev) => Math.min(prev + 3, articlesResourcesArticles.length))}
+              onClick={() => setVisibleCount((prev) => Math.min(prev + 3, resolvedArticles.length))}
               className="rounded bg-black px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white transition hover:bg-black/80"
             >
               Load More

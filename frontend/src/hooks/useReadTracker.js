@@ -11,11 +11,13 @@ export default function useReadTracker({
 }) {
   const API = import.meta.env.VITE_API_URL;
 
-  const startRef = useRef(Date.now());
+  const startRef = useRef(0);
   const sentRef = useRef(false);
 
   useEffect(() => {
-    if (!articleId || !title) return;
+    if (!API || !articleId || !title) return;
+    startRef.current = Date.now();
+    sentRef.current = false;
 
     function getScrollPercent() {
       const doc = document.documentElement;
@@ -37,6 +39,7 @@ export default function useReadTracker({
         fetch(`${API}/api/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          keepalive: true,
           body: JSON.stringify({
             type: "read",
             sessionId: getSessionId(),

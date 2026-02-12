@@ -1,10 +1,12 @@
 import { useState } from "react";
 
-function NewsletterBanner() {
+function NewsletterBanner({ variant = "home" }) {
+  const API = import.meta.env.VITE_API_URL;
   const [email, setEmail] = useState("");
   const [feedback, setFeedback] = useState({ type: "idle", message: "" });
+  const isSports = variant === "sports";
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     const trimmedEmail = email.trim();
@@ -13,25 +15,62 @@ function NewsletterBanner() {
       return;
     }
 
-    setFeedback({
-      type: "success",
-      message: `Thanks, ${trimmedEmail} is now subscribed to updates.`,
-    });
-    setEmail("");
+    try {
+      if (!API) throw new Error("API is unavailable.");
+
+      const res = await fetch(`${API}/api/subscribers/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, source: isSports ? "sports_style_banner" : "home_banner" }),
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.message || "Subscription failed.");
+
+      setFeedback({
+        type: "success",
+        message: json?.message || `Thanks, ${trimmedEmail} is now subscribed to updates.`,
+      });
+      setEmail("");
+    } catch (err) {
+      setFeedback({
+        type: "error",
+        message: err?.message || "Could not subscribe. Please try again.",
+      });
+    }
   };
 
   return (
     <section className="bg-[#d8d8dc] px-4 pb-8 pt-2">
-      <div className="mx-auto w-full max-w-5xl overflow-hidden rounded bg-[#b84a3d] px-6 py-7 md:px-8">
+      <div
+        className={`mx-auto w-full max-w-5xl overflow-hidden rounded px-6 py-7 md:px-8 ${
+          isSports ? "bg-[#d1d4d9]" : "bg-[#b84a3d]"
+        }`}
+      >
         <div className="grid gap-6 md:grid-cols-[1fr_280px] md:items-center">
           <div>
-            <h2 className="max-w-lg text-3xl font-semibold leading-tight text-white md:text-[34px]">
-              Stay informed with our latest news and updates.
-            </h2>
-            <p className="max-w-lg pt-3 text-xs text-white/90 md:text-sm">
-              Get breaking news and curated stories delivered to your inbox every day.
-              Be the first to know what is happening around the world.
-            </p>
+            {isSports ? (
+              <>
+                <h2 className="max-w-lg text-5xl font-extrabold uppercase leading-[0.9] text-black/70 md:text-6xl">
+                  Newsletter
+                  <br />
+                  Subscription
+                </h2>
+                <p className="max-w-lg pt-3 text-sm text-black/70 md:text-base">
+                  Get curated updates and weekly highlights directly in your inbox.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="max-w-lg text-3xl font-semibold leading-tight text-white md:text-[34px]">
+                  Stay informed with our latest news and updates.
+                </h2>
+                <p className="max-w-lg pt-3 text-xs text-white/90 md:text-sm">
+                  Get breaking news and curated stories delivered to your inbox every day.
+                  Be the first to know what is happening around the world.
+                </p>
+              </>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3" noValidate>
@@ -45,12 +84,16 @@ function NewsletterBanner() {
                 }
               }}
               placeholder="Enter your email"
-              className="w-full rounded border border-black/25 bg-white px-3 py-2.5 text-sm text-black/80 placeholder:text-black/35 focus:outline-none"
+              className={`w-full rounded border border-black/25 px-3 py-2.5 text-sm text-black/80 placeholder:text-black/35 focus:outline-none ${
+                isSports ? "bg-[#d8dbe0]" : "bg-white"
+              }`}
               required
             />
             <button
               type="submit"
-              className="w-full rounded bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-black/85"
+              className={`w-full rounded px-4 py-2.5 text-sm font-semibold text-white transition ${
+                isSports ? "bg-[#2f3135] hover:bg-black" : "bg-black hover:bg-black/85"
+              }`}
             >
               Sign Up
             </button>
@@ -60,7 +103,13 @@ function NewsletterBanner() {
                 role="status"
                 aria-live="polite"
                 className={`text-xs ${
-                  feedback.type === "success" ? "text-white" : "text-yellow-100"
+                  feedback.type === "success"
+                    ? isSports
+                      ? "text-black/75"
+                      : "text-white"
+                    : isSports
+                      ? "text-red-700"
+                      : "text-yellow-100"
                 }`}
               >
                 {feedback.message}
@@ -69,10 +118,12 @@ function NewsletterBanner() {
           </form>
         </div>
 
-        <p className="mt-6 text-4xl font-black uppercase leading-none text-black/12 md:text-6xl">
-          Margin
-          <span className="ml-1 align-super text-sm font-semibold tracking-wide md:text-base">ke</span>
-        </p>
+        {!isSports ? (
+          <p className="mt-6 text-4xl font-black uppercase leading-none text-black/12 md:text-6xl">
+            Margin
+            <span className="ml-1 align-super text-sm font-semibold tracking-wide md:text-base">ke</span>
+          </p>
+        ) : null}
       </div>
     </section>
   );

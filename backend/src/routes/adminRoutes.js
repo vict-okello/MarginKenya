@@ -1,62 +1,55 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import Event from "../models/Event.js";
+import createRateLimiter from "../middleware/rateLimit.js";
+import requireAdmin from "../middleware/requireAdmin.js";
 
 const router = express.Router();
+const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 8 });
 
 function signAdminToken(payload) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET is missing in .env");
-  return jwt.sign(payload, secret, { expiresIn: "7d" });
+  const issuer = process.env.JWT_ISSUER || "marginkenya-admin";
+  const audience = process.env.JWT_AUDIENCE || "marginkenya-dashboard";
+  return jwt.sign(payload, secret, {
+    algorithm: "HS256",
+    expiresIn: "7d",
+    issuer,
+    audience,
+    subject: String(payload?.email || "admin"),
+    jwtid: crypto.randomBytes(12).toString("hex"),
+  });
 }
 
-/**
- * Reads JWT from: Authorization: Bearer <token>
- * Confirms token + role=admin
- */
-function requireAdmin(req, res, next) {
-  try {
-    const auth = req.headers.authorization || "";
-    const [scheme, token] = auth.split(" ");
-
-    if (scheme !== "Bearer" || !token) {
-      return res.status(401).json({ message: "Missing or invalid Authorization header" });
-    }
-
-    const secret = process.env.JWT_SECRET;
-    if (!secret) return res.status(500).json({ message: "JWT_SECRET missing" });
-
-    const decoded = jwt.verify(token, secret);
-
-    if (!decoded || decoded.role !== "admin") {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    req.admin = decoded; // { email, role, iat, exp }
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Invalid or expired token" });
-  }
+function safeEqual(a, b) {
+  const left = crypto.createHash("sha256").update(String(a ?? "")).digest();
+  const right = crypto.createHash("sha256").update(String(b ?? "")).digest();
+  return crypto.timingSafeEqual(left, right);
 }
 
 // POST /api/admin/login
-router.post("/login", (req, res) => {
-  const { email, password } = req.body || {};
+router.post("/login", loginRateLimiter, (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password required" });
   }
 
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  if (email.length > 160 || password.length > 200) {
+    return res.status(400).json({ message: "Invalid credentials format" });
+  }
+
+  const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    return res.status(500).json({
-      message: "ADMIN_EMAIL or ADMIN_PASSWORD missing in backend .env",
-    });
+    return res.status(500).json({ message: "Admin auth is not configured" });
   }
 
-  if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+  if (!safeEqual(email, ADMIN_EMAIL) || !safeEqual(password, ADMIN_PASSWORD)) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
@@ -81,6 +74,7 @@ router.get("/stats", requireAdmin, async (req, res) => {
     }).lean();
 
     const pageViews = events.filter((e) => e.type === "page_view");
+    const articleViews = events.filter((e) => e.type === "article_view");
     const totalViews = pageViews.length;
     const uniqueVisitors = new Set(events.map((e) => e.sessionId)).size;
 
@@ -144,7 +138,8 @@ router.get("/stats", requireAdmin, async (req, res) => {
     const catCounts = {};
     let countedViews = 0;
 
-    for (const e of pageViews) {
+    const trafficEvents = [...pageViews, ...articleViews];
+    for (const e of trafficEvents) {
       const cat = e.category || categoryFromPath(e.path);
       if (!cat) continue;
       catCounts[cat] = (catCounts[cat] || 0) + 1;
@@ -159,7 +154,8 @@ router.get("/stats", requireAdmin, async (req, res) => {
 
     // topArticles
     const articleCounts = {};
-    for (const e of pageViews) {
+    const articleSource = articleViews.length ? articleViews : pageViews;
+    for (const e of articleSource) {
       const key = e.title || e.articleId || e.path || "Untitled";
       articleCounts[key] = (articleCounts[key] || 0) + 1;
     }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import usePageViewTracker from "../hooks/usePageViewTracker";
 
 const THEME_KEY = "admin_dashboard_theme";
 
@@ -16,19 +17,17 @@ const navItems = [
   { to: "/admin/culture", label: "Culture", icon: "culture" },
   { to: "/admin/sports", label: "Sports", icon: "sports" },
   { to: "/admin/podcast", label: "Podcast", icon: "podcast" },
+  { to: "/admin/newsletter", label: "Newsletter", icon: "newsletter" },
   { to: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
 export default function AdminLayout() {
+  usePageViewTracker();
+
   const navigate = useNavigate();
   const location = useLocation();
   const navRef = useRef(null);
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY);
-    setIsDark(saved === "dark");
-  }, []);
+  const [isDark, setIsDark] = useState(() => localStorage.getItem(THEME_KEY) === "dark");
 
   useEffect(() => {
     localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
@@ -254,6 +253,13 @@ function NavIcon({ name }) {
         <svg {...common}>
           <path d="M12 17a3 3 0 0 0 3-3V9a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z" />
           <path d="M7 10a5 5 0 0 1 10 0M5 10a7 7 0 0 1 14 0M12 17v4" />
+        </svg>
+      );
+    case "newsletter":
+      return (
+        <svg {...common}>
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="M3 8l9 6 9-6" />
         </svg>
       );
     case "settings":
