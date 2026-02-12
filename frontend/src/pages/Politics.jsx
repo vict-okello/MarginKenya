@@ -1,19 +1,62 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { politicsDesk } from "../data/politicsArticles";
+import { politicsDesk as staticPoliticsDesk } from "../data/politicsArticles";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
 const MotionArticle = motion.article;
 const MotionButton = motion.button;
 
+function normalizeDesk(payload) {
+  return {
+    local: Array.isArray(payload?.local) ? payload.local : [],
+    international: Array.isArray(payload?.international) ? payload.international : [],
+  };
+}
+
 function Politics() {
+  const API = import.meta.env.VITE_API_URL;
   const [desk, setDesk] = useState("local");
+  const [politicsDesk, setPoliticsDesk] = useState(staticPoliticsDesk);
   const [visibleCounts, setVisibleCounts] = useState({
     local: 3,
     international: 3,
   });
+
+  const resolveImageUrl = useMemo(() => {
+    const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
+    return (url) => {
+      if (!url) return "";
+      if (/^https?:\/\//i.test(url)) return url;
+      return base ? `${base}${url}` : url;
+    };
+  }, [API]);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadPolitics() {
+      try {
+        const res = await fetch(`${API}/api/politics`, { credentials: "include" });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!alive) return;
+        const next = normalizeDesk(json);
+        if (next.local.length || next.international.length) {
+          setPoliticsDesk(next);
+        }
+      } catch {
+        // Keep static fallback on failure.
+      }
+    }
+
+    if (API) loadPolitics();
+    return () => {
+      alive = false;
+    };
+  }, [API]);
+
   const activeStories = politicsDesk[desk];
   const visibleCount = visibleCounts[desk];
   const visibleStories = activeStories.slice(0, visibleCount);
@@ -95,7 +138,7 @@ function Politics() {
           >
             <Link to={`/politics/article/${leadStory.id}`} className="group block">
               <img
-                src={leadStory.image}
+                src={resolveImageUrl(leadStory.image)}
                 alt={leadStory.title}
                 className="h-72 w-full object-cover transition duration-300 group-hover:scale-[1.02] md:h-96"
               />
@@ -120,7 +163,7 @@ function Politics() {
               >
                 <Link to={`/politics/article/${story.id}`} className="group contents">
                   <img
-                    src={story.image}
+                    src={resolveImageUrl(story.image)}
                     alt={story.title}
                     className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
                   />
@@ -155,7 +198,7 @@ function Politics() {
               >
                 <Link to={`/politics/article/${story.id}`} className="group contents">
                   <img
-                    src={story.image}
+                    src={resolveImageUrl(story.image)}
                     alt={story.title}
                     className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
                   />

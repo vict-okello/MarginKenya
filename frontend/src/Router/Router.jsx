@@ -32,7 +32,13 @@ import AdminLogin from "../pages/admin/AdminLogin.jsx";
 import AdminWorld from "../pages/admin/AdminWorld.jsx";
 import AdminTechnology from "../pages/admin/AdminTechnology.jsx";
 import AdminHealth from "../pages/admin/AdminHealth.jsx";
+import AdminBusiness from "../pages/admin/AdminBusiness.jsx";
+import AdminPolitics from "../pages/admin/AdminPolitics.jsx";
+import AdminCulture from "../pages/admin/AdminCulture.jsx";
 import AdminSettings from "../pages/admin/AdminSettings.jsx";
+import AdminPodcast from "../pages/admin/AdminPodcast.jsx";
+import AdminLatestNews from "../pages/admin/AdminLatestNews.jsx";
+import AdminResources from "../pages/admin/AdminResources.jsx";
 
 const router = createBrowserRouter([
   {
@@ -85,9 +91,15 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "hero", element: <AdminHero /> },
       { path: "world", element: <AdminWorld /> },
+      { path: "latest-news", element: <AdminLatestNews /> },
+      { path: "resources", element: <AdminResources /> },
       { path: "technology", element: <AdminTechnology /> },
       { path: "health", element: <AdminHealth /> },
+      { path: "business", element: <AdminBusiness /> },
+      { path: "politics", element: <AdminPolitics /> },
+      { path: "culture", element: <AdminCulture /> },
       { path: "sports", element: <AdminSports /> },
+      { path: "podcast", element: <AdminPodcast /> },
       { path: "settings", element: <AdminSettings /> },
     ],
   },

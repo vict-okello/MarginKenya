@@ -7,9 +7,15 @@ const navItems = [
   { to: "/admin", label: "Dashboard", icon: "dashboard" },
   { to: "/admin/hero", label: "Hero", icon: "hero" },
   { to: "/admin/world", label: "World", icon: "world" },
+  { to: "/admin/latest-news", label: "Latest News", icon: "latest-news" },
+  { to: "/admin/resources", label: "Resources", icon: "resources" },
   { to: "/admin/technology", label: "Technology", icon: "technology" },
   { to: "/admin/health", label: "Health", icon: "health" },
+  { to: "/admin/business", label: "Business", icon: "business" },
+  { to: "/admin/politics", label: "Politics", icon: "politics" },
+  { to: "/admin/culture", label: "Culture", icon: "culture" },
   { to: "/admin/sports", label: "Sports", icon: "sports" },
+  { to: "/admin/podcast", label: "Podcast", icon: "podcast" },
   { to: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
@@ -187,6 +193,20 @@ function NavIcon({ name }) {
           <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
         </svg>
       );
+    case "latest-news":
+      return (
+        <svg {...common}>
+          <path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+          <path d="M8 9h8M8 13h8M8 17h5" />
+        </svg>
+      );
+    case "resources":
+      return (
+        <svg {...common}>
+          <path d="M4 6a2 2 0 0 1 2-2h8l6 6v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z" />
+          <path d="M14 4v6h6" />
+        </svg>
+      );
     case "technology":
       return (
         <svg {...common}>
@@ -200,11 +220,40 @@ function NavIcon({ name }) {
           <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
         </svg>
       );
+    case "business":
+      return (
+        <svg {...common}>
+          <path d="M4 20V8m5 12V4m5 16v-9m5 9V6" />
+          <path d="M3 20h18" />
+        </svg>
+      );
+    case "politics":
+      return (
+        <svg {...common}>
+          <path d="M4 20h16" />
+          <path d="M6 20V8l6-4 6 4v12" />
+          <path d="M9 20v-6h6v6" />
+        </svg>
+      );
+    case "culture":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="3" />
+          <path d="M5 20c1.5-4 4-6 7-6s5.5 2 7 6" />
+        </svg>
+      );
     case "sports":
       return (
         <svg {...common}>
           <circle cx="12" cy="12" r="8" />
           <path d="M8 8c2 2 6 2 8 0M8 16c2-2 6-2 8 0M12 4v16" />
+        </svg>
+      );
+    case "podcast":
+      return (
+        <svg {...common}>
+          <path d="M12 17a3 3 0 0 0 3-3V9a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z" />
+          <path d="M7 10a5 5 0 0 1 10 0M5 10a7 7 0 0 1 14 0M12 17v4" />
         </svg>
       );
     case "settings":
