@@ -77,7 +77,6 @@ function LatestNewsArticle() {
     if (!API) return article.image;
     return `${API}${article.image}`;
   }, [article?.image, API]);
-  const isSportsImage = article?.category === "Sports";
 
   useArticleViewTracker({
     articleId: article?.id,
@@ -109,7 +108,7 @@ function LatestNewsArticle() {
     >
       <div className="mx-auto w-full max-w-5xl">
         <MotionWrap
-          className="overflow-hidden rounded bg-gradient-to-b from-[#e4e7ec] to-[#cfd4db]"
+          className="mx-auto max-w-4xl overflow-hidden rounded"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -117,9 +116,7 @@ function LatestNewsArticle() {
           <MotionImage
             src={resolvedImage}
             alt={article.title}
-            className={`h-[260px] w-full md:h-[430px] ${
-              isSportsImage ? "object-contain p-3 md:p-6" : "object-cover"
-            }`}
+            className="h-auto w-full object-cover"
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.35 }}
           />
@@ -133,7 +130,7 @@ function LatestNewsArticle() {
           {article.category} - {article.date}
         </MotionText>
         <MotionTitle
-          className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl"
+          className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.2 }}

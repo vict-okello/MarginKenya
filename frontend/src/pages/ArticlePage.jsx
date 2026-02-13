@@ -50,17 +50,19 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
           &larr; {backLabel}
         </Link>
 
-        <MotionWrap className="overflow-hidden rounded pt-5">
+        <MotionWrap className="mx-auto max-w-4xl overflow-hidden rounded pt-5">
           <MotionImage
             src={article.image}
             alt={article.title}
-            className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[420px]"
+            className="h-auto w-full object-cover"
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.35 }}
           />
         </MotionWrap>
 
-        <MotionTitle className="pt-6 text-4xl font-semibold text-black">{article.title}</MotionTitle>
+        <MotionTitle className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
+          {article.title}
+        </MotionTitle>
 
         <MotionText className="pt-3 text-sm text-black/65">
           {(article.category || sectionName)} - {article.date}

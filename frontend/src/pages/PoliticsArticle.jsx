@@ -121,26 +121,19 @@ function PoliticsArticle() {
           {article.scope} - {article.tag} - {article.date}
         </MotionText>
 
-        <MotionTitle className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl">
+        <MotionTitle className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
           {article.title}
         </MotionTitle>
 
         <div className="pt-6">
-
-          {/* Larger floating image */}
           <MotionImage
             src={resolveImageUrl(article.image)}
             alt={article.title}
-            className="
-              w-full rounded bg-black/5
-              sm:w-[360px] sm:float-left sm:mr-8 sm:mb-4
-              object-cover
-            "
+            className="mx-auto w-full max-w-4xl rounded object-cover"
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.25 }}
           />
 
-          {/* Text wraps to right and continues below */}
           <MotionText className="pt-5 text-lg leading-relaxed text-black/75 md:text-xl">
             {article.summary}
           </MotionText>
@@ -148,9 +141,6 @@ function PoliticsArticle() {
           <MotionText className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg">
             {bodyText}
           </MotionText>
-
-          {/* Clear float */}
-          <div className="clear-both" />
         </div>
 
       </div>

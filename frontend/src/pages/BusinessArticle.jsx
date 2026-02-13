@@ -78,7 +78,7 @@ function BusinessArticle() {
     >
       <div className="mx-auto w-full max-w-5xl">
         <MotionWrap
-          className="overflow-hidden rounded"
+          className="mx-auto max-w-4xl overflow-hidden rounded"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -86,7 +86,7 @@ function BusinessArticle() {
           <MotionImage
             src={resolveImageUrl(article.image)}
             alt={article.title}
-            className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[420px]"
+            className="h-auto w-full object-cover"
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.35 }}
           />
@@ -102,7 +102,7 @@ function BusinessArticle() {
         </MotionText>
 
         <MotionTitle
-          className="pt-2 text-4xl font-semibold text-black"
+          className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}

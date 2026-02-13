@@ -1,0 +1,32 @@
+[
+  {
+    "id": "top-scorer",
+    "title": "Top Scorer to the Final",
+    "summary": "The EuroLeague Finals Top Scorer is the individual award for the player that gained the highest points in the EuroLeague Finals.",
+    "body": "This feature breaks down the moments that defined the final, how the top scorer created space, and what this performance means for the next stage of the season.",
+    "date": "",
+    "author": "",
+    "category": "Sports",
+    "image": "/src/assets/sport1.png"
+  },
+  {
+    "id": "runners-top-four",
+    "title": "Ethiopian Runners Took the Top Four Spots",
+    "summary": "A dominant track performance delivered a clean top-four finish.",
+    "body": "From start control to final surge, this report covers split times, pace strategy, and why this race may be remembered as one of the strongest team displays this year.",
+    "date": "",
+    "author": "",
+    "category": "Sports",
+    "image": "/src/assets/sport1.png"
+  },
+  {
+    "id": "indycar-dixon-practice",
+    "title": "IndyCar Detroit: Dixon Quickest in Second Practice",
+    "summary": "A sharp session placed Dixon ahead before qualifying.",
+    "body": "We review lap consistency, setup choices, and how conditions shaped the second practice order heading into race weekend.",
+    "date": "",
+    "author": "",
+    "category": "Sports",
+    "image": "/src/assets/sport1.png"
+  }
+]

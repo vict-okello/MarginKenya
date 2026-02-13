@@ -11,6 +11,10 @@ export default function requireAdmin(req, res, next) {
     if (token.length > 4096) {
       return res.status(401).json({ message: "Invalid admin token" });
     }
+    // Basic structural check before JWT verification to reject malformed payloads early.
+    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token)) {
+      return res.status(401).json({ message: "Invalid admin token" });
+    }
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {

@@ -45,7 +45,10 @@ function Culture() {
       <div className="mx-auto w-full max-w-5xl">
         <div className="rounded-2xl border border-black/15 bg-gradient-to-r from-[#ece9f1] via-[#e2dce9] to-[#d9d5e2] p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Culture Desk</p>
-          <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
+          <h1
+            className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]"
+            style={{ textShadow: "0 8px 22px rgba(125,93,171,0.22)" }}
+          >
             Culture
           </h1>
           <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">

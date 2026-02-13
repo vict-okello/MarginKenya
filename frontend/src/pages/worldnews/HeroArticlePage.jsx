@@ -88,7 +88,7 @@ export default function HeroArticlePage() {
 
         {img ? (
           <MotionWrap
-            className="overflow-hidden rounded pt-5"
+            className="mx-auto max-w-4xl overflow-hidden rounded pt-5"
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -96,14 +96,14 @@ export default function HeroArticlePage() {
             <MotionImage
               src={img}
               alt={article.title}
-              className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[420px]"
+              className="h-auto w-full object-cover"
               whileHover={{ scale: 1.03 }}
               transition={{ duration: 0.35 }}
             />
           </MotionWrap>
         ) : null}
 
-        <MotionTitle className="pt-6 text-4xl font-semibold text-black">
+        <MotionTitle className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
           {article.title}
         </MotionTitle>
 

@@ -104,7 +104,10 @@ export default function Technology() {
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="rounded-3xl border border-black/15 bg-gradient-to-r from-[#e4edf3] via-[#d6e3ec] to-[#ccdce8] p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Technology Desk</p>
-          <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:ui-monospace,SFMono-Regular,Menlo,monospace]">
+          <h1
+            className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:ui-monospace,SFMono-Regular,Menlo,monospace]"
+            style={{ textShadow: "0 8px 22px rgba(59,130,246,0.22)" }}
+          >
             Technology
           </h1>
           <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">

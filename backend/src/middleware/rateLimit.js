@@ -1,6 +1,7 @@
 export default function createRateLimiter({
   windowMs = 15 * 60 * 1000,
   max = 100,
+  maxEntries = 50000,
   keyGenerator = (req) => {
     const forwarded = String(req.headers["x-forwarded-for"] || "")
       .split(",")[0]
@@ -19,12 +20,30 @@ export default function createRateLimiter({
     }
   }
 
+  function normalizeKey(input) {
+    const raw = String(input || "unknown").trim();
+    if (!raw) return "unknown";
+    return raw.slice(0, 120);
+  }
+
+  function enforceStoreLimit() {
+    if (store.size <= maxEntries) return;
+    const toRemove = store.size - maxEntries;
+    let removed = 0;
+    for (const key of store.keys()) {
+      store.delete(key);
+      removed += 1;
+      if (removed >= toRemove) break;
+    }
+  }
+
   return function rateLimit(req, res, next) {
     const now = Date.now();
     cleanup(now);
+    enforceStoreLimit();
     const resetAt = now + windowMs;
 
-    const key = String(keyGenerator(req) || "unknown");
+    const key = normalizeKey(keyGenerator(req));
     const existing = store.get(key);
 
     if (!existing || now - existing.start >= windowMs) {

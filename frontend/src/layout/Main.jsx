@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import ScrollToTop from "../components/ScrollToTop";
+import CookieConsent from "../components/CookieConsent";
 import usePageViewTracker from "../hooks/usePageViewTracker";
 
 function Main() {
@@ -15,6 +16,7 @@ function Main() {
         <Outlet />
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   );
 }

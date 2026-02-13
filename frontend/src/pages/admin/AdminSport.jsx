@@ -1,43 +1,83 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import americanFootballImage from "../../assets/american-football.png";
 import { sportsArticles, sportsCategories } from "../../data/sportsArticles";
 
 const STORAGE_KEY = "admin_sports_draft_v1";
+const CATEGORY_STORAGE_KEY = "admin_sports_categories_draft_v1";
+const CATEGORY_PAGE_SIZE = 4;
 
 function makeId() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function normalizeSportsArticles(input) {
+  if (Array.isArray(input)) return input;
+  if (input && typeof input === "object") {
+    return Object.values(input);
+  }
+  return [];
+}
+
 function cloneStories(input = []) {
-  return input.map((s, i) => ({
+  const list = normalizeSportsArticles(input);
+  return list.map((s, i) => ({
     id: s?.id || `sports-${i}-${makeId()}`,
     title: s?.title || "",
-    author: s?.author || "",
-    category: s?.category || "Sports",
-    date: s?.date || "",
     summary: s?.summary || "",
     body: s?.body || "",
+    date: s?.date || "",
+    author: s?.author || "",
+    category: s?.category || "Sports",
     image: s?.image || "",
   }));
 }
 
-function defaultStories() {
-  return cloneStories(Object.values(sportsArticles || {}));
+function normalizeSportsCategories(input) {
+  if (Array.isArray(input)) return input;
+  if (input && typeof input === "object") {
+    return Object.values(input);
+  }
+  return [];
+}
+
+function cloneCategories(input = []) {
+  const list = normalizeSportsCategories(input);
+  return list.map((c, i) => ({
+    id: c?.id || `sports-category-${i}-${makeId()}`,
+    name: c?.name || "",
+    title: c?.title || "",
+    summary: c?.summary || "",
+    body: c?.body || "",
+    image: c?.image || "",
+  }));
 }
 
 function loadInitialStories() {
-  if (typeof window === "undefined") return defaultStories();
+  if (typeof window === "undefined") return cloneStories(sportsArticles);
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultStories();
+    if (!raw) return cloneStories(sportsArticles);
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultStories();
+    if (!Array.isArray(parsed) || parsed.length === 0) return cloneStories(sportsArticles);
     return cloneStories(parsed);
   } catch {
-    return defaultStories();
+    return cloneStories(sportsArticles);
+  }
+}
+
+function loadInitialCategories() {
+  if (typeof window === "undefined") return cloneCategories(sportsCategories);
+
+  try {
+    const raw = window.localStorage.getItem(CATEGORY_STORAGE_KEY);
+    if (!raw) return cloneCategories(sportsCategories);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return cloneCategories(sportsCategories);
+    return cloneCategories(parsed);
+  } catch {
+    return cloneCategories(sportsCategories);
   }
 }
 
@@ -48,16 +88,17 @@ export default function AdminSport() {
   const [stories, setStories] = useState(() => loadInitialStories());
   const [selectedId, setSelectedId] = useState(() => loadInitialStories()[0]?.id || "");
   const [editorOpen, setEditorOpen] = useState(true);
+  const [categoryEditorOpen, setCategoryEditorOpen] = useState(true);
   const [notice, setNotice] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadingCategory, setUploadingCategory] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [loadingPublished, setLoadingPublished] = useState(false);
-  const [articleStart, setArticleStart] = useState(0);
-  const [categoryPage, setCategoryPage] = useState(0);
-  const [email, setEmail] = useState("");
-  const [subscribeMessage, setSubscribeMessage] = useState("");
-  const [subscribers, setSubscribers] = useState(0);
+  const [categories, setCategories] = useState(() => loadInitialCategories());
+  const [selectedCategoryId, setSelectedCategoryId] = useState(() => loadInitialCategories()[0]?.id || "");
+  const [categoryStart, setCategoryStart] = useState(0);
   const fileRef = useRef(null);
+  const categoryFileRef = useRef(null);
 
   const selected = useMemo(
     () => stories.find((s) => String(s.id) === String(selectedId)) || stories[0] || null,
@@ -66,31 +107,14 @@ export default function AdminSport() {
 
   const featured = stories[0] || null;
   const spotlight = stories.slice(1, 3);
-
-  const articleCards = useMemo(
-    () =>
-      stories.map((story, idx) => ({
-        ...story,
-        tag: story.category || "Sports",
-        author: story.author || "Editor",
-        date: story.date || "Date",
-        image: story.image || "",
-        _idx: idx,
-      })),
-    [stories]
+  const feed = stories.slice(3);
+  const selectedCategory = useMemo(
+    () => categories.find((c) => String(c.id) === String(selectedCategoryId)) || categories[0] || null,
+    [categories, selectedCategoryId]
   );
-
-  const visibleArticleCards = useMemo(() => {
-    if (!articleCards.length) return [];
-    return Array.from({ length: Math.min(3, articleCards.length) }, (_, index) => {
-      return articleCards[(articleStart + index) % articleCards.length];
-    });
-  }, [articleCards, articleStart]);
-
-  const categoryList = useMemo(() => Object.values(sportsCategories || {}), []);
-  const categoriesPerPage = 4;
-  const totalCategoryPages = Math.max(1, Math.ceil(categoryList.length / categoriesPerPage));
-  const visibleCategories = categoryList.slice(categoryPage * categoriesPerPage, (categoryPage + 1) * categoriesPerPage);
+  const maxCategoryStart = Math.max(0, categories.length - CATEGORY_PAGE_SIZE);
+  const safeCategoryStart = Math.min(categoryStart, maxCategoryStart);
+  const visibleCategories = categories.slice(safeCategoryStart, safeCategoryStart + CATEGORY_PAGE_SIZE);
 
   useEffect(() => {
     if (!stories.length) {
@@ -103,16 +127,14 @@ export default function AdminSport() {
   }, [stories, selectedId]);
 
   useEffect(() => {
-    if (categoryPage > totalCategoryPages - 1) setCategoryPage(Math.max(0, totalCategoryPages - 1));
-  }, [categoryPage, totalCategoryPages]);
-
-  useEffect(() => {
-    if (!articleCards.length) {
-      setArticleStart(0);
+    if (!categories.length) {
+      setSelectedCategoryId("");
       return;
     }
-    if (articleStart > articleCards.length - 1) setArticleStart(0);
-  }, [articleCards.length, articleStart]);
+    if (!selectedCategoryId || !categories.some((c) => String(c.id) === String(selectedCategoryId))) {
+      setSelectedCategoryId(categories[0].id);
+    }
+  }, [categories, selectedCategoryId]);
 
   useEffect(() => {
     let mounted = true;
@@ -122,7 +144,7 @@ export default function AdminSport() {
       setLoadingPublished(true);
       try {
         const res = await fetch(`${API}/api/sports`);
-        const json = await res.json();
+        const json = await res.json().catch(() => []);
         if (!res.ok) return;
         if (mounted && Array.isArray(json) && json.length > 0) {
           const next = cloneStories(json);
@@ -143,6 +165,31 @@ export default function AdminSport() {
     };
   }, [API]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadPublishedCategories() {
+      if (!API) return;
+      try {
+        const res = await fetch(`${API}/api/sports-categories`);
+        const json = await res.json().catch(() => []);
+        if (!res.ok) return;
+        if (mounted && Array.isArray(json) && json.length > 0) {
+          const next = cloneCategories(json);
+          setCategories(next);
+          setSelectedCategoryId(next[0]?.id || "");
+        }
+      } catch {
+        // Keep local draft fallback.
+      }
+    }
+
+    loadPublishedCategories();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
   function patchSelected(patch) {
     if (!selected) return;
     setStories((prev) => prev.map((s) => (String(s.id) === String(selected.id) ? { ...s, ...patch } : s)));
@@ -152,11 +199,11 @@ export default function AdminSport() {
     const next = {
       id: makeId(),
       title: "",
-      author: "",
-      category: "Sports",
-      date: new Date().toISOString().slice(0, 10),
       summary: "",
       body: "",
+      date: new Date().toISOString().slice(0, 10),
+      author: "",
+      category: "Sports",
       image: "",
     };
     setStories((prev) => [next, ...prev]);
@@ -195,16 +242,20 @@ export default function AdminSport() {
   function saveDraft() {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stories));
-      setNotice("Sports draft saved locally.");
+      window.localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories));
+      setNotice("Sports stories and categories draft saved locally.");
     } catch {
       setNotice("Could not save draft in this browser.");
     }
   }
 
   function resetFromDefault() {
-    const next = defaultStories();
-    setStories(next);
-    setSelectedId(next[0]?.id || "");
+    const nextStories = cloneStories(sportsArticles);
+    const nextCategories = cloneCategories(sportsCategories);
+    setStories(nextStories);
+    setSelectedId(nextStories[0]?.id || "");
+    setCategories(nextCategories);
+    setSelectedCategoryId(nextCategories[0]?.id || "");
     setNotice("Reset to default sports content.");
   }
 
@@ -220,7 +271,7 @@ export default function AdminSport() {
 
     setPublishing(true);
     try {
-      const res = await fetch(`${API}/api/sports`, {
+      const storiesRes = await fetch(`${API}/api/sports`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -229,17 +280,117 @@ export default function AdminSport() {
         body: JSON.stringify(stories),
       });
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json?.message || "Publish failed");
+      const categoriesRes = await fetch(`${API}/api/sports-categories`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(categories),
+      });
 
-      const next = Array.isArray(json?.data) ? cloneStories(json.data) : stories;
-      setStories(next);
-      setSelectedId(next[0]?.id || "");
-      setNotice("Published. Sports page data is now updated.");
+      const storiesJson = await storiesRes.json().catch(() => ({}));
+      const categoriesJson = await categoriesRes.json().catch(() => ({}));
+
+      if (!storiesRes.ok) throw new Error(storiesJson?.message || "Stories publish failed");
+      if (!categoriesRes.ok) throw new Error(categoriesJson?.message || "Categories publish failed");
+
+      const nextStories = Array.isArray(storiesJson?.data) ? cloneStories(storiesJson.data) : stories;
+      const nextCategories = Array.isArray(categoriesJson?.data) ? cloneCategories(categoriesJson.data) : categories;
+      setStories(nextStories);
+      setSelectedId(nextStories[0]?.id || "");
+      setCategories(nextCategories);
+      setSelectedCategoryId(nextCategories[0]?.id || "");
+      setNotice("Published. Sports stories and categories are now updated.");
     } catch (err) {
       setNotice(err?.message || "Publish failed.");
     } finally {
       setPublishing(false);
+    }
+  }
+
+  function patchSelectedCategory(patch) {
+    if (!selectedCategory) return;
+    setCategories((prev) =>
+      prev.map((c) => (String(c.id) === String(selectedCategory.id) ? { ...c, ...patch } : c))
+    );
+  }
+
+  function addCategory() {
+    const next = {
+      id: makeId(),
+      name: "",
+      title: "",
+      summary: "",
+      body: "",
+      image: "",
+    };
+    setCategories((prev) => [next, ...prev]);
+    setSelectedCategoryId(next.id);
+    setCategoryEditorOpen(true);
+    setNotice("New sports category added.");
+  }
+
+  function deleteSelectedCategory() {
+    if (!selectedCategory) return;
+    setCategories((prev) => {
+      const next = prev.filter((c) => String(c.id) !== String(selectedCategory.id));
+      setSelectedCategoryId(next[0]?.id || "");
+      return next;
+    });
+    setNotice("Category removed.");
+  }
+
+  function moveSelectedCategory(direction) {
+    if (!selectedCategory) return;
+    setCategories((prev) => {
+      const next = [...prev];
+      const index = next.findIndex((c) => String(c.id) === String(selectedCategory.id));
+      if (index < 0) return prev;
+
+      const swap = direction === "up" ? index - 1 : index + 1;
+      if (swap < 0 || swap >= next.length) return prev;
+
+      const tmp = next[index];
+      next[index] = next[swap];
+      next[swap] = tmp;
+      return next;
+    });
+  }
+
+  async function uploadSelectedCategoryImage(file) {
+    if (!selectedCategory) return;
+    if (!API) {
+      setNotice("VITE_API_URL is missing.");
+      return;
+    }
+    if (!token) {
+      setNotice("Missing admin token. Please login again.");
+      return;
+    }
+
+    setUploadingCategory(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+
+      const res = await fetch(`${API}/api/uploads/sports`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json?.message || "Image upload failed");
+      if (!json?.url) throw new Error("Upload succeeded but URL is missing.");
+
+      patchSelectedCategory({ image: json.url });
+      setNotice("Category image uploaded.");
+    } catch (err) {
+      setNotice(err?.message || "Image upload failed.");
+    } finally {
+      setUploadingCategory(false);
+      if (categoryFileRef.current) categoryFileRef.current.value = "";
     }
   }
 
@@ -290,22 +441,13 @@ export default function AdminSport() {
     return image;
   }
 
-  function handleSubscribe(event) {
-    event.preventDefault();
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) {
-      setSubscribeMessage("Please enter a valid email.");
-      return;
-    }
-
-    setSubscribers((n) => n + 1);
-    setSubscribeMessage("Preview mode only. Subscription API runs on public page.");
-    setEmail("");
+  function goPrevCategoryPage() {
+    setCategoryStart((prev) => Math.max(0, prev - CATEGORY_PAGE_SIZE));
   }
 
-  const topStory = featured;
-  const sideStoryOne = spotlight[0];
-  const sideStoryTwo = spotlight[1];
+  function goNextCategoryPage() {
+    setCategoryStart((prev) => Math.min(maxCategoryStart, prev + CATEGORY_PAGE_SIZE));
+  }
 
   return (
     <section className="space-y-4 text-zinc-900">
@@ -325,6 +467,13 @@ export default function AdminSport() {
               className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
             >
               New Story
+            </button>
+            <button
+              type="button"
+              onClick={addCategory}
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
+            >
+              New Category
             </button>
             <button
               type="button"
@@ -357,230 +506,133 @@ export default function AdminSport() {
       ) : null}
 
       <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-700">Preview (Sports.jsx Layout)</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-700">Preview</h2>
 
-        <div className="bg-[#d8d8dc] px-4 py-8 mt-4 rounded-xl">
-          <div className="mx-auto w-full max-w-5xl rounded-2xl border border-black/15 bg-gradient-to-r from-[#eceef2] via-[#dee2ea] to-[#d6dce7] p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Sports Desk</p>
-            <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
-              Sports
-            </h1>
-            <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">
-              Match highlights, athlete stories, and the moments that move fans.
-            </p>
-            <div className="mt-5 rounded-xl border border-black/15 bg-white/60 px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
-              Sports Pulse: fixtures, form, and momentum shifts ahead of the next gameweek.
-            </div>
-          </div>
-
-          <div className="mx-auto mt-5 grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_220px]">
-            <article className="relative overflow-hidden rounded bg-[#dfe0e2] p-6 md:p-8">
-              <div className="absolute -left-12 top-10 h-56 w-56 rounded-full border-[18px] border-black/5" />
-
-              <div className="relative z-10">
-                <p className="text-5xl font-black uppercase leading-[0.95] text-black/70 md:text-7xl">
-                  {topStory?.title || "Top Story"}
-                </p>
-              </div>
-
-              <div className="mt-5 overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
-                {topStory?.image ? (
-                  <img
-                    src={resolveImageUrl(topStory.image)}
-                    alt={topStory.title || "Top scorer"}
-                    className="mx-auto h-auto w-auto max-h-[520px] max-w-full object-contain"
-                  />
+        {featured ? (
+          <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+            <article className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+              <div className="overflow-hidden rounded-xl bg-zinc-200">
+                {featured.image ? (
+                  <img src={resolveImageUrl(featured.image)} alt={featured.title || "Featured sports story"} className="h-72 w-full object-cover" />
                 ) : (
-                  <div className="flex h-64 items-center justify-center text-sm text-black/45">No image</div>
+                  <div className="flex h-72 items-center justify-center text-sm text-zinc-500">No image</div>
                 )}
               </div>
-
-              <p className="relative z-10 mt-4 max-w-md text-sm text-black/80">{topStory?.summary || "Add summary"}</p>
-
-              {topStory ? (
-                <Link
-                  to={`/sports/article/${topStory.id}`}
-                  className="relative z-10 mt-8 inline-block rounded bg-black px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white"
-                >
-                  Continue Reading
-                </Link>
-              ) : null}
+              <p className="pt-3 text-xs uppercase tracking-[0.12em] text-zinc-600">
+                {featured.category || "Sports"} - {featured.date || "Date"}
+              </p>
+              <h3 className="pt-2 text-3xl font-semibold leading-tight text-zinc-900">{featured.title || "Untitled featured story"}</h3>
+              <p className="pt-2 text-sm text-zinc-700">{featured.summary || "Add summary"}</p>
             </article>
 
-            <aside className="space-y-4">
-              <article className="rounded bg-[#e4e5e7] p-2">
-                <span className="inline-block rounded bg-[#d6dbe3] px-2 py-1 text-[10px] text-black/70">Today</span>
-                {sideStoryOne ? (
-                  <Link to={`/sports/article/${sideStoryOne.id}`}>
-                    <div className="mt-2 overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
-                      {sideStoryOne.image ? (
-                        <img
-                          src={resolveImageUrl(sideStoryOne.image)}
-                          alt={sideStoryOne.title || "Sports update"}
-                          className="h-40 w-full object-contain object-center p-2 drop-shadow-[0_8px_12px_rgba(0,0,0,0.18)]"
-                        />
+            <div className="grid gap-4">
+              {spotlight.map((story) => (
+                <article key={story.id} className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+                  <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+                    <div className="overflow-hidden rounded-xl bg-zinc-200">
+                      {story.image ? (
+                        <img src={resolveImageUrl(story.image)} alt={story.title || "Sports story"} className="h-28 w-full object-cover" />
                       ) : (
-                        <div className="flex h-40 items-center justify-center text-sm text-black/45">No image</div>
+                        <div className="flex h-28 items-center justify-center text-xs text-zinc-500">No image</div>
                       )}
                     </div>
-                  </Link>
-                ) : null}
-                <p className="pt-2 text-xs text-black/80">{sideStoryOne?.title || "Side story"}</p>
-              </article>
-
-              <article className="rounded bg-[#e4e5e7] p-2">
-                {sideStoryTwo ? (
-                  <Link to={`/sports/article/${sideStoryTwo.id}`}>
-                    <div className="overflow-hidden rounded bg-gradient-to-b from-[#f0f1f4] to-[#d5d8de]">
-                      {sideStoryTwo.image ? (
-                        <img
-                          src={resolveImageUrl(sideStoryTwo.image)}
-                          alt={sideStoryTwo.title || "Sports headline"}
-                          className="h-40 w-full object-contain object-center p-2 drop-shadow-[0_8px_12px_rgba(0,0,0,0.18)]"
-                        />
-                      ) : (
-                        <div className="flex h-40 items-center justify-center text-sm text-black/45">No image</div>
-                      )}
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.12em] text-zinc-600">
+                        {story.author || "Author"} - {story.date || "Date"}
+                      </p>
+                      <h3 className="pt-1 text-xl leading-tight text-zinc-900">{story.title || "Untitled"}</h3>
+                      <p className="pt-2 text-sm text-zinc-700">{story.summary || "Add summary"}</p>
                     </div>
-                  </Link>
-                ) : null}
-                <p className="pt-2 text-xs text-black/80">{sideStoryTwo?.title || "Side story"}</p>
-              </article>
-            </aside>
-          </div>
-
-          <div className="mx-auto mt-10 w-full max-w-5xl">
-            <div className="flex items-center justify-between pb-4">
-              <h2 className="text-3xl font-semibold text-black/80">Category</h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCategoryPage((prev) => Math.max(prev - 1, 0))}
-                  disabled={categoryPage === 0}
-                  className={`rounded border border-black/30 px-3 py-1 text-sm ${
-                    categoryPage === 0 ? "cursor-not-allowed text-black/30" : "text-black hover:bg-white/70"
-                  }`}
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategoryPage((prev) => Math.min(prev + 1, totalCategoryPages - 1))}
-                  disabled={categoryPage >= totalCategoryPages - 1}
-                  className={`rounded border border-black/30 px-3 py-1 text-sm ${
-                    categoryPage >= totalCategoryPages - 1
-                      ? "cursor-not-allowed text-black/30"
-                      : "text-black hover:bg-white/70"
-                  }`}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {visibleCategories.map((category) => (
-                <Link key={category.id} to={`/sports/category/${category.id}`} className="overflow-hidden rounded bg-[#d0d3d8]">
-                  <img
-                    src={resolveImageUrl(category.image)}
-                    alt={category.name}
-                    className="h-40 w-full bg-[#cfd2d7] p-1 object-contain"
-                  />
-                  <p className="px-3 py-3 text-center text-2xl font-extrabold uppercase text-black/55">{category.name}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="mx-auto mt-12 w-full max-w-5xl">
-            <h2 className="pb-4 text-4xl font-semibold text-black/80">Sports Article</h2>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {visibleArticleCards.map((article) => (
-                <article key={`${article.id}-${article._idx}`}>
-                  <Link to={`/sports/article/${article.id}`} className="relative block overflow-hidden rounded">
-                    {article.image ? (
-                      <img src={resolveImageUrl(article.image)} alt={article.title} className="h-64 w-full object-cover" />
-                    ) : (
-                      <div className="flex h-64 items-center justify-center bg-zinc-300 text-sm text-black/45">No image</div>
-                    )}
-                    <span className="absolute right-3 top-3 rounded border border-white/70 px-2 py-1 text-[10px] text-white">
-                      {article.tag}
-                    </span>
-                  </Link>
-
-                  <div className="pt-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#b9bec5] text-xs font-semibold text-black/70">
-                        {(article.author || "ED").slice(0, 2).toUpperCase()}
-                      </span>
-                      <p className="text-sm text-black/80">{article.author}</p>
-                    </div>
-                    <p className="pt-3 text-sm text-black/60">{article.date}</p>
-                    <Link to={`/sports/article/${article.id}`} className="block pt-3 text-[34px] font-semibold leading-tight text-black/85">
-                      {article.title || "Untitled"}
-                    </Link>
-                    <p className="pt-3 text-lg text-black/65">{article.summary || "Add summary"}</p>
                   </div>
                 </article>
               ))}
             </div>
+          </div>
+        ) : null}
 
-            <div className="mt-6 flex gap-3">
+        {feed.length > 0 ? (
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {feed.map((story) => (
+              <article key={story.id} className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+                <div className="overflow-hidden rounded-xl bg-zinc-200">
+                  {story.image ? (
+                    <img src={resolveImageUrl(story.image)} alt={story.title || "Sports story"} className="h-40 w-full object-cover" />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center text-sm text-zinc-500">No image</div>
+                  )}
+                </div>
+                <p className="pt-3 text-xs uppercase tracking-[0.12em] text-zinc-500">
+                  {story.category || "Sports"} - {story.date || "Date"}
+                </p>
+                <h3 className="pt-2 text-xl leading-tight text-zinc-900">{story.title || "Untitled"}</h3>
+                <p className="pt-2 text-xs text-zinc-600">{story.author || "Author"}</p>
+              </article>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-700">Categories Preview</h2>
+          {categories.length > CATEGORY_PAGE_SIZE ? (
+            <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setArticleStart((prev) => (prev - 1 + articleCards.length) % Math.max(articleCards.length, 1))}
-                className="rounded bg-[#c0c4ca] px-5 py-3 text-xl text-white"
-                aria-label="Back"
-                disabled={!articleCards.length}
+                onClick={goPrevCategoryPage}
+                disabled={safeCategoryStart === 0}
+                className={`rounded border px-3 py-1 text-sm ${
+                  safeCategoryStart === 0
+                    ? "cursor-not-allowed border-zinc-300 text-zinc-400"
+                    : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                }`}
               >
                 &larr;
               </button>
               <button
                 type="button"
-                onClick={() => setArticleStart((prev) => (prev + 1) % Math.max(articleCards.length, 1))}
-                className="rounded bg-[#2f3135] px-5 py-3 text-xl text-white"
-                aria-label="Next"
-                disabled={!articleCards.length}
+                onClick={goNextCategoryPage}
+                disabled={safeCategoryStart >= maxCategoryStart}
+                className={`rounded border px-3 py-1 text-sm ${
+                  safeCategoryStart >= maxCategoryStart
+                    ? "cursor-not-allowed border-zinc-300 text-zinc-400"
+                    : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                }`}
               >
                 &rarr;
               </button>
             </div>
-          </div>
-
-          <div className="mx-auto mt-12 w-full max-w-5xl overflow-hidden rounded bg-[#d1d4d9]">
-            <div className="relative grid gap-4 px-6 py-8 md:grid-cols-[1fr_320px] md:px-10">
-              <div className="relative z-10 max-w-xl">
-                <h3 className="text-5xl font-extrabold uppercase leading-[0.9] text-black/70">
-                  Newsletter
-                  <br />
-                  Subscription
-                </h3>
-
-                <form onSubmit={handleSubscribe} className="mt-6 flex max-w-md overflow-hidden rounded border border-black/35">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="example@gmail.com"
-                    required
-                    className="w-full bg-[#d8dbe0] px-4 py-3 text-base text-black/70 placeholder:text-black/35 focus:outline-none"
-                  />
-                  <button type="submit" className="bg-[#2f3135] px-6 text-2xl text-white transition hover:bg-black" aria-label="Subscribe">
-                    {"\u2197"}
-                  </button>
-                </form>
-                <p className="pt-3 text-sm text-black/70">{subscribeMessage || `Subscribers recorded: ${subscribers}`}</p>
-              </div>
-
-              <div className="relative hidden md:block">
-                <div className="absolute -left-8 top-2 h-48 w-48 rounded-full border-[6px] border-black/5" />
-                <div className="absolute -left-2 top-8 h-40 w-40 rounded-full border-[6px] border-black/5" />
-                <img src={americanFootballImage} alt="Sports newsletter" className="relative z-10 ml-auto h-56 w-auto object-contain" />
-              </div>
-            </div>
-          </div>
+          ) : null}
         </div>
+
+        {visibleCategories.length ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {visibleCategories.map((category) => (
+              <article key={category.id} className="overflow-hidden rounded-2xl border border-zinc-300 bg-zinc-100">
+                <div className="overflow-hidden bg-zinc-200">
+                  {category.image ? (
+                    <img
+                      src={resolveImageUrl(category.image)}
+                      alt={category.name || "Sports category"}
+                      className="h-40 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-40 items-center justify-center text-sm text-zinc-500">No image</div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-zinc-500">Category</p>
+                  <h3 className="pt-2 text-2xl leading-tight text-zinc-900">{category.name || "Untitled category"}</h3>
+                  <p className="pt-2 text-sm text-zinc-700">{category.summary || "Add summary"}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl border border-zinc-300 bg-zinc-100 p-4 text-sm text-zinc-600">
+            No sports categories yet. Click <span className="font-semibold">New Category</span> to add one.
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-zinc-300 bg-white/70">
@@ -708,6 +760,139 @@ export default function AdminSport() {
                         className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
                       >
                         Open Article
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="rounded-2xl border border-zinc-300 bg-white/70">
+        <button
+          type="button"
+          onClick={() => setCategoryEditorOpen((v) => !v)}
+          className="flex w-full items-center justify-between gap-2 px-4 py-3"
+        >
+          <div className="text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Category Editor</p>
+            <p className="mt-1 text-xs text-zinc-600">Edit sports category cards and order shown on Sports page.</p>
+          </div>
+          <span className="rounded border border-zinc-300 bg-white px-3 py-1 text-xs font-semibold text-zinc-800">
+            {categoryEditorOpen ? "Collapse" : "Expand"}
+          </span>
+        </button>
+
+        {categoryEditorOpen ? (
+          <div className="border-t border-zinc-200 p-4">
+            <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+              <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Categories</p>
+                <div className="max-h-[420px] space-y-2 overflow-auto pr-1">
+                  {categories.map((category, idx) => (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => setSelectedCategoryId(category.id)}
+                      className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+                        String(selectedCategory?.id) === String(category.id)
+                          ? "border-zinc-900 bg-zinc-900 text-white"
+                          : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                      }`}
+                    >
+                      <p className="text-[11px] uppercase tracking-wide opacity-80">Position {idx + 1}</p>
+                      <p className="truncate font-semibold">{category.name || "Untitled category"}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {!selectedCategory ? (
+                  <p className="text-sm text-zinc-600">Select a category to edit.</p>
+                ) : (
+                  <>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Field label="Name" value={selectedCategory.name} onChange={(v) => patchSelectedCategory({ name: v })} />
+                      <Field label="Title" value={selectedCategory.title} onChange={(v) => patchSelectedCategory({ title: v })} />
+                      <Field label="Image URL" value={selectedCategory.image} onChange={(v) => patchSelectedCategory({ image: v })} />
+                    </div>
+
+                    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Image Upload</p>
+                      <p className="mt-1 text-xs text-zinc-600">Upload category image from your laptop (JPG, PNG, WEBP, GIF).</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => categoryFileRef.current?.click()}
+                          disabled={uploadingCategory}
+                          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
+                        >
+                          {uploadingCategory ? "Uploading..." : "Upload Category Image"}
+                        </button>
+                        <input
+                          ref={categoryFileRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp,image/gif"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) uploadSelectedCategoryImage(file);
+                          }}
+                        />
+                        <span className="text-xs text-zinc-600">{selectedCategory.image ? "Image is set." : "No image selected."}</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Summary</label>
+                      <textarea
+                        value={selectedCategory.summary}
+                        onChange={(e) => patchSelectedCategory({ summary: e.target.value })}
+                        rows={3}
+                        className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Body</label>
+                      <textarea
+                        value={selectedCategory.body}
+                        onChange={(e) => patchSelectedCategory({ body: e.target.value })}
+                        rows={6}
+                        className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedCategory("up")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                      >
+                        Move Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedCategory("down")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                      >
+                        Move Down
+                      </button>
+                      <button
+                        type="button"
+                        onClick={deleteSelectedCategory}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                      >
+                        Delete Category
+                      </button>
+                      <Link
+                        to={`/sports/category/${selectedCategory.id}`}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                      >
+                        Open Category
                       </Link>
                     </div>
                   </>

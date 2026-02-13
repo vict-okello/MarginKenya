@@ -21,6 +21,7 @@ const SECTION_DIRS = {
   general: "",
   business: "business",
   technology: "technology",
+  sports: "sports",
   culture: "culture",
   health: "health",
   hero: "hero",

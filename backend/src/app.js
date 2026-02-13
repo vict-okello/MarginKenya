@@ -22,6 +22,9 @@ import healthNewsRoutes from "./routes/healthNewsRoutes.js";
 import technologyRoutes from "./routes/technologyRoutes.js";
 import businessRoutes from "./routes/businessRoutes.js";
 import podcastRoutes from "./routes/podcastRoutes.js";
+import cookieConsentRoutes from "./routes/cookieConsentRoutes.js";
+import sportsRoutes from "./routes/sportsRoutes.js";
+import sportsCategoriesRoutes from "./routes/sportsCategoriesRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +70,11 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "5mb", strict: true }));
 app.use(express.urlencoded({ extended: false, limit: "100kb" }));
 app.use(sanitizeRequest);
+app.use("/api", (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Pragma", "no-cache");
+  next();
+});
 app.use("/api", apiRateLimit);
 
 // Serve uploads from backend/uploads (not backend/src/uploads)
@@ -105,6 +113,9 @@ app.use("/api/health-news", healthNewsRoutes);
 app.use("/api/technology", technologyRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/podcast", podcastRoutes);
+app.use("/api/cookie-consent", cookieConsentRoutes);
+app.use("/api/sports", sportsRoutes);
+app.use("/api/sports-categories", sportsCategoriesRoutes);
 
 // 404 for API routes (JSON)
 app.use("/api", (req, res) => {

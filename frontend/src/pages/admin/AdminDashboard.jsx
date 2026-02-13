@@ -18,6 +18,27 @@ import {
 } from "recharts";
 
 const PIE_COLORS = ["#f59e0b", "#60a5fa", "#34d399", "#f472b6", "#c084fc"];
+const EMPTY_STATS = {
+  kpis: {
+    totalViews: 0,
+    uniqueVisitors: 0,
+    avgReadTimeSec: 0,
+    bounceRate: 0,
+  },
+  viewsByDay: [
+    { day: "Mon", views: 0 },
+    { day: "Tue", views: 0 },
+    { day: "Wed", views: 0 },
+    { day: "Thu", views: 0 },
+    { day: "Fri", views: 0 },
+    { day: "Sat", views: 0 },
+    { day: "Sun", views: 0 },
+  ],
+  categoryTraffic: [],
+  topArticles: [],
+  articleReadStats: [],
+  sectionEdits: [],
+};
 
 export default function AdminDashboard() {
   const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
@@ -26,49 +47,9 @@ export default function AdminDashboard() {
   const { isDark = false } = useOutletContext() || {};
 
   const [stats, setStats] = useState(null);
+  const [recentEvents, setRecentEvents] = useState([]);
+  const [lastSyncAt, setLastSyncAt] = useState(null);
   const [error, setError] = useState("");
-
-  // Demo data only used when you are NOT logged in (no JWT)
-  const demo = useMemo(
-    () => ({
-      kpis: {
-        totalViews: 128430,
-        uniqueVisitors: 47120,
-        avgReadTimeSec: 224,
-        bounceRate: 38.4,
-      },
-      viewsByDay: [
-        { day: "Mon", views: 0 },
-        { day: "Tue", views: 14 },
-        { day: "Wed", views: 0 },
-        { day: "Thu", views: 0 },
-        { day: "Fri", views: 0 },
-        { day: "Sat", views: 0 },
-        { day: "Sun", views: 0 },
-      ],
-      categoryTraffic: [
-        { name: "Tech", value: 21 },
-        { name: "Other", value: 36 },
-        { name: "Sports", value: 21 },
-        { name: "Health", value: 14 },
-        { name: "World", value: 7 },
-      ],
-      topArticles: [
-        { title: "Cultural movements deep dive", views: 18400 },
-        { title: "AI trends this week", views: 14200 },
-        { title: "Global health policy update", views: 9800 },
-        { title: "Weekend sports roundup", views: 9100 },
-      ],
-      sectionEdits: [
-        { section: "Hero", edits: 8 },
-        { section: "World", edits: 5 },
-        { section: "Tech", edits: 7 },
-        { section: "Health", edits: 3 },
-        { section: "Sports", edits: 4 },
-      ],
-    }),
-    []
-  );
 
   // Fetch live stats ONLY when JWT exists, and send it in Authorization header.
   useEffect(() => {
@@ -80,7 +61,7 @@ export default function AdminDashboard() {
 
         const token = localStorage.getItem("adminToken");
 
-        // If not logged in -> do NOT fetch; use demo data silently
+        // If not logged in -> do NOT fetch.
         if (!token) {
           if (alive) setStats(null);
           return;
@@ -88,13 +69,22 @@ export default function AdminDashboard() {
 
         if (!API) throw new Error("VITE_API_URL is missing");
 
-        const res = await fetch(`${API}/api/admin/stats`, {
+        const statsPromise = fetch(`${API}/api/admin/stats`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+        const recentPromise = fetch(`${API}/api/events/recent`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const [res, recentRes] = await Promise.all([statsPromise, recentPromise]);
 
         // Token invalid/expired -> logout and redirect (no demo fallback)
         if (res.status === 401 || res.status === 403) {
@@ -114,9 +104,15 @@ export default function AdminDashboard() {
         }
 
         const json = await res.json();
-        if (alive) setStats(json);
+        const recentJson = recentRes.ok ? await recentRes.json().catch(() => []) : [];
+
+        if (alive) {
+          setStats(json);
+          setRecentEvents(Array.isArray(recentJson) ? recentJson.slice(0, 8) : []);
+          setLastSyncAt(new Date());
+        }
       } catch (e) {
-        // If JWT exists, we show an error card state rather than silently using demo
+        // If JWT exists, show an error card state.
         if (alive) setError(e?.message || "Failed to load live stats.");
       }
     })();
@@ -148,9 +144,7 @@ export default function AdminDashboard() {
     });
   }, []);
 
-  const tokenExists = Boolean(localStorage.getItem("adminToken"));
-  const usingDemo = !tokenExists; // demo only when not logged in
-  const data = stats ?? demo;
+  const data = stats ?? EMPTY_STATS;
   const pulseData = useMemo(() => {
     const raw = Array.isArray(data?.viewsByDay) ? data.viewsByDay : [];
     if (!raw.length) return [];
@@ -165,8 +159,9 @@ export default function AdminDashboard() {
   }, [data?.viewsByDay]);
 
   const trend = computeTrend(data.viewsByDay);
-  const maxTopViews = Math.max(...data.topArticles.map((a) => a.views));
-  const updatedAt = new Date().toLocaleTimeString([], {
+  const maxTopViews = Math.max(1, ...data.topArticles.map((a) => a.views || 0));
+  const maxAvgArticleRead = Math.max(1, ...data.articleReadStats.map((a) => a.avgReadTimeSec || 0));
+  const updatedAt = (lastSyncAt || new Date()).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -216,7 +211,7 @@ export default function AdminDashboard() {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <Pill label={usingDemo ? "Demo Mode" : error ? "Live (Error)" : "Live Data"} />
+              <Pill label={error ? "Live (Error)" : stats ? "Live Data" : "Waiting for Live Data"} />
               <Pill label={`Updated ${updatedAt}`} />
               <Pill label={`${Math.abs(trend.views)}% weekly shift`} />
             </div>
@@ -360,7 +355,7 @@ export default function AdminDashboard() {
         </Panel>
       </section>
 
-      <section data-anim className="grid grid-cols-1 gap-3 xl:grid-cols-3">
+      <section data-anim className="grid grid-cols-1 gap-3 xl:grid-cols-4">
         <Panel isDark={isDark} title="Top Performing Stories" subtitle="This week" className="xl:col-span-2">
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -406,13 +401,73 @@ export default function AdminDashboard() {
         </Panel>
 
         <Panel isDark={isDark} title="Recent Activity" subtitle="Editorial feed">
-          <ul className="space-y-2">
-            <ActivityRow isDark={isDark} time="09:42" text="Hero story replaced in World section." />
-            <ActivityRow isDark={isDark} time="09:18" text="Tech article metadata updated." />
-            <ActivityRow isDark={isDark} time="08:55" text="Sports roundup moved to top rank." />
-            <ActivityRow isDark={isDark} time="08:21" text="Health draft approved by editor." />
-            <ActivityRow isDark={isDark} time="07:54" text="Homepage newsletter CTA refreshed." />
-          </ul>
+          {recentEvents.length ? (
+            <ul className="space-y-2">
+              {recentEvents.map((event, idx) => (
+                <ActivityRow
+                  key={`${event.createdAt || "time"}-${event.type || "type"}-${idx}`}
+                  isDark={isDark}
+                  time={formatActivityTime(event.createdAt)}
+                  text={formatActivityText(event)}
+                />
+              ))}
+            </ul>
+          ) : (
+            <div
+              className={
+                isDark
+                  ? "rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/70"
+                  : "rounded-xl border border-zinc-300 bg-white/70 p-3 text-sm text-zinc-600"
+              }
+            >
+              No recent activity yet.
+            </div>
+          )}
+        </Panel>
+
+        <Panel isDark={isDark} title="Avg Read Time by Article" subtitle="Top engagement depth">
+          {data.articleReadStats.length ? (
+            <ul className="space-y-2">
+              {data.articleReadStats.slice(0, 8).map((item, index) => (
+                <li
+                  key={`${item.articleId || "article"}-${index}`}
+                  className={[
+                    "rounded-xl border px-3 py-2.5",
+                    isDark ? "border-white/10 bg-white/5" : "border-zinc-300 bg-white/70",
+                  ].join(" ")}
+                >
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <p className="min-w-0 truncate">
+                      <span className={isDark ? "mr-2 text-white/45" : "mr-2 text-zinc-500"}>#{index + 1}</span>
+                      {item.title || "Untitled"}
+                    </p>
+                    <p className="whitespace-nowrap font-medium">{formatTime(item.avgReadTimeSec || 0)}</p>
+                  </div>
+                  <p className={isDark ? "mt-1 text-xs text-white/60" : "mt-1 text-xs text-zinc-600"}>
+                    {Number(item.reads || 0).toLocaleString()} reads
+                  </p>
+                  <div className={`mt-2 h-1.5 rounded-full ${isDark ? "bg-white/10" : "bg-zinc-300/70"}`}>
+                    <div
+                      className="h-full rounded-full bg-emerald-400"
+                      style={{
+                        width: `${Math.max(8, Math.round(((item.avgReadTimeSec || 0) / maxAvgArticleRead) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div
+              className={
+                isDark
+                  ? "rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/70"
+                  : "rounded-xl border border-zinc-300 bg-white/70 p-3 text-sm text-zinc-600"
+              }
+            >
+              No article read-time stats yet.
+            </div>
+          )}
         </Panel>
       </section>
 
@@ -440,12 +495,7 @@ export default function AdminDashboard() {
         <Panel isDark={isDark} title="Status" subtitle="System">
           <div className="space-y-2 text-sm">
             <div className={isDark ? "rounded-xl border border-white/10 bg-white/5 p-3" : "rounded-xl border border-zinc-300 bg-white/70 p-3"}>
-              API:{" "}
-              {usingDemo
-                ? "Disconnected (demo data in use)"
-                : error
-                ? "Connected (live) — error loading stats"
-                : "Connected (live stats)"}
+              API: {error ? "Connected (live) error loading stats" : stats ? "Connected (live stats)" : "Connecting..."}
             </div>
             <div className={isDark ? "rounded-xl border border-white/10 bg-white/5 p-3" : "rounded-xl border border-zinc-300 bg-white/70 p-3"}>
               Theme: {isDark ? "Dark mode" : "Light mode"}
@@ -560,3 +610,25 @@ function formatTime(sec = 0) {
   const s = sec % 60;
   return `${m}m ${String(s).padStart(2, "0")}s`;
 }
+
+function formatActivityTime(value) {
+  if (!value) return "--:--";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "--:--";
+  return parsed.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatActivityText(event = {}) {
+  const type = String(event.type || "").trim();
+  const title = String(event.title || "").trim();
+  const category = String(event.category || "").trim();
+  const path = String(event.path || "").trim();
+
+  if (title && category) return `${title} (${category}).`;
+  if (title) return `${title}.`;
+  if (category && type) return `${type.replace("_", " ")} in ${category}.`;
+  if (path && type) return `${type.replace("_", " ")} on ${path}.`;
+  if (type) return `${type.replace("_", " ")} event recorded.`;
+  return "Activity recorded.";
+}
+

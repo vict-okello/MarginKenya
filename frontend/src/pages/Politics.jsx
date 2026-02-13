@@ -85,7 +85,10 @@ function Politics() {
         <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-black/15 bg-gradient-to-r from-[#f1e8e8] via-[#e8dbdb] to-[#dfd1d1] p-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Politics Desk</p>
-            <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
+            <h1
+              className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]"
+              style={{ textShadow: "0 8px 22px rgba(185,83,83,0.22)" }}
+            >
               Politics
             </h1>
             <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">

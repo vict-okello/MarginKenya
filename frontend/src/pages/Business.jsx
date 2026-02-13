@@ -93,7 +93,10 @@ function Business() {
         <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-black/15 bg-gradient-to-r from-[#f0ece6] via-[#e7dfd2] to-[#ddd6c8] p-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Business Desk</p>
-            <h1 className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]">
+            <h1
+              className="pt-2 text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl [font-family:Georgia,Times,serif]"
+              style={{ textShadow: "0 8px 22px rgba(148,106,64,0.22)" }}
+            >
               Business
             </h1>
             <p className="max-w-3xl pt-3 text-sm text-black/70 md:text-base">

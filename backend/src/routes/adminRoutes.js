@@ -23,6 +23,7 @@ function emptyStatsPayload() {
     ],
     categoryTraffic: [],
     topArticles: [],
+    articleReadStats: [],
     sectionEdits: [],
   };
 }
@@ -112,6 +113,49 @@ function buildStatsFromEvents(events = []) {
     .sort((a, b) => b.views - a.views)
     .slice(0, 6);
 
+  // Per-article read-time stats from "read" events.
+  const articleTitleById = new Map();
+  for (const view of articleViews) {
+    const id = String(view?.articleId || "").trim();
+    const title = String(view?.title || "").trim();
+    if (id && title) articleTitleById.set(id, title);
+  }
+
+  const readBuckets = new Map();
+  for (const r of reads) {
+    const key = r.articleId || r.title || r.path || "untitled";
+    const articleId = String(r.articleId || "").trim();
+    const resolvedTitleFromViews = articleId ? articleTitleById.get(articleId) : "";
+    const fallbackTitle = String(r.title || "").trim();
+
+    const current = readBuckets.get(key) || {
+      articleId: articleId || "",
+      title: resolvedTitleFromViews || fallbackTitle || r.path || "Untitled",
+      reads: 0,
+      totalReadTimeSec: 0,
+    };
+
+    current.reads += 1;
+    current.totalReadTimeSec += Number(r.readTimeSec || 0);
+    if (!current.articleId && articleId) current.articleId = articleId;
+    if ((!current.title || current.title === "Untitled") && resolvedTitleFromViews) {
+      current.title = resolvedTitleFromViews;
+    } else if ((!current.title || current.title === "Untitled") && fallbackTitle) {
+      current.title = fallbackTitle;
+    }
+    readBuckets.set(key, current);
+  }
+
+  const articleReadStats = [...readBuckets.values()]
+    .map((item) => ({
+      articleId: item.articleId || "",
+      title: item.title,
+      reads: item.reads,
+      avgReadTimeSec: item.reads ? Math.round(item.totalReadTimeSec / item.reads) : 0,
+    }))
+    .sort((a, b) => b.avgReadTimeSec - a.avgReadTimeSec)
+    .slice(0, 20);
+
   const editEvents = events.filter((e) => e.type === "edit");
   const editsBySection = {};
   for (const e of editEvents) {
@@ -128,6 +172,7 @@ function buildStatsFromEvents(events = []) {
     viewsByDay,
     categoryTraffic,
     topArticles,
+    articleReadStats,
     sectionEdits,
   };
 }
