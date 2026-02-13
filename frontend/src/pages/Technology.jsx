@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { technologyArticles } from "../data/technologyArticles";
@@ -25,22 +25,56 @@ const itemVariants = {
 };
 
 export default function Technology() {
+  const API = import.meta.env.VITE_API_URL;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const [visibleCount, setVisibleCount] = useState(3);
+  const [stories, setStories] = useState(technologyArticles);
 
-  const featuredArticle = technologyArticles[0];
-  const spotlightStories = technologyArticles.slice(1, 3);
-  const feedStories = technologyArticles.slice(3);
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^\/?uploads\//i.test(url)) {
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      return base ? `${base}${normalized}` : normalized;
+    }
+    return url;
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadTechnology() {
+      try {
+        const res = await fetch(`${API}/api/technology`);
+        const json = await res.json();
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        if (mounted && next.length > 0) setStories(next);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadTechnology();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const featuredArticle = stories[0];
+  const spotlightStories = stories.slice(1, 3);
+  const feedStories = stories.slice(3);
   const visibleFeed = feedStories.slice(0, visibleCount);
   const canLoadMore = visibleCount < feedStories.length;
 
   const deskSignals = useMemo(() => {
-    const contributors = new Set(technologyArticles.map((item) => item.author).filter(Boolean)).size;
+    const contributors = new Set(stories.map((item) => item.author).filter(Boolean)).size;
     return [
-      { label: "Coverage", value: `${technologyArticles.length} stories` },
+      { label: "Coverage", value: `${stories.length} stories` },
       { label: "Active Topics", value: "AI, Security, Cloud" },
       { label: "Contributors", value: `${contributors} writer${contributors === 1 ? "" : "s"}` },
     ];
-  }, []);
+  }, [stories]);
 
   const topicLanes = ["AI Systems", "Cybersecurity", "Data Platforms", "Consumer Tech"];
 
@@ -99,8 +133,8 @@ export default function Technology() {
               whileHover={{ y: -5 }}
               className="relative overflow-hidden rounded-3xl border border-black/20 bg-black"
             >
-              <MotionImage
-                src={featuredArticle.image}
+                <MotionImage
+                src={resolveImageUrl(featuredArticle.image)}
                 alt={featuredArticle.title}
                 className="h-[320px] w-full object-cover md:h-[460px]"
                 whileHover={{ scale: 1.03 }}
@@ -131,7 +165,7 @@ export default function Technology() {
                 >
                   <div className="overflow-hidden rounded-xl">
                     <img
-                      src={article.image}
+                      src={resolveImageUrl(article.image)}
                       alt={article.title}
                       className="h-32 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     />
@@ -183,7 +217,7 @@ export default function Technology() {
                 >
                   <div className="absolute right-0 top-0 h-14 w-14 bg-gradient-to-bl from-[#ff8f5a]/30 to-transparent" />
                   <MotionImage
-                    src={article.image}
+                    src={resolveImageUrl(article.image)}
                     alt={article.title}
                     className="h-48 w-full object-cover"
                     whileHover={{ scale: 1.03 }}

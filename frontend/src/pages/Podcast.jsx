@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
 const MotionButton = motion.button;
-const MotionBar = motion.div;
 
-const episodes = [
+const fallbackEpisodes = [
   {
     id: "pod-market-after-hours",
     title: "After Hours: Markets, Elections, and What Changes Next",
@@ -18,6 +17,7 @@ const episodes = [
     description:
       "A tactical breakdown of policy moves and capital flows shaping the week ahead for East Africa.",
     color: "from-[#1f2937] to-[#0f172a]",
+    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "pod-tech-policy",
@@ -29,6 +29,7 @@ const episodes = [
     description:
       "How regulators, startups, and enterprise teams are negotiating speed, safety, and trust.",
     color: "from-[#0f766e] to-[#134e4a]",
+    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "pod-health-access",
@@ -40,6 +41,7 @@ const episodes = [
     description:
       "A field-report format covering telehealth, mobile clinics, and digital triage in underserved regions.",
     color: "from-[#7f1d1d] to-[#450a0a]",
+    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "pod-culture-signal",
@@ -51,6 +53,7 @@ const episodes = [
     description:
       "Creators and editors discuss narrative, identity, and the economics of modern cultural publishing.",
     color: "from-[#312e81] to-[#1e1b4b]",
+    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
   {
     id: "pod-sports-sunday",
@@ -62,79 +65,56 @@ const episodes = [
     description:
       "A concise review of weekend performances and what to watch before the next fixtures.",
     color: "from-[#9a3412] to-[#7c2d12]",
+    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
   },
 ];
 
 const moods = ["All", "Analysis", "Strategy", "Explainer", "Interview", "Recap"];
-const waveform = [16, 22, 30, 18, 26, 38, 24, 34, 20, 28, 16, 32, 22, 27, 19, 24];
-
 function Podcast() {
+  const API = import.meta.env.VITE_API_URL;
   const [activeMood, setActiveMood] = useState("All");
-  const [activeEpisodeId, setActiveEpisodeId] = useState(episodes[0].id);
+  const [episodes, setEpisodes] = useState(fallbackEpisodes);
+  const [activeEpisodeId, setActiveEpisodeId] = useState(fallbackEpisodes[0].id);
   const [visibleLibraryCount, setVisibleLibraryCount] = useState(2);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(42);
-  const tickRef = useRef(null);
 
-  const durationToSeconds = (durationLabel) => {
-    const [minutes] = durationLabel.split(" ");
-    return Number(minutes) * 60;
-  };
+  useEffect(() => {
+    let mounted = true;
 
-  const formatClock = (seconds) => {
-    const total = Math.max(0, Math.floor(seconds));
-    const mins = Math.floor(total / 60);
-    const secs = total % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
+    async function loadPodcast() {
+      try {
+        const res = await fetch(`${API}/api/podcast`);
+        const json = await res.json();
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        if (mounted && next.length > 0) {
+          setEpisodes(next);
+          setActiveEpisodeId(next[0]?.id || fallbackEpisodes[0].id);
+        }
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadPodcast();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
 
   const filteredEpisodes = useMemo(
     () => (activeMood === "All" ? episodes : episodes.filter((episode) => episode.mood === activeMood)),
-    [activeMood]
+    [activeMood, episodes]
   );
 
   const activeEpisode =
-    filteredEpisodes.find((episode) => episode.id === activeEpisodeId) || filteredEpisodes[0] || episodes[0];
-  const activeDurationSeconds = durationToSeconds(activeEpisode.duration);
-  const progressPercent = Math.min((currentTime / activeDurationSeconds) * 100, 100);
-  const onDeckEpisodes = filteredEpisodes.filter((episode) => episode.id !== activeEpisode.id).slice(0, 3);
+    filteredEpisodes.find((episode) => episode.id === activeEpisodeId) || filteredEpisodes[0] || episodes[0] || fallbackEpisodes[0];
+  const queueEpisodes = filteredEpisodes.filter((episode) => episode.id !== activeEpisode.id).slice(0, 3);
   const visibleLibraryEpisodes = filteredEpisodes.slice(0, visibleLibraryCount);
   const canLoadMoreLibrary = visibleLibraryCount < filteredEpisodes.length;
 
-  const selectEpisode = (episodeId, autoplay = false) => {
+  const selectEpisode = (episodeId) => {
     setActiveEpisodeId(episodeId);
-    setCurrentTime(0);
-    setIsPlaying(autoplay);
   };
-
-  const goToNextEpisode = (autoplay = false) => {
-    if (filteredEpisodes.length === 0) return;
-    const currentIndex = filteredEpisodes.findIndex((episode) => episode.id === activeEpisode.id);
-    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % filteredEpisodes.length : 0;
-    selectEpisode(filteredEpisodes[nextIndex].id, autoplay);
-  };
-
-  useEffect(() => {
-    if (!isPlaying || activeDurationSeconds <= 0) return;
-    clearInterval(tickRef.current);
-    tickRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const next = prev + 1;
-        if (next >= activeDurationSeconds) {
-          clearInterval(tickRef.current);
-          if (filteredEpisodes.length > 0) {
-            const currentIndex = filteredEpisodes.findIndex((episode) => episode.id === activeEpisode.id);
-            const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % filteredEpisodes.length : 0;
-            selectEpisode(filteredEpisodes[nextIndex].id, true);
-          }
-          return 0;
-        }
-        return next;
-      });
-    }, 1000);
-
-    return () => clearInterval(tickRef.current);
-  }, [isPlaying, activeDurationSeconds, filteredEpisodes, activeEpisode.id]);
 
   return (
     <MotionSection
@@ -153,7 +133,7 @@ function Podcast() {
             </p>
           </div>
           <div className="rounded border border-black/25 px-3 py-2 text-xs uppercase tracking-[0.14em] text-black/60">
-            5 Fresh Episodes
+            {episodes.length} Fresh Episodes
           </div>
         </div>
         <div className="mt-4 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70">
@@ -169,7 +149,7 @@ function Podcast() {
                 setActiveMood(mood);
                 setVisibleLibraryCount(2);
                 const nextEpisodes = mood === "All" ? episodes : episodes.filter((episode) => episode.mood === mood);
-                selectEpisode(nextEpisodes[0]?.id || episodes[0].id, false);
+                selectEpisode(nextEpisodes[0]?.id || episodes[0]?.id || fallbackEpisodes[0].id);
               }}
               className={`rounded border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
                 activeMood === mood
@@ -183,20 +163,15 @@ function Podcast() {
           ))}
         </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[1.45fr_0.75fr]">
+        <div className="mt-5 grid gap-5 lg:grid-cols-[1.45fr_0.8fr]">
           <MotionDiv
             key={activeEpisode.id}
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className={`rounded border border-black/20 bg-gradient-to-br ${activeEpisode.color} p-5 text-white`}
+            className={`rounded-2xl border border-black/20 bg-gradient-to-br ${activeEpisode.color} p-5 text-white`}
           >
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs uppercase tracking-[0.14em] text-white/80">Now Playing</p>
-              <div className="rounded bg-black/25 px-2 py-1 text-[11px] uppercase tracking-[0.12em] text-white/75">
-                Studio Feed
-              </div>
-            </div>
+            <p className="text-xs uppercase tracking-[0.14em] text-white/80">Featured Episode</p>
             <h2 className="pt-2 text-3xl leading-tight md:text-4xl">{activeEpisode.title}</h2>
             <p className="pt-2 text-sm text-white/75">
               {activeEpisode.host} <span className="px-2">-</span> {activeEpisode.channel}
@@ -205,69 +180,39 @@ function Podcast() {
             </p>
             <p className="max-w-3xl pt-4 text-white/85">{activeEpisode.description}</p>
 
-            <div className="mt-5 rounded bg-white/15 p-3 backdrop-blur">
-              <div className="mb-3 flex h-12 items-end gap-1 rounded bg-black/20 px-2 py-1">
-                {waveform.map((height, index) => (
-                  <MotionBar
-                    key={`${activeEpisode.id}-${index}`}
-                    className="min-w-[3px] flex-1 rounded-t bg-white/85"
-                    initial={{ height: `${Math.max(6, height - 8)}px` }}
-                    animate={
-                      isPlaying
-                        ? { height: [`${height - 8}px`, `${height + 6}px`, `${height - 4}px`] }
-                        : { height: `${Math.max(6, height - 10)}px` }
-                    }
-                    transition={{ duration: 0.8, repeat: isPlaying ? Infinity : 0, delay: index * 0.03 }}
-                  />
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.12em] text-white/80">
-                <span>{formatClock(currentTime)}</span>
-                <span>{formatClock(activeDurationSeconds)}</span>
-              </div>
-              <div className="mt-2 h-1.5 rounded bg-white/25">
-                <div className="h-1.5 rounded bg-white" style={{ width: `${progressPercent}%` }} />
-              </div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentTime((prev) => Math.max(prev - 15, 0))}
-                  className="rounded bg-black/35 px-3 py-1 text-xs text-white"
-                >
-                  Rewind 15s
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsPlaying((prev) => !prev)}
-                  className="rounded bg-white px-3 py-1 text-xs font-semibold text-black"
-                >
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goToNextEpisode(false)}
-                  className="rounded bg-black/35 px-3 py-1 text-xs text-white"
-                >
-                  Next
-                </button>
-              </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <a
+                href={activeEpisode.watchUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-black"
+              >
+                Watch Episode
+              </a>
+              <a
+                href={activeEpisode.watchUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded border border-white/35 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white"
+              >
+                Open Link
+              </a>
             </div>
           </MotionDiv>
 
           <MotionDiv
-            initial={{ opacity: 0, x: 14 }}
+            initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="rounded border border-black/20 bg-[#cfd4db] p-4"
+            className="rounded-2xl border border-black/20 bg-[#cfd4db] p-4"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/65">On Deck</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/65">Up Next</p>
             <div className="mt-3 space-y-3">
-              {onDeckEpisodes.map((episode, index) => (
+              {queueEpisodes.map((episode, index) => (
                 <button
                   key={episode.id}
                   type="button"
-                  onClick={() => selectEpisode(episode.id, false)}
+                  onClick={() => selectEpisode(episode.id)}
                   className="w-full rounded border border-black/15 bg-white/45 p-3 text-left transition hover:border-black/30 hover:bg-white/70"
                 >
                   <p className="text-[11px] uppercase tracking-[0.12em] text-black/55">
@@ -276,11 +221,6 @@ function Podcast() {
                   <p className="pt-1 text-sm leading-tight text-black/80">{episode.title}</p>
                 </button>
               ))}
-              {onDeckEpisodes.length === 0 ? (
-                <div className="rounded border border-black/15 bg-white/45 p-3 text-sm text-black/65">
-                  No queued episodes in this mood.
-                </div>
-              ) : null}
             </div>
           </MotionDiv>
         </div>
@@ -290,7 +230,7 @@ function Podcast() {
             <MotionButton
               key={episode.id}
               type="button"
-              onClick={() => selectEpisode(episode.id, false)}
+              onClick={() => selectEpisode(episode.id)}
               whileHover={{ y: -3 }}
               whileTap={{ scale: 0.98 }}
               className={`rounded border p-4 text-left transition ${
@@ -304,6 +244,17 @@ function Podcast() {
               </p>
               <h3 className="pt-2 text-2xl leading-tight text-black/85">{episode.title}</h3>
               <p className="pt-2 text-sm text-black/70">{episode.host}</p>
+              <div className="pt-3">
+                <a
+                  href={episode.watchUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex rounded border border-black/30 bg-white/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-black/80 hover:bg-white"
+                >
+                  Watch Episode
+                </a>
+              </div>
             </MotionButton>
           ))}
         </div>

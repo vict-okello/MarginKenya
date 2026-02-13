@@ -1,9 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-
-const MotionSection = motion.section;
-const MotionDiv = motion.div;
-const MotionArticle = motion.article;
 
 const emptyDesk = { local: [], international: [] };
 
@@ -34,8 +29,12 @@ function normalizeDesk(payload) {
 function resolveImageUrl(api, url) {
   if (!url) return "";
   if (/^https?:\/\//i.test(url)) return url;
-  const base = (api || "").replace(/\/+$/, "").replace(/\/api$/i, "");
-  return base ? `${base}${url}` : url;
+  if (/^\/?uploads\//i.test(url)) {
+    const base = (api || "").replace(/\/+$/, "").replace(/\/api$/i, "");
+    const normalized = url.startsWith("/") ? url : `/${url}`;
+    return base ? `${base}${normalized}` : normalized;
+  }
+  return url;
 }
 
 export default function AdminPolitics() {
@@ -64,21 +63,14 @@ export default function AdminPolitics() {
   }, [token]);
 
   const activeStories = useMemo(() => politicsDesk[desk] || [], [politicsDesk, desk]);
-  const leadStory = activeStories[0] || null;
-  const sideStories = activeStories.slice(1);
-
   const selected = useMemo(() => {
     if (!selectedId) return activeStories[0] || null;
-    return activeStories.find((s) => String(s.id) === String(selectedId)) || null;
+    return activeStories.find((s) => String(s.id) === String(selectedId)) || activeStories[0] || null;
   }, [activeStories, selectedId]);
 
-  const pulseText = useMemo(
-    () =>
-      desk === "local"
-        ? "Local Pulse: county assemblies, parliament, and grassroots civic movements."
-        : "Global Pulse: diplomacy, multilateral policy shifts, and election watch.",
-    [desk]
-  );
+  const leadStory = activeStories[0] || null;
+  const sideStories = activeStories.slice(1, 3);
+  const restStories = activeStories.slice(3, 9);
 
   async function load() {
     setLoading(true);
@@ -95,7 +87,6 @@ export default function AdminPolitics() {
       const data = await res.json();
       const next = normalizeDesk(data);
       setPoliticsDesk(next);
-
       const first = (next[desk] || [])[0];
       setSelectedId(first?.id ? String(first.id) : "");
     } catch (e) {
@@ -118,7 +109,7 @@ export default function AdminPolitics() {
     if (!selectedId || !activeStories.some((s) => String(s.id) === String(selectedId))) {
       setSelectedId(String(activeStories[0].id));
     }
-  }, [desk, activeStories, selectedId]);
+  }, [activeStories, selectedId]);
 
   function patchSelected(patch) {
     if (!selected) return;
@@ -135,11 +126,12 @@ export default function AdminPolitics() {
     const story = makeNewStory();
     setPoliticsDesk((prev) => {
       const next = { ...prev };
-      next[desk] = [...(next[desk] || []), story];
+      next[desk] = [story, ...(next[desk] || [])];
       return next;
     });
     setSelectedId(String(story.id));
     setPanelOpen(true);
+    setNotice("New story added.");
   }
 
   function deleteSelected() {
@@ -148,8 +140,10 @@ export default function AdminPolitics() {
       const next = { ...prev };
       const list = (next[desk] || []).filter((s) => String(s.id) !== String(selected.id));
       next[desk] = list;
+      setSelectedId(list[0]?.id ? String(list[0].id) : "");
       return next;
     });
+    setNotice("Story removed.");
   }
 
   function moveSelected(direction) {
@@ -189,7 +183,7 @@ export default function AdminPolitics() {
       const json = await res.json().catch(() => null);
       const next = normalizeDesk(json?.data || politicsDesk);
       setPoliticsDesk(next);
-      setNotice("Saved.");
+      setNotice("Published. Politics page is now updated.");
     } catch (e) {
       setError(e?.message || "Save failed");
     } finally {
@@ -220,7 +214,7 @@ export default function AdminPolitics() {
       const json = await res.json();
       if (!json?.url) throw new Error("Upload returned no url");
 
-      patchSelected({ image: resolveImageUrl(API, json.url) });
+      patchSelected({ image: json.url });
       setNotice("Image uploaded.");
     } catch (e) {
       setError(e?.message || "Upload failed");
@@ -231,21 +225,13 @@ export default function AdminPolitics() {
   }
 
   return (
-    <MotionSection
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35 }}
-      className="bg-[#d8d8dc] px-4 py-12"
-    >
-      <div className="mx-auto w-full max-w-5xl">
-        <div className="flex flex-wrap items-end justify-between gap-3 pb-5">
+    <section className="space-y-4 text-zinc-900">
+      <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
-              Politics
-            </h1>
-            <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
-            <p className="pt-3 text-sm text-black/65">
-              Manage local and international stories with the same structure as the live Politics page.
+            <h1 className="text-3xl font-black uppercase tracking-[0.04em] md:text-4xl">Politics Edits</h1>
+            <p className="mt-1 text-sm text-zinc-600">
+              Manage local and international politics stories with the same live page structure.
             </p>
           </div>
 
@@ -253,7 +239,7 @@ export default function AdminPolitics() {
             <button
               type="button"
               onClick={addStory}
-              className="rounded border border-black/25 bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-black/5"
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100"
             >
               New Story
             </button>
@@ -261,291 +247,201 @@ export default function AdminPolitics() {
               type="button"
               disabled={saving || loading}
               onClick={saveAll}
-              className="rounded border border-black/25 bg-[#dfe3e8] px-4 py-2 text-sm font-semibold text-black hover:bg-black/5 disabled:opacity-60"
+              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? "Publishing..." : "Publish"}
             </button>
             <button
               type="button"
               disabled={loading}
               onClick={load}
-              className="rounded border border-black/25 bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-black/5 disabled:opacity-60"
+              className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 disabled:opacity-60"
             >
               Refresh
             </button>
           </div>
         </div>
 
-        <div className="flex gap-2 rounded border border-black/25 p-1 w-fit">
+        <div className="mt-4 inline-flex rounded-xl border border-zinc-300 bg-white p-1">
           <button
             type="button"
             onClick={() => setDesk("local")}
-            className={`rounded px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition ${
-              desk === "local" ? "bg-black text-white" : "text-black/70 hover:bg-black/10"
+            className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
+              desk === "local" ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100"
             }`}
           >
-            Local News
+            Local ({politicsDesk.local.length})
           </button>
           <button
             type="button"
             onClick={() => setDesk("international")}
-            className={`rounded px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition ${
-              desk === "international" ? "bg-black text-white" : "text-black/70 hover:bg-black/10"
+            className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] ${
+              desk === "international" ? "bg-zinc-900 text-white" : "text-zinc-700 hover:bg-zinc-100"
             }`}
           >
-            International
+            International ({politicsDesk.international.length})
           </button>
         </div>
+      </div>
 
-        <MotionDiv
-          key={desk}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="mt-5 rounded border border-black/25 bg-[#dfe2e6] px-4 py-3 text-xs uppercase tracking-[0.12em] text-black/70"
-        >
-          {pulseText}
-        </MotionDiv>
+      {(error || notice) && (
+        <div className="grid gap-2">
+          {error ? (
+            <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-zinc-900">{error}</div>
+          ) : null}
+          {notice ? (
+            <div className="rounded-2xl border border-zinc-300 bg-white/70 px-4 py-3 text-sm text-zinc-700">{notice}</div>
+          ) : null}
+        </div>
+      )}
 
-        {(error || notice) && (
-          <div className="mt-4 grid gap-2">
-            {error ? (
-              <div className="rounded border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-black">{error}</div>
-            ) : null}
-            {notice ? (
-              <div className="rounded border border-black/20 bg-white/70 px-4 py-3 text-sm text-black">{notice}</div>
-            ) : null}
-          </div>
-        )}
+      {loading ? (
+        <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5 text-sm text-zinc-700">Loading politics...</div>
+      ) : (
+        <>
+          <div className="rounded-2xl border border-zinc-300 bg-white/70 p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-700">Preview - {desk}</h2>
 
-        {loading ? (
-          <div className="mt-5 rounded border border-black/15 bg-white/30 p-5 text-sm text-black/70">Loading politics...</div>
-        ) : activeStories.length === 0 ? (
-          <div className="mt-5 rounded border border-black/15 bg-white/30 p-5 text-sm text-black/70">
-            No stories yet. Click <span className="font-semibold">New Story</span>.
-          </div>
-        ) : (
-          <>
-            <MotionDiv
-              key={`${desk}-preview`}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="mt-5 grid gap-5 lg:grid-cols-[1.3fr_1fr]"
-            >
-              {leadStory ? (
-                <MotionArticle className="overflow-hidden rounded border border-black/15 bg-white/40">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedId(String(leadStory.id));
-                      setPanelOpen(true);
-                    }}
-                    className="group block w-full text-left"
-                  >
-                    <img
-                      src={
-                        resolveImageUrl(API, leadStory.image) ||
-                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect width='1200' height='700' fill='%23eef2f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='34'%3ELead Story Image%3C/text%3E%3C/svg%3E"
-                      }
-                      alt={leadStory.title || "Lead"}
-                      className="h-72 w-full object-cover md:h-96"
-                    />
-                    <div className="p-5">
-                      <p className="text-xs uppercase tracking-[0.12em] text-black/55">
-                        {leadStory.tag || "Politics"} <span className="px-2">-</span> {leadStory.date || "Date"}
-                      </p>
-                      <h2 className="pt-3 text-4xl leading-tight text-black/90 transition group-hover:text-black md:text-[42px]">
-                        {leadStory.title || "Set the lead headline"}
-                      </h2>
-                      <p className="pt-4 text-black/75">{leadStory.summary || "Add a summary for this story."}</p>
-                    </div>
-                  </button>
-                </MotionArticle>
-              ) : null}
-
-              <div className="grid gap-5">
-                {sideStories.slice(0, 2).map((story) => (
-                  <MotionArticle key={story.id} className="grid gap-4 rounded border border-black/15 bg-white/30 p-4 sm:grid-cols-[170px_1fr]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedId(String(story.id));
-                        setPanelOpen(true);
-                      }}
-                      className="group contents text-left"
-                    >
+            {leadStory ? (
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+                <article className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+                  <div className="overflow-hidden rounded-xl bg-zinc-200">
+                    {leadStory.image ? (
                       <img
-                        src={
-                          resolveImageUrl(API, story.image) ||
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='680' height='360'%3E%3Crect width='680' height='360' fill='%23eef2f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='24'%3ESide Image%3C/text%3E%3C/svg%3E"
-                        }
-                        alt={story.title || "Story"}
-                        className="h-36 w-full rounded object-cover"
+                        src={resolveImageUrl(API, leadStory.image)}
+                        alt={leadStory.title || "Lead story"}
+                        className="h-64 w-full object-cover"
                       />
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.12em] text-black/55">
-                          {story.tag || "Politics"} <span className="px-2">-</span> {story.date || "Date"}
-                        </p>
-                        <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black">
-                          {story.title || "Set side headline"}
-                        </h3>
-                        <p className="pt-3 text-sm text-black/70">{story.summary || "Add side summary."}</p>
-                      </div>
-                    </button>
-                  </MotionArticle>
-                ))}
-              </div>
-            </MotionDiv>
+                    ) : (
+                      <div className="flex h-64 items-center justify-center text-sm text-zinc-500">No image</div>
+                    )}
+                  </div>
+                  <p className="pt-3 text-xs uppercase tracking-[0.12em] text-zinc-600">
+                    {leadStory.tag || "Politics"} - {leadStory.date || "Date"}
+                  </p>
+                  <h3 className="pt-2 text-3xl font-semibold leading-tight text-zinc-900">
+                    {leadStory.title || "Set the lead headline"}
+                  </h3>
+                  <p className="pt-2 text-sm text-zinc-700">{leadStory.summary || "Add a summary"}</p>
+                </article>
 
-            {sideStories.length > 2 ? (
-              <div className="mt-5 grid gap-5 md:grid-cols-2">
-                {sideStories.slice(2).map((story) => (
-                  <MotionArticle key={story.id} className="grid gap-4 rounded border border-black/15 bg-white/30 p-4 sm:grid-cols-[170px_1fr]">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedId(String(story.id));
-                        setPanelOpen(true);
-                      }}
-                      className="group contents text-left"
-                    >
-                      <img
-                        src={
-                          resolveImageUrl(API, story.image) ||
-                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='680' height='360'%3E%3Crect width='680' height='360' fill='%23eef2f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='24'%3EStory Image%3C/text%3E%3C/svg%3E"
-                        }
-                        alt={story.title || "Story"}
-                        className="h-36 w-full rounded object-cover"
-                      />
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.12em] text-black/55">
-                          {story.tag || "Politics"} <span className="px-2">-</span> {story.date || "Date"}
-                        </p>
-                        <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black">
-                          {story.title || "Set story headline"}
-                        </h3>
-                        <p className="pt-3 text-sm text-black/70">{story.summary || "Add story summary."}</p>
+                <div className="grid gap-4">
+                  {sideStories.map((story) => (
+                    <article key={story.id} className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+                      <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+                        <div className="overflow-hidden rounded-xl bg-zinc-200">
+                          {story.image ? (
+                            <img
+                              src={resolveImageUrl(API, story.image)}
+                              alt={story.title || "Politics story"}
+                              className="h-28 w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-28 items-center justify-center text-xs text-zinc-500">No image</div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.12em] text-zinc-600">
+                            {story.tag || "Politics"} - {story.date || "Date"}
+                          </p>
+                          <h3 className="pt-1 text-xl leading-tight text-zinc-900">{story.title || "Untitled"}</h3>
+                          <p className="pt-2 text-sm text-zinc-700">{story.summary || "Add summary"}</p>
+                        </div>
                       </div>
-                    </button>
-                  </MotionArticle>
-                ))}
-              </div>
-            ) : null}
-
-            <div className="mt-6 rounded border border-black/20 bg-[#dfe3e8]">
-              <button
-                type="button"
-                onClick={() => setPanelOpen((v) => !v)}
-                className="flex w-full items-center justify-between gap-3 px-4 py-3"
-              >
-                <div className="text-left">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Story Editor</p>
-                  <p className="mt-1 text-xs text-black/55">Edit title, summary, tag, image and full content for selected story.</p>
+                    </article>
+                  ))}
                 </div>
-                <span className="rounded border border-black/25 bg-white px-3 py-1 text-xs font-semibold text-black">
-                  {panelOpen ? "Collapse" : "Expand"}
-                </span>
-              </button>
+              </div>
+            ) : (
+              <div className="mt-4 rounded-xl border border-zinc-300 bg-zinc-100 p-4 text-sm text-zinc-600">
+                No stories in this desk. Click <span className="font-semibold">New Story</span> to add one.
+              </div>
+            )}
 
-              {panelOpen ? (
-                <div className="border-t border-black/15 bg-white/40 p-4">
-                  {!selected ? (
-                    <p className="text-sm text-black/60">Select a story from preview to edit.</p>
-                  ) : (
-                    <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-                      <div className="grid gap-3">
-                        <div className="grid gap-2">
-                          <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Title</label>
-                          <input
-                            value={selected.title || ""}
-                            onChange={(e) => patchSelected({ title: e.target.value })}
-                            className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                          />
+            {restStories.length > 0 ? (
+              <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {restStories.map((story) => (
+                  <article key={story.id} className="rounded-2xl border border-zinc-300 bg-zinc-100 p-3">
+                    <div className="overflow-hidden rounded-xl bg-zinc-200">
+                      {story.image ? (
+                        <img
+                          src={resolveImageUrl(API, story.image)}
+                          alt={story.title || "Politics story"}
+                          className="h-36 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-36 items-center justify-center text-sm text-zinc-500">No image</div>
+                      )}
+                    </div>
+                    <p className="pt-3 text-xs text-zinc-500">{story.date || "Date"}</p>
+                    <h3 className="pt-2 text-xl leading-tight text-zinc-900">{story.title || "Untitled"}</h3>
+                    <p className="pt-2 text-xs text-zinc-600">{story.tag || "Politics"}</p>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="rounded-2xl border border-zinc-300 bg-white/70">
+            <button
+              type="button"
+              onClick={() => setPanelOpen((v) => !v)}
+              className="flex w-full items-center justify-between gap-2 px-4 py-3"
+            >
+              <div className="text-left">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Story Editor - {desk}</p>
+                <p className="mt-1 text-xs text-zinc-600">Edit title, summary, tag, image and full content.</p>
+              </div>
+              <span className="rounded border border-zinc-300 bg-white px-3 py-1 text-xs font-semibold text-zinc-800">
+                {panelOpen ? "Collapse" : "Expand"}
+              </span>
+            </button>
+
+            {panelOpen ? (
+              <div className="border-t border-zinc-200 p-4">
+                <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+                  <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Stories</p>
+                    <div className="max-h-[420px] space-y-2 overflow-auto pr-1">
+                      {activeStories.map((story, idx) => (
+                        <button
+                          key={story.id}
+                          type="button"
+                          onClick={() => setSelectedId(story.id)}
+                          className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+                            String(selected?.id) === String(story.id)
+                              ? "border-zinc-900 bg-zinc-900 text-white"
+                              : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                          }`}
+                        >
+                          <p className="text-[11px] uppercase tracking-wide opacity-80">Position {idx + 1}</p>
+                          <p className="truncate font-semibold">{story.title || "Untitled"}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {!selected ? (
+                      <p className="text-sm text-zinc-600">Select a story to edit.</p>
+                    ) : (
+                      <>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <Field label="Title" value={selected.title} onChange={(v) => patchSelected({ title: v })} />
+                          <Field label="Tag" value={selected.tag} onChange={(v) => patchSelected({ tag: v })} />
+                          <Field label="Date" value={selected.date} onChange={(v) => patchSelected({ date: v })} />
+                          <Field label="Image URL" value={selected.image} onChange={(v) => patchSelected({ image: v })} />
                         </div>
 
-                        <div className="grid gap-2 md:grid-cols-2">
-                          <div className="grid gap-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Tag</label>
-                            <input
-                              value={selected.tag || ""}
-                              onChange={(e) => patchSelected({ tag: e.target.value })}
-                              className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Date</label>
-                            <input
-                              value={selected.date || ""}
-                              onChange={(e) => patchSelected({ date: e.target.value })}
-                              className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                            />
-                          </div>
-                        </div>
+                        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-700">Image Upload</p>
+                          <p className="mt-1 text-xs text-zinc-600">Upload JPG, PNG, or WEBP.</p>
 
-                        <div className="grid gap-2">
-                          <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Summary</label>
-                          <textarea
-                            value={selected.summary || ""}
-                            onChange={(e) => patchSelected({ summary: e.target.value })}
-                            rows={4}
-                            className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                          />
-                        </div>
-
-                        <div className="grid gap-2">
-                          <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Content</label>
-                          <textarea
-                            value={selected.content || ""}
-                            onChange={(e) => patchSelected({ content: e.target.value })}
-                            rows={8}
-                            className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                          />
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <button
-                            type="button"
-                            onClick={saveAll}
-                            disabled={saving}
-                            className="h-8 rounded bg-black px-2.5 py-1 text-xs font-semibold leading-none text-white hover:opacity-90 disabled:opacity-60"
-                          >
-                            {saving ? "Saving..." : "Save Changes"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveSelected("up")}
-                            className="h-8 rounded border border-black/25 bg-white px-2.5 py-1 text-xs font-semibold leading-none text-black hover:bg-black/5"
-                          >
-                            Move Up
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveSelected("down")}
-                            className="h-8 rounded border border-black/25 bg-white px-2.5 py-1 text-xs font-semibold leading-none text-black hover:bg-black/5"
-                          >
-                            Move Down
-                          </button>
-                          <button
-                            type="button"
-                            onClick={deleteSelected}
-                            className="h-8 rounded border border-black/25 bg-white px-2.5 py-1 text-xs font-semibold leading-none text-black hover:bg-black/5"
-                          >
-                            Delete Story
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid gap-3">
-                        <div className="rounded border border-black/15 bg-white/60 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Image Upload</p>
-                          <p className="mt-1 text-xs text-black/55">Upload JPG/PNG/WebP or paste image URL.</p>
-
-                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
                             <button
                               type="button"
                               onClick={() => fileRef.current?.click()}
-                              className="rounded border border-black/25 bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-black/5"
+                              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
                             >
                               {uploading ? "Uploading..." : "Upload Image"}
                             </button>
@@ -560,38 +456,74 @@ export default function AdminPolitics() {
                                 if (file) uploadImage(file);
                               }}
                             />
-
-                            <input
-                              value={selected.image || ""}
-                              onChange={(e) => patchSelected({ image: e.target.value })}
-                              className="min-w-[220px] flex-1 rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
-                              placeholder="Paste image URL"
-                            />
                           </div>
                         </div>
 
-                        <div className="overflow-hidden rounded border border-black/15 bg-white">
-                          <div className="border-b border-black/10 px-4 py-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Preview</p>
-                          </div>
-                          <img
-                            src={
-                              resolveImageUrl(API, selected.image) ||
-                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect width='1200' height='700' fill='%23eef2f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='34'%3ENo Image%3C/text%3E%3C/svg%3E"
-                            }
-                            alt={selected.title || "preview"}
-                            className="h-64 w-full object-cover"
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Summary</label>
+                          <textarea
+                            value={selected.summary || ""}
+                            onChange={(e) => patchSelected({ summary: e.target.value })}
+                            rows={4}
+                            className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
                           />
                         </div>
-                      </div>
-                    </div>
-                  )}
+
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Content</label>
+                          <textarea
+                            value={selected.content || ""}
+                            onChange={(e) => patchSelected({ content: e.target.value })}
+                            rows={8}
+                            className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                          />
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => moveSelected("up")}
+                            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                          >
+                            Move Up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveSelected("down")}
+                            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                          >
+                            Move Down
+                          </button>
+                          <button
+                            type="button"
+                            onClick={deleteSelected}
+                            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                          >
+                            Delete Story
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              ) : null}
-            </div>
-          </>
-        )}
-      </div>
-    </MotionSection>
+              </div>
+            ) : null}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function Field({ label, value, onChange }) {
+  return (
+    <div>
+      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">{label}</label>
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+      />
+    </div>
   );
 }

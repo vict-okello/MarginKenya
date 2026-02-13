@@ -1,0 +1,57 @@
+[
+  {
+    "id": "pod-market-after-hours",
+    "title": "After Hours: Markets, Elections, and What Changes Next",
+    "host": "Host: Amina Otieno",
+    "duration": "50 min",
+    "mood": "Analysis",
+    "channel": "Politics & Business",
+    "description": "A tactical breakdown of policy moves and capital flows shaping the week ahead for East Africa.",
+    "color": "from-[#1f2937] to-[#0f172a]",
+    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "pod-tech-policy",
+    "title": "Code & Cabinet: The New Rules for AI Adoption",
+    "host": "Host: Daniel Kimani",
+    "duration": "35 min",
+    "mood": "Strategy",
+    "channel": "Technology",
+    "description": "How regulators, startups, and enterprise teams are negotiating speed, safety, and trust.",
+    "color": "from-[#0f766e] to-[#134e4a]",
+    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "pod-health-access",
+    "title": "Care Lines: Expanding Access Beyond Major Cities",
+    "host": "Host: Leah Njeri",
+    "duration": "28 min",
+    "mood": "Explainer",
+    "channel": "Health",
+    "description": "A field-report format covering telehealth, mobile clinics, and digital triage in underserved regions.",
+    "color": "from-[#7f1d1d] to-[#450a0a]",
+    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "pod-culture-signal",
+    "title": "Culture Signal: Why Local Stories Travel Globally",
+    "host": "Host: Brian Mugo",
+    "duration": "31 min",
+    "mood": "Interview",
+    "channel": "Culture",
+    "description": "Creators and editors discuss narrative, identity, and the economics of modern cultural publishing.",
+    "color": "from-[#312e81] to-[#1e1b4b]",
+    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "pod-sports-sunday",
+    "title": "Sunday Tape: Tactics, Transfers, and Team Building",
+    "host": "Host: Jake W.",
+    "duration": "39 min",
+    "mood": "Recap",
+    "channel": "Sports",
+    "description": "A concise review of weekend performances and what to watch before the next fixtures.",
+    "color": "from-[#9a3412] to-[#7c2d12]",
+    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  }
+]

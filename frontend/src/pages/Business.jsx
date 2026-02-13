@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { businessArticles } from "../data/businessArticles";
@@ -9,35 +9,54 @@ const MotionDiv = motion.div;
 const MotionButton = motion.button;
 const MotionArticle = motion.article;
 
-const marketSnapshot = {
-  Local: [
-    { label: "KES / USD", value: "129.4", delta: "-0.6%", trend: "down" },
-    { label: "NSE 20", value: "1,842", delta: "+0.9%", trend: "up" },
-    { label: "Fuel Index", value: "104.1", delta: "-0.2%", trend: "down" },
-    { label: "Tea Auction", value: "$2.43/kg", delta: "+1.4%", trend: "up" },
-  ],
-  International: [
-    { label: "Brent", value: "$82.6", delta: "+0.8%", trend: "up" },
-    { label: "DXY", value: "104.2", delta: "-0.4%", trend: "down" },
-    { label: "Baltic Dry", value: "1,762", delta: "+1.1%", trend: "up" },
-    { label: "Copper", value: "$3.94/lb", delta: "-0.3%", trend: "down" },
-  ],
-};
-
 function Business() {
+  const API = import.meta.env.VITE_API_URL;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const [scope, setScope] = useState("Local");
   const [tag, setTag] = useState("All");
   const [visibleCount, setVisibleCount] = useState(3);
+  const [stories, setStories] = useState(businessArticles);
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^\/?uploads\//i.test(url)) {
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      return base ? `${base}${normalized}` : normalized;
+    }
+    return url;
+  }
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadBusiness() {
+      try {
+        const res = await fetch(`${API}/api/business`);
+        const json = await res.json();
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        if (mounted && next.length > 0) setStories(next);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadBusiness();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
 
   const tags = useMemo(() => {
-    const scoped = businessArticles.filter((item) => item.scope === scope);
+    const scoped = stories.filter((item) => item.scope === scope);
     return ["All", ...new Set(scoped.map((item) => item.tag))];
-  }, [scope]);
+  }, [scope, stories]);
 
   const filteredArticles = useMemo(() => {
-    const scoped = businessArticles.filter((item) => item.scope === scope);
+    const scoped = stories.filter((item) => item.scope === scope);
     return tag === "All" ? scoped : scoped.filter((item) => item.tag === tag);
-  }, [scope, tag]);
+  }, [scope, tag, stories]);
 
   const visibleArticles = filteredArticles.slice(0, visibleCount);
   const featured = visibleArticles[0];
@@ -115,30 +134,6 @@ function Business() {
           {pulseLabel}
         </MotionDiv>
 
-        <MotionDiv
-          key={`snapshot-${scope}`}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-          className="mt-4 rounded border border-black/20 bg-[#dde1e6] p-4"
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/60">Market Snapshot</p>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-black/45">Updated: 08:45 EAT</p>
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {marketSnapshot[scope].map((item) => (
-              <div key={item.label} className="rounded border border-black/15 bg-white/55 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-black/55">{item.label}</p>
-                <p className="pt-1 text-lg font-semibold text-black/85">{item.value}</p>
-                <p className={`text-sm ${item.trend === "up" ? "text-emerald-700" : "text-red-700"}`}>
-                  {item.delta}
-                </p>
-              </div>
-            ))}
-          </div>
-        </MotionDiv>
-
         <div className="mt-5 flex flex-wrap gap-2">
           {tags.map((itemTag) => (
             <button
@@ -171,7 +166,7 @@ function Business() {
               <MotionArticle whileHover={{ y: -4 }} className="overflow-hidden rounded border border-black/15 bg-white/35">
                 <Link to={`/business/article/${featured.id}`} className="group block">
                   <img
-                    src={featured.image}
+                    src={resolveImageUrl(featured.image)}
                     alt={featured.title}
                     className="h-72 w-full object-cover transition duration-300 group-hover:scale-[1.02] md:h-96"
                   />
@@ -198,7 +193,7 @@ function Business() {
                   >
                     <Link to={`/business/article/${article.id}`} className="group contents">
                       <img
-                        src={article.image}
+                        src={resolveImageUrl(article.image)}
                         alt={article.title}
                         className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
                       />
@@ -251,7 +246,7 @@ function Business() {
                   >
                     <Link to={`/business/article/${article.id}`} className="group contents">
                       <img
-                        src={article.image}
+                        src={resolveImageUrl(article.image)}
                         alt={article.title}
                         className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
                       />

@@ -2,6 +2,7 @@ import express from "express";
 import Event from "../models/Event.js";
 import requireAdmin from "../middleware/requireAdmin.js";
 import createRateLimiter from "../middleware/rateLimit.js";
+import { appendFallbackEvent, readFallbackEvents } from "../utils/eventFallbackStore.js";
 
 const router = express.Router();
 const ingestRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, max: 600 });
@@ -52,7 +53,7 @@ router.post("/", ingestRateLimiter, async (req, res) => {
       });
     }
 
-    const event = await Event.create({
+    const payload = {
       type,
       sessionId: cleanSessionId,
       path: normalizePath(path),
@@ -66,11 +67,20 @@ router.post("/", ingestRateLimiter, async (req, res) => {
         cleanText(req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "", 80) ||
         req.socket?.remoteAddress ||
         "",
-    });
+      createdAt: new Date().toISOString(),
+    };
+
+    let event = null;
+    try {
+      event = await Event.create(payload);
+    } catch {
+      appendFallbackEvent(payload);
+    }
 
     return res.json({
       ok: true,
-      id: event._id,
+      id: event?._id || `fallback-${Date.now()}`,
+      source: event ? "db" : "fallback",
     });
   } catch (err) {
     console.error("POST /api/events failed:", err);
@@ -84,10 +94,17 @@ router.post("/", ingestRateLimiter, async (req, res) => {
  */
 router.get("/recent", requireAdmin, debugRateLimiter, async (req, res) => {
   try {
-    const events = await Event.find()
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .lean();
+    let events = [];
+    try {
+      events = await Event.find()
+        .sort({ createdAt: -1 })
+        .limit(30)
+        .lean();
+    } catch {
+      events = readFallbackEvents()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 30);
+    }
 
     return res.json(
       events.map((e) => ({

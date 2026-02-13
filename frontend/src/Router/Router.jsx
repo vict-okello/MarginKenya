@@ -27,7 +27,7 @@ import NotFound from "../pages/NotFound.jsx";
 import AdminLayout from "../layout/AdminLayout.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import AdminHero from "../pages/admin/AdminHero.jsx";
-import AdminSports from "../pages/admin/AdminSports.jsx";
+import AdminSport from "../pages/admin/AdminSport.jsx";
 import AdminLogin from "../pages/admin/AdminLogin.jsx";
 import AdminWorld from "../pages/admin/AdminWorld.jsx";
 import AdminTechnology from "../pages/admin/AdminTechnology.jsx";
@@ -99,7 +99,7 @@ const router = createBrowserRouter([
       { path: "business", element: <AdminBusiness /> },
       { path: "politics", element: <AdminPolitics /> },
       { path: "culture", element: <AdminCulture /> },
-      { path: "sports", element: <AdminSports /> },
+      { path: "sports", element: <AdminSport /> },
       { path: "podcast", element: <AdminPodcast /> },
       { path: "newsletter", element: <AdminNewsletter /> },
       { path: "settings", element: <AdminSettings /> },

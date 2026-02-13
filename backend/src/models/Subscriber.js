@@ -20,8 +20,6 @@ const SubscriberSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-SubscriberSchema.index({ email: 1 }, { unique: true });
 SubscriberSchema.index({ createdAt: 1 });
 
 export default mongoose.model("Subscriber", SubscriberSchema);
-

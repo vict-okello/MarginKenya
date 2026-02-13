@@ -19,6 +19,9 @@ import resourcesRoutes from "./routes/resourcesRoutes.js";
 import subscribersRoutes from "./routes/subscribersRoutes.js";
 import cultureRoutes from "./routes/cultureRoutes.js";
 import healthNewsRoutes from "./routes/healthNewsRoutes.js";
+import technologyRoutes from "./routes/technologyRoutes.js";
+import businessRoutes from "./routes/businessRoutes.js";
+import podcastRoutes from "./routes/podcastRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -99,6 +102,9 @@ app.use("/api/resources-admin", resourcesRoutes);
 app.use("/api/subscribers", subscribersRoutes);
 app.use("/api/culture", cultureRoutes);
 app.use("/api/health-news", healthNewsRoutes);
+app.use("/api/technology", technologyRoutes);
+app.use("/api/business", businessRoutes);
+app.use("/api/podcast", podcastRoutes);
 
 // 404 for API routes (JSON)
 app.use("/api", (req, res) => {

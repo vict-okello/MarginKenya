@@ -19,6 +19,8 @@ if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true });
 
 const SECTION_DIRS = {
   general: "",
+  business: "business",
+  technology: "technology",
   culture: "culture",
   health: "health",
   hero: "hero",

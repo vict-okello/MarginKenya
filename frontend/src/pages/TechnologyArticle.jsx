@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { technologyArticles } from "../data/technologyArticles";
@@ -13,8 +14,43 @@ const MotionTitle = motion.h1;
 const MotionText = motion.p;
 
 function TechnologyArticle() {
+  const API = import.meta.env.VITE_API_URL;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const { articleId } = useParams();
-  const article = technologyArticles.find((item) => item.id === articleId);
+  const [stories, setStories] = useState(technologyArticles);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadTechnology() {
+      try {
+        const res = await fetch(`${API}/api/technology`);
+        const json = await res.json();
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        if (mounted && next.length > 0) setStories(next);
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
+    }
+
+    if (API) loadTechnology();
+    return () => {
+      mounted = false;
+    };
+  }, [API]);
+
+  const article = useMemo(() => stories.find((item) => item.id === articleId), [stories, articleId]);
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    if (/^https?:\/\//i.test(url)) return url;
+    if (/^\/?uploads\//i.test(url)) {
+      const normalized = url.startsWith("/") ? url : `/${url}`;
+      return base ? `${base}${normalized}` : normalized;
+    }
+    return url;
+  }
 
   useArticleViewTracker({
     articleId: article?.id,
@@ -48,7 +84,7 @@ function TechnologyArticle() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <MotionImage
-            src={article.image}
+            src={resolveImageUrl(article.image)}
             alt={article.title}
             className="h-[240px] w-full object-cover object-center md:h-[360px] lg:h-[420px]"
             whileHover={{ scale: 1.03 }}
