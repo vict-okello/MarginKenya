@@ -152,7 +152,7 @@ export default function Sports() {
         <div className="rounded-3xl border border-black/15 bg-gradient-to-r from-[#efebe4] via-[#e6dfd2] to-[#ddd6c8] p-5 md:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Sports Desk</p>
           <h1
-            className="pt-1.5 text-4xl font-black uppercase tracking-[0.05em] text-black/90 md:text-5xl [font-family:Georgia,Times,serif]"
+            className="pt-1.5 text-4xl font-black uppercase tracking-[0.05em] text-black/90 md:text-5xl"
             style={{ textShadow: "0 8px 22px rgba(240,80,58,0.22)" }}
           >
             Sports
@@ -196,7 +196,7 @@ export default function Sports() {
 
               <div className="absolute bottom-0 p-6 text-white md:p-7">
                 <p className="text-xs uppercase tracking-[0.13em] text-white/80">{featured.date || "Latest"}</p>
-                <h2 className="pt-3 text-4xl leading-tight md:text-[46px] [font-family:Georgia,Times,serif]">
+                <h2 className="pt-3 text-4xl leading-tight md:text-[46px]">
                   {featured.title}
                 </h2>
                 <p className="pt-3 max-w-2xl text-sm text-white/80 md:text-base">{featured.summary}</p>
@@ -223,7 +223,7 @@ export default function Sports() {
                     <p className="text-[10px] uppercase tracking-[0.12em] text-black/55">
                       {story.author || "Desk Editor"} <span className="px-2">-</span> {story.date || "Latest"}
                     </p>
-                    <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black [font-family:Georgia,Times,serif]">
+                    <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black">
                       {story.title}
                     </h3>
                     <p className="pt-2 text-sm text-black/70">{story.summary}</p>
@@ -290,7 +290,7 @@ export default function Sports() {
                     />
                     <div className="p-4">
                       <p className="text-[10px] uppercase tracking-[0.12em] text-black/55">Category</p>
-                      <h3 className="pt-2 text-2xl leading-tight text-black/85 [font-family:Georgia,Times,serif]">
+                      <h3 className="pt-2 text-2xl leading-tight text-black/85">
                         {category.name}
                       </h3>
                       <p className="pt-2 text-sm text-black/70">{category.summary}</p>
@@ -327,7 +327,7 @@ export default function Sports() {
                     <p className="text-[10px] uppercase tracking-[0.12em] text-black/55">
                       {story.category || "Sports"} <span className="px-2">-</span> {story.date || "Latest"}
                     </p>
-                    <h3 className="pt-2 text-[31px] leading-tight text-black/85 transition group-hover:text-black [font-family:Georgia,Times,serif]">
+                    <h3 className="pt-2 text-[31px] leading-tight text-black/85 transition group-hover:text-black">
                       {story.title}
                     </h3>
                     <p className="pt-3 text-sm text-black/68">{story.summary}</p>

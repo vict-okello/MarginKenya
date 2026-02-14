@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -36,6 +38,7 @@ function ArticlesResourcesArticle() {
   const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
   const [articles, setArticles] = useState(articlesResourcesArticles);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     let alive = true;
@@ -80,6 +83,18 @@ function ArticlesResourcesArticle() {
     title: article?.title,
     category: article?.category || "Resources",
     section: "Resources",
+  });
+
+  const canonicalPath = article
+    ? `/resources/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/resources";
+
+  useSeo({
+    title: article?.title || "Resources Article",
+    description: article?.summary || article?.body || "Resources article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (!article) {

@@ -1,0 +1,20 @@
+{
+  "branding": {
+    "siteName": "MarginKenya",
+    "logo": "/uploads/branding/1771064458052-git.png",
+    "favicon": "",
+    "defaultOgImage": ""
+  },
+  "security": {
+    "maintenanceMode": false,
+    "maintenanceMessage": "We’ll be back soon."
+  },
+  "adminDashboard": {
+    "title": "Editorial Command Center Admin",
+    "subtitle": "Site-aligned dashboard with live metrics and quick editorial controls.",
+    "headerColorFrom": "#c7cef0",
+    "headerColorTo": "#b8b8f4",
+    "profileImage": "/uploads/dashboard/1771068276647-git.png",
+    "headerImage": ""
+  }
+}

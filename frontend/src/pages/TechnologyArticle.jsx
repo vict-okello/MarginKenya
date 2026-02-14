@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -18,6 +20,7 @@ function TechnologyArticle() {
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const { articleId } = useParams();
   const [stories, setStories] = useState(technologyArticles);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     let mounted = true;
@@ -63,6 +66,19 @@ function TechnologyArticle() {
     title: article?.title,
     category: "Technology",
     section: "Technology",
+  });
+
+  const resolvedImage = article ? resolveImageUrl(article.image) : "";
+  const canonicalPath = article
+    ? `/technology/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/technology";
+
+  useSeo({
+    title: article?.title || "Technology Article",
+    description: article?.summary || article?.body || "Technology news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (!article) {

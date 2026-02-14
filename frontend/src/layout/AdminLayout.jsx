@@ -4,6 +4,22 @@ import usePageViewTracker from "../hooks/usePageViewTracker";
 
 const THEME_KEY = "admin_dashboard_theme";
 
+function safeJsonParse(value, fallback = null) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function joinUrl(base, path) {
+  const b = String(base || "").replace(/\/$/, "");
+  const p = String(path || "");
+  if (!p) return "";
+  if (p.startsWith("http://") || p.startsWith("https://")) return p;
+  return `${b}${p.startsWith("/") ? "" : "/"}${p}`;
+}
+
 const navItems = [
   { to: "/admin", label: "Dashboard", icon: "dashboard" },
   { to: "/admin/hero", label: "Hero", icon: "hero" },
@@ -24,10 +40,13 @@ const navItems = [
 export default function AdminLayout() {
   usePageViewTracker();
 
+  const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
   const navigate = useNavigate();
   const location = useLocation();
   const navRef = useRef(null);
   const [isDark, setIsDark] = useState(() => localStorage.getItem(THEME_KEY) === "dark");
+  const [settingsAvatar, setSettingsAvatar] = useState("");
+  const [siteName, setSiteName] = useState("MarginKenya");
 
   useEffect(() => {
     localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
@@ -63,11 +82,42 @@ export default function AdminLayout() {
     });
   }, []);
 
-  // Later: fetch from /api/admin/me
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        if (!token || !API) return;
+
+        const res = await fetch(`${API}/api/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+
+        const data = await res.json().catch(() => null);
+        const img = String(data?.adminDashboard?.profileImage || "");
+        const brandingName = String(data?.branding?.siteName || "MarginKenya");
+        if (alive) setSettingsAvatar(img);
+        if (alive) setSiteName(brandingName);
+      } catch {
+        // Keep fallback avatar.
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [API]);
+
+  const adminUser = safeJsonParse(localStorage.getItem("adminUser"), null);
+  const roleText = String(adminUser?.role || "editor").replaceAll("_", " ");
   const admin = {
-    name: "Admin",
-    role: "Editor",
-    avatarUrl: "https://api.dicebear.com/9.x/thumbs/svg?seed=VeloraAdmin",
+    name: adminUser?.email ? String(adminUser.email).split("@")[0] : "Admin",
+    role: roleText.charAt(0).toUpperCase() + roleText.slice(1),
+    avatarUrl: settingsAvatar
+      ? joinUrl(API, settingsAvatar)
+      : "https://api.dicebear.com/9.x/thumbs/svg?seed=VeloraAdmin",
   };
 
   return (
@@ -82,7 +132,7 @@ export default function AdminLayout() {
         >
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold tracking-wide">Admin Panel</p>
+              <p className="text-sm font-semibold tracking-wide">{siteName} Admin Panel</p>
               <p className={["text-xs", isDark ? "text-white/60" : "text-zinc-600"].join(" ")}>Content & Analytics</p>
             </div>
             <button

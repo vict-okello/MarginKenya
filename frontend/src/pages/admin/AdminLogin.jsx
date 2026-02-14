@@ -26,14 +26,22 @@ export default function AdminLogin() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
         setError(data?.message || "Login failed");
         return;
       }
 
+      // Ensure adminUser always has role
+      const admin = data.admin || {};
+      const role = admin.role || "writer";
+
       localStorage.setItem("adminToken", data.token);
-      localStorage.setItem("adminUser", JSON.stringify(data.admin || {}));
+      localStorage.setItem("adminUser", JSON.stringify({ ...admin, role }));
+
+      // So you can confirm immediately (open DevTools console)
+      console.log("Logged in as role:", role);
 
       const nextPath = location.state?.from || "/admin";
       navigate(nextPath, { replace: true });
@@ -46,7 +54,7 @@ export default function AdminLogin() {
 
   return (
     <div className="mx-auto mt-10 max-w-md rounded-2xl border border-zinc-300 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-zinc-900">Admin Login</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900">MarginKenya Admins</h1>
       <p className="mt-2 text-sm text-zinc-600">Sign in to access the dashboard analytics.</p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { healthArticles } from "../data/healthArticles";
@@ -32,7 +32,7 @@ function Health() {
   const [stories, setStories] = useState(healthArticles);
   const [publishedCount, setPublishedCount] = useState(null);
 
-  function resolveImageUrl(url) {
+  const resolveImageUrl = useCallback((url) => {
     if (!url) return "";
     if (/^https?:\/\//i.test(url)) return url;
     if (/^\/?uploads\//i.test(url)) {
@@ -40,7 +40,7 @@ function Health() {
       return base ? `${base}${normalized}` : normalized;
     }
     return url;
-  }
+  }, [base]);
 
   useEffect(() => {
     let mounted = true;
@@ -79,7 +79,7 @@ function Health() {
       const img = new Image();
       img.src = resolveImageUrl(item.image);
     });
-  }, [visibleCount, rest, base]);
+  }, [visibleCount, rest, resolveImageUrl]);
 
   const quickStats = useMemo(
     () => [

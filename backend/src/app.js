@@ -25,12 +25,20 @@ import podcastRoutes from "./routes/podcastRoutes.js";
 import cookieConsentRoutes from "./routes/cookieConsentRoutes.js";
 import sportsRoutes from "./routes/sportsRoutes.js";
 import sportsCategoriesRoutes from "./routes/sportsCategoriesRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
+import invitesRoutes from "./routes/invitesRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
+import testEmailRoutes from "./routes/testEmailRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// uploads folder is at backend/uploads (one level above src)
+const uploadsRoot = path.join(__dirname, "../uploads");
+
 const app = express();
 const apiRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
+
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   ...(String(process.env.CLIENT_ORIGINS || "")
@@ -59,6 +67,7 @@ app.use(
     optionsSuccessStatus: 204,
   })
 );
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && !allowedOrigins.includes(origin)) {
@@ -70,6 +79,8 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "5mb", strict: true }));
 app.use(express.urlencoded({ extended: false, limit: "100kb" }));
 app.use(sanitizeRequest);
+app.use("/api/invites", invitesRoutes);
+
 app.use("/api", (req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("Pragma", "no-cache");
@@ -77,10 +88,10 @@ app.use("/api", (req, res, next) => {
 });
 app.use("/api", apiRateLimit);
 
-// Serve uploads from backend/uploads (not backend/src/uploads)
+//  Serve uploads from backend/uploads (correct path)
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
+  express.static(uploadsRoot, {
     index: false,
     dotfiles: "deny",
     maxAge: "7d",
@@ -116,6 +127,9 @@ app.use("/api/podcast", podcastRoutes);
 app.use("/api/cookie-consent", cookieConsentRoutes);
 app.use("/api/sports", sportsRoutes);
 app.use("/api/sports-categories", sportsCategoriesRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/test-email", testEmailRoutes);
+app.use("/", seoRoutes);
 
 // 404 for API routes (JSON)
 app.use("/api", (req, res) => {

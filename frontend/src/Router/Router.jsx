@@ -49,33 +49,33 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
 
       { path: "worldnews", element: <Worldnews showViewAll={false} variant="page" /> },
-      { path: "worldnews/article/:articleId", element: <WorldnewsArticle /> },
-      { path: "hero/article/:id", element: <HeroArticlePage /> },
+      { path: "worldnews/article/:articleId/:slug?", element: <WorldnewsArticle /> },
+      { path: "hero/article/:id/:slug?", element: <HeroArticlePage /> },
 
       { path: "resources", element: <ResourcesPage /> },
-      { path: "resources/article/:articleId", element: <ArticlesResourcesArticle /> },
+      { path: "resources/article/:articleId/:slug?", element: <ArticlesResourcesArticle /> },
 
       { path: "latest-news", element: <LatestNewsPage /> },
-      { path: "latest-news/:articleId", element: <LatestNewsArticle /> },
+      { path: "latest-news/:articleId/:slug?", element: <LatestNewsArticle /> },
 
       { path: "politics", element: <Politics /> },
-      { path: "politics/article/:articleId", element: <PoliticsArticle /> },
+      { path: "politics/article/:articleId/:slug?", element: <PoliticsArticle /> },
 
       { path: "business", element: <Business /> },
-      { path: "business/article/:articleId", element: <BusinessArticle /> },
+      { path: "business/article/:articleId/:slug?", element: <BusinessArticle /> },
 
       { path: "technology", element: <Technology /> },
-      { path: "technology/article/:articleId", element: <TechnologyArticle /> },
+      { path: "technology/article/:articleId/:slug?", element: <TechnologyArticle /> },
 
       { path: "health", element: <Health /> },
-      { path: "health/article/:articleId", element: <HealthArticle /> },
+      { path: "health/article/:articleId/:slug?", element: <HealthArticle /> },
 
       { path: "sports", element: <Sports /> },
-      { path: "sports/article/:articleId", element: <SportsArticle /> },
+      { path: "sports/article/:articleId/:slug?", element: <SportsArticle /> },
       { path: "sports/category/:categoryId", element: <SportsCategory /> },
 
       { path: "culture", element: <Culture /> },
-      { path: "culture/article/:articleId", element: <CultureArticle /> },
+      { path: "culture/article/:articleId/:slug?", element: <CultureArticle /> },
 
       { path: "podcast", element: <Podcast /> },
 

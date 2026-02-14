@@ -24,6 +24,12 @@ function escapeRegex(input = "") {
   return String(input).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function requireEditorOrSuperAdmin(req, res, next) {
+  const role = req.admin?.role;
+  if (role === "editor" || role === "super_admin") return next();
+  return res.status(403).json({ message: "Forbidden" });
+}
+
 // Public: subscribe email
 // POST /api/subscribers/subscribe
 router.post("/subscribe", subscribeRateLimiter, async (req, res) => {
@@ -51,9 +57,9 @@ router.post("/subscribe", subscribeRateLimiter, async (req, res) => {
   }
 });
 
-// Admin list
+// Admin list (editor + super_admin)
 // GET /api/subscribers/list?page=1&limit=25&q=gmail
-router.get("/list", requireAdmin, async (req, res) => {
+router.get("/list", requireAdmin, requireEditorOrSuperAdmin, async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query?.page || 1));
     const limit = Math.max(1, Math.min(100, Number(req.query?.limit || 25)));
@@ -88,9 +94,9 @@ router.get("/list", requireAdmin, async (req, res) => {
   }
 });
 
-// Admin export (Excel-compatible CSV)
+// Admin export (editor + super_admin)
 // GET /api/subscribers/export.csv?q=gmail
-router.get("/export.csv", requireAdmin, async (req, res) => {
+router.get("/export.csv", requireAdmin, requireEditorOrSuperAdmin, async (req, res) => {
   try {
     const q = String(req.query?.q || "").trim().toLowerCase().slice(0, 100);
     const filter = q
@@ -113,11 +119,7 @@ router.get("/export.csv", requireAdmin, async (req, res) => {
     const header = "Email,Source,Subscribed At";
     const lines = rows.map((r) => {
       const subscribedAt = r.createdAt ? new Date(r.createdAt).toISOString() : "";
-      return [
-        escapeCell(r.email || ""),
-        escapeCell(r.source || "website"),
-        escapeCell(subscribedAt),
-      ].join(",");
+      return [escapeCell(r.email || ""), escapeCell(r.source || "website"), escapeCell(subscribedAt)].join(",");
     });
 
     const csv = [header, ...lines].join("\n");
@@ -133,9 +135,9 @@ router.get("/export.csv", requireAdmin, async (req, res) => {
   }
 });
 
-// Admin stats
+// Admin stats (editor + super_admin)
 // GET /api/subscribers/stats?days=30
-router.get("/stats", requireAdmin, async (req, res) => {
+router.get("/stats", requireAdmin, requireEditorOrSuperAdmin, async (req, res) => {
   try {
     const requestedDays = Number(req.query?.days || 30);
     const days = Number.isFinite(requestedDays) ? Math.max(7, Math.min(365, requestedDays)) : 30;

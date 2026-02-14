@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -41,6 +43,7 @@ function BusinessArticle() {
   }, [API]);
 
   const article = useMemo(() => stories.find((item) => item.id === articleId), [stories, articleId]);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -63,6 +66,19 @@ function BusinessArticle() {
     title: article?.title,
     category: article?.tag || "Business",
     section: article?.scope || "Business",
+  });
+
+  const resolvedImage = article ? resolveImageUrl(article.image) : "";
+  const canonicalPath = article
+    ? `/business/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/business";
+
+  useSeo({
+    title: article?.title || "Business Article",
+    description: article?.summary || article?.body || "Business news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (!article) {

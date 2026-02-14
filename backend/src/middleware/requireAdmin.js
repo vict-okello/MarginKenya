@@ -30,11 +30,13 @@ export default function requireAdmin(req, res, next) {
       audience,
     });
 
-    if (!decoded || decoded.role !== "admin") {
-      return res.status(403).json({ message: "Forbidden: admin only" });
+    // allow multiple roles (role-based admin system)
+    const allowedRoles = ["super_admin", "editor", "writer"];
+    if (!decoded || !allowedRoles.includes(decoded.role)) {
+      return res.status(403).json({ message: "Forbidden: admin role required" });
     }
 
-    req.admin = decoded;
+    req.admin = decoded; // { email, role, iat, exp, ... }
     return next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });

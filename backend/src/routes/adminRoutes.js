@@ -5,6 +5,8 @@ import Event from "../models/Event.js";
 import createRateLimiter from "../middleware/rateLimit.js";
 import requireAdmin from "../middleware/requireAdmin.js";
 import { readFallbackEvents } from "../utils/eventFallbackStore.js";
+import adminInvitesRoutes from "./adminInvitesRoutes.js";
+
 
 const router = express.Router();
 const loginRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 8 });
@@ -182,6 +184,7 @@ function signAdminToken(payload) {
   if (!secret) throw new Error("JWT_SECRET is missing in .env");
   const issuer = process.env.JWT_ISSUER || "marginkenya-admin";
   const audience = process.env.JWT_AUDIENCE || "marginkenya-dashboard";
+
   return jwt.sign(payload, secret, {
     algorithm: "HS256",
     expiresIn: "7d",
@@ -198,7 +201,7 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(left, right);
 }
 
-// POST /api/admin/login
+// POST /api/admin/login   NOW RETURNS ROLE: super_admin/editor/writer
 router.post("/login", loginRateLimiter, (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
   const password = String(req.body?.password || "");
@@ -211,27 +214,50 @@ router.post("/login", loginRateLimiter, (req, res) => {
     return res.status(400).json({ message: "Invalid credentials format" });
   }
 
-  const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+  const accounts = [
+    {
+      role: "super_admin",
+      email: String(process.env.SUPER_ADMIN_EMAIL || "").trim().toLowerCase(),
+      password: process.env.SUPER_ADMIN_PASSWORD || "",
+    },
+    {
+      role: "editor",
+      email: String(process.env.EDITOR_EMAIL || "").trim().toLowerCase(),
+      password: process.env.EDITOR_PASSWORD || "",
+    },
+    {
+      role: "writer",
+      email: String(process.env.WRITER_EMAIL || "").trim().toLowerCase(),
+      password: process.env.WRITER_PASSWORD || "",
+    },
+  ].filter((a) => a.email && a.password);
 
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    return res.status(500).json({ message: "Admin auth is not configured" });
+  if (!accounts.length) {
+    return res.status(500).json({ message: "Role-based admin auth is not configured" });
   }
 
-  if (!safeEqual(email, ADMIN_EMAIL) || !safeEqual(password, ADMIN_PASSWORD)) {
+  const match = accounts.find(
+    (a) => safeEqual(email, a.email) && safeEqual(password, a.password)
+  );
+
+  if (!match) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
-  const token = signAdminToken({ email, role: "admin" });
+  const token = signAdminToken({ email, role: match.role });
 
   return res.json({
     token,
-    admin: { email, role: "admin" },
+    admin: { email, role: match.role },
   });
 });
 
-// GET /api/admin/stats (PROTECTED)
+// GET /api/admin/stats (PROTECTED)  Only editor + super_admin can view stats
 router.get("/stats", requireAdmin, async (req, res) => {
+  if (!["super_admin", "editor"].includes(req.admin?.role)) {
+    return res.status(403).json({ message: "Role not allowed to view stats" });
+  }
+
   try {
     const now = new Date();
     const start = new Date(now);
@@ -259,5 +285,7 @@ router.get("/stats", requireAdmin, async (req, res) => {
     return res.status(200).json(emptyStatsPayload());
   }
 });
+
+router.use(adminInvitesRoutes);
 
 export default router;

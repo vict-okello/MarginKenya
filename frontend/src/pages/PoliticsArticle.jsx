@@ -5,6 +5,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionImage = motion.img;
@@ -25,6 +27,7 @@ function PoliticsArticle() {
   const { articleId } = useParams();
   const [deskData, setDeskData] = useState({ local: [], international: [] });
   const [loading, setLoading] = useState(true);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const resolveImageUrl = useMemo(() => {
     const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
@@ -85,6 +88,19 @@ function PoliticsArticle() {
     title: article?.title,
     category: article?.tag || "Politics",
     section: article?.scope || "Politics",
+  });
+
+  const resolvedImage = article ? resolveImageUrl(article.image) : "";
+  const canonicalPath = article
+    ? `/politics/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/politics";
+
+  useSeo({
+    title: article?.title || "Politics Article",
+    description: article?.summary || article?.content || article?.body || "Politics news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (loading) {

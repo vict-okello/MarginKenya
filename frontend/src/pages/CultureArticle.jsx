@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -17,6 +19,7 @@ function CultureArticle() {
   const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
   const [articles, setArticles] = useState(cultureArticles);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     let mounted = true;
@@ -58,6 +61,19 @@ function CultureArticle() {
     title: article?.title,
     category: "Culture",
     section: "Culture",
+  });
+
+  const resolvedImage = article ? resolveImageUrl(article.image) : "";
+  const canonicalPath = article
+    ? `/culture/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/culture";
+
+  useSeo({
+    title: article?.title || "Culture Article",
+    description: article?.summary || article?.body || "Culture news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (!article) {

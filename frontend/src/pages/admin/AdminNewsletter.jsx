@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -52,6 +53,26 @@ function ChartTooltip({ active, payload, label }) {
 export default function AdminNewsletter() {
   const API = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("adminToken");
+  const navigate = useNavigate();
+
+  const adminUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("adminUser") || "null");
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const role = adminUser?.role || "writer";
+  const canView = role === "editor" || role === "super_admin";
+
+  useEffect(() => {
+    if (!token) navigate("/admin-login", { replace: true });
+  }, [token, navigate]);
+
+  useEffect(() => {
+    if (token && !canView) navigate("/admin", { replace: true });
+  }, [token, canView, navigate]);
 
   const [days, setDays] = useState(30);
   const [chartMode, setChartMode] = useState("area");
@@ -68,6 +89,8 @@ export default function AdminNewsletter() {
   const pageSize = 20;
 
   async function loadStats() {
+    if (!canView) return;
+
     if (!API) {
       setError("VITE_API_URL is missing.");
       return;
@@ -80,6 +103,12 @@ export default function AdminNewsletter() {
       const res = await fetch(`${API}/api/subscribers/stats?days=${days}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+
+      if (res.status === 401 || res.status === 403) {
+        setError("Not authorized.");
+        return;
+      }
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.message || "Failed to load newsletter stats");
       setStats(json);
@@ -91,6 +120,7 @@ export default function AdminNewsletter() {
   }
 
   async function loadEmails(targetPage = 1, targetSearch = search) {
+    if (!canView) return;
     if (!API) return;
     if (!token) return;
 
@@ -105,6 +135,12 @@ export default function AdminNewsletter() {
       const res = await fetch(`${API}/api/subscribers/list?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (res.status === 401 || res.status === 403) {
+        setError("Not authorized.");
+        return;
+      }
+
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json?.message || "Failed to load subscribers list");
 
@@ -120,6 +156,8 @@ export default function AdminNewsletter() {
   }
 
   async function exportSubscribers() {
+    if (!canView) return;
+
     if (!API) {
       setError("VITE_API_URL is missing.");
       return;
@@ -136,6 +174,11 @@ export default function AdminNewsletter() {
       const res = await fetch(`${API}/api/subscribers/export.csv?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (res.status === 401 || res.status === 403) {
+        setError("Not authorized.");
+        return;
+      }
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
@@ -157,14 +200,16 @@ export default function AdminNewsletter() {
   }
 
   useEffect(() => {
+    if (!canView) return;
     loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [days, API]);
+  }, [days, API, canView]);
 
   useEffect(() => {
+    if (!canView) return;
     loadEmails(1, search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [API, search]);
+  }, [API, search, canView]);
 
   const series = useMemo(() => {
     const raw = Array.isArray(stats?.series) ? stats.series : [];
@@ -202,6 +247,8 @@ export default function AdminNewsletter() {
     if (totals.today < totals.avg * 0.75) return "Today is below your average signup rate.";
     return "Today is near your average signup rate.";
   }, [series, totals.today, totals.avg]);
+
+  if (!token || !canView) return null;
 
   return (
     <section className="mx-auto w-full max-w-6xl space-y-4">
@@ -246,7 +293,11 @@ export default function AdminNewsletter() {
 
       <div className="grid gap-3 md:grid-cols-4">
         <StatCard title="Total Subscribers" value={stats ? formatK(stats.totalSubscribers) : "-"} sub="All time" />
-        <StatCard title="New In Range" value={stats ? formatK(stats.newSubscribersInRange) : "-"} sub={`Last ${days} days`} />
+        <StatCard
+          title="New In Range"
+          value={stats ? formatK(stats.newSubscribersInRange) : "-"}
+          sub={`Last ${days} days`}
+        />
         <StatCard title="Last 7 Days" value={stats ? formatK(stats.last7) : "-"} sub="Current weekly window" />
         <StatCard title="Growth" value={stats ? growth.value : "-"} sub={growth.sub} tone={growth.tone} />
       </div>
@@ -263,7 +314,9 @@ export default function AdminNewsletter() {
               type="button"
               onClick={() => setChartMode("area")}
               className={`h-9 rounded-lg border px-3 text-sm ${
-                chartMode === "area" ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 bg-white text-zinc-900"
+                chartMode === "area"
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-300 bg-white text-zinc-900"
               }`}
             >
               Area
@@ -272,7 +325,9 @@ export default function AdminNewsletter() {
               type="button"
               onClick={() => setChartMode("bar")}
               className={`h-9 rounded-lg border px-3 text-sm ${
-                chartMode === "bar" ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 bg-white text-zinc-900"
+                chartMode === "bar"
+                  ? "border-zinc-900 bg-zinc-900 text-white"
+                  : "border-zinc-300 bg-white text-zinc-900"
               }`}
             >
               Bars
@@ -288,7 +343,14 @@ export default function AdminNewsletter() {
                 <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#52525b" }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#52525b" }} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="newSubs" stroke="#18181b" fill="#18181b" fillOpacity={0.18} dot={false} />
+                <Area
+                  type="monotone"
+                  dataKey="newSubs"
+                  stroke="#18181b"
+                  fill="#18181b"
+                  fillOpacity={0.18}
+                  dot={false}
+                />
               </AreaChart>
             ) : (
               <BarChart data={barsWindow} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>

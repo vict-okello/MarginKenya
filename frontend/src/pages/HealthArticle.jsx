@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -40,6 +42,7 @@ function HealthArticle() {
 
   const article = articles.find((item) => String(item.id) === String(articleId));
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -62,6 +65,19 @@ function HealthArticle() {
     title: article?.title,
     category: "Health",
     section: "Health",
+  });
+
+  const resolvedImage = article ? resolveImageUrl(article.image) : "";
+  const canonicalPath = article
+    ? `/health/article/${article.id}/${slugify(article.title || article.id)}`
+    : "/health";
+
+  useSeo({
+    title: article?.title || "Health Article",
+    description: article?.summary || article?.body || "Health news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (!article) {

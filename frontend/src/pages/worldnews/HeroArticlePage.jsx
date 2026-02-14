@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import NotFoundMessage from "../../components/NotFoundMessage";
 import useArticleViewTracker from "../../hooks/useArticleViewTracker";
 import useReadTracker from "../../hooks/useReadTracker";
+import useSeo from "../../hooks/useSeo";
+import slugify from "../../utils/slugify";
 import NewsletterBanner from "../NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -19,6 +21,7 @@ function isHttp(url) {
 export default function HeroArticlePage() {
   const API = import.meta.env.VITE_API_URL;
   const { id } = useParams();
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   const [article, setArticle] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -59,17 +62,26 @@ export default function HeroArticlePage() {
     };
   }, [API, id]);
 
+  const img = article?.imageUrl
+    ? isHttp(article.imageUrl)
+      ? article.imageUrl
+      : `${API}${article.imageUrl}`
+    : "";
+
+  const canonicalPath = `/hero/article/${id}/${slugify(article?.title || id)}`;
+  useSeo({
+    title: article?.title || "Hero Article",
+    description: article?.summary || article?.body || "World news article",
+    url: `${origin}${canonicalPath}`,
+    image: img,
+    type: "article",
+  });
+
   if (notFound) {
     return <NotFoundMessage backTo="/" backLabel="Back to Home" />;
   }
 
   if (!article) return null;
-
-  const img = article.imageUrl
-    ? isHttp(article.imageUrl)
-      ? article.imageUrl
-      : `${API}${article.imageUrl}`
-    : "";
 
   return (
     <MotionSection

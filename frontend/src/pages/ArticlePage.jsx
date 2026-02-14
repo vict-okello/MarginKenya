@@ -4,6 +4,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useReadTracker from "../hooks/useReadTracker";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -14,6 +16,18 @@ const MotionText = motion.p;
 export default function ArticlePage({ data, backTo = "/", backLabel = "Back", sectionName = "" }) {
   const { articleId } = useParams();
   const article = data.find((item) => item.id === articleId);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const sectionBase = backTo === "/" ? "/worldnews" : backTo;
+  const canonicalPath = article
+    ? `${sectionBase}/article/${article.id}/${slugify(article.title || article.id)}`
+    : "";
+  const seoImage = article?.image
+    ? /^https?:\/\//i.test(article.image)
+      ? article.image
+      : article.image.startsWith("/")
+        ? `${origin}${article.image}`
+        : article.image
+    : "";
 
   useReadTracker({
     articleId: article?.id,
@@ -29,6 +43,14 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
     title: article?.title,
     category: article?.category || sectionName,
     section: sectionName,
+  });
+
+  useSeo({
+    title: article ? `${article.title}` : `${sectionName} Article`,
+    description: article?.summary || article?.body || `${sectionName} news article`,
+    url: article ? `${origin}${canonicalPath}` : `${origin}${sectionBase}`,
+    image: seoImage,
+    type: "article",
   });
 
   if (!article) {

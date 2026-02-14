@@ -6,6 +6,8 @@ import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
+import useSeo from "../hooks/useSeo";
+import slugify from "../utils/slugify";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -36,6 +38,7 @@ function LatestNewsArticle() {
   const { articleId } = useParams();
   const [articles, setArticles] = useState(latestNewsArticles);
   const [loading, setLoading] = useState(true);
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     let mounted = true;
@@ -89,6 +92,18 @@ function LatestNewsArticle() {
     title: article?.title,
     category: article?.category || "Latest News",
     section: "Latest News",
+  });
+
+  const canonicalPath = article
+    ? `/latest-news/${article.id}/${slugify(article.title || article.id)}`
+    : "/latest-news";
+
+  useSeo({
+    title: article?.title || "Latest News Article",
+    description: article?.summary || article?.body || "Latest news article",
+    url: `${origin}${canonicalPath}`,
+    image: resolvedImage,
+    type: "article",
   });
 
   if (loading) {
