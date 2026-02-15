@@ -54,7 +54,7 @@ function LatestNewsArticle() {
         const data = await res.json();
         if (!res.ok) return;
         const list = normalizeLatestNews(data);
-        if (mounted && list.length > 0) setArticles(list);
+        if (mounted) setArticles(list);
       } catch {
         // Keep static fallback data when API is unavailable.
       } finally {
@@ -150,7 +150,7 @@ function LatestNewsArticle() {
           {article.category} - {article.date}
         </MotionText>
         <MotionTitle
-          className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]"
+          className="article-title pt-2 font-semibold text-black"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.2 }}
@@ -158,7 +158,7 @@ function LatestNewsArticle() {
           {article.title}
         </MotionTitle>
         <MotionText
-          className="pt-5 text-lg leading-relaxed text-black/75 md:text-xl"
+          className="article-content pt-5 text-black/75"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.28 }}
@@ -166,7 +166,7 @@ function LatestNewsArticle() {
           {article.summary}
         </MotionText>
         <MotionText
-          className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg"
+          className="article-content whitespace-pre-line pt-6 text-black/85"
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.36 }}

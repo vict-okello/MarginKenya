@@ -7,7 +7,7 @@
     "date": "Jan 25, 2025",
     "summary": "From immersive computing to next-generation interfaces, the technology stack is shifting from utility-first tools into full experience ecosystems.",
     "body": "Teams are now shipping products that blend AI, connectivity, and real-time 3D interactions. As adoption rises, companies that invest in secure infrastructure and practical user education are more likely to scale these innovations successfully.",
-    "image": "/src/assets/hero1.png"
+    "image": "/uploads/defaults/hero1.png"
   },
   {
     "id": "smart-homes-living-spaces",
@@ -17,7 +17,7 @@
     "date": "Feb 10, 2025",
     "summary": "Connected homes are growing beyond convenience and becoming platforms for safety, sustainability, and personalized automation.",
     "body": "Modern smart-home systems now coordinate lighting, climate, and appliance behavior through sensor-driven rules. The next wave adds predictive routines that anticipate user habits while keeping privacy controls transparent.",
-    "image": "/src/assets/world.jpg"
+    "image": "/uploads/defaults/world.jpg"
   },
   {
     "id": "future-of-5g",
@@ -27,7 +27,7 @@
     "date": "Jan 25, 2025",
     "summary": "5G deployments are unlocking lower latency for cloud gaming, telemedicine, and distributed industrial systems.",
     "body": "As network coverage improves, developers are designing apps around real-time responsiveness instead of offline buffering. This shift is especially visible in logistics, manufacturing monitoring, and location-aware consumer products.",
-    "image": "/src/assets/technology.jpg"
+    "image": "/uploads/defaults/technology.jpg"
   },
   {
     "id": "cybersecurity-digital-breaches",
@@ -37,7 +37,7 @@
     "date": "Jan 25, 2025",
     "summary": "Organizations are balancing rapid innovation with stronger endpoint and identity protections.",
     "body": "Security teams are prioritizing zero-trust controls, multi-factor authentication, and continuous anomaly detection. Incident-response playbooks are also being rehearsed more frequently to reduce recovery time.",
-    "image": "/src/assets/health2.png"
+    "image": "/uploads/defaults/health2.png"
   },
   {
     "id": "vr-beyond-entertainment",
@@ -47,7 +47,7 @@
     "date": "Jan 25, 2025",
     "summary": "Virtual reality is now supporting practical training, remote collaboration, and richer digital storytelling.",
     "body": "Educational institutions and enterprise teams are using VR simulations to improve hands-on learning outcomes. At the same time, creators are exploring interactive formats that blur the boundary between media and participation.",
-    "image": "/src/assets/sport.jpg"
+    "image": "/uploads/defaults/sport.jpg"
   },
   {
     "id": "edge-ai-devices",
@@ -57,7 +57,7 @@
     "date": "Jan 22, 2025",
     "summary": "On-device AI is reducing latency and improving privacy for everyday digital services.",
     "body": "By processing tasks locally, edge AI helps mobile apps and smart devices respond faster while sending less data to centralized servers. This architecture is becoming central in wearables, cameras, and real-time analytics tools.",
-    "image": "/src/assets/technology.jpg"
+    "image": "/uploads/defaults/technology.jpg"
   },
   {
     "id": "green-data-centers",
@@ -67,7 +67,7 @@
     "date": "Jan 20, 2025",
     "summary": "Cloud providers are redesigning infrastructure to lower energy use and carbon impact.",
     "body": "Operators are adopting efficient cooling systems, cleaner energy contracts, and hardware reuse cycles. These efforts are helping organizations expand digital services while improving sustainability metrics.",
-    "image": "/src/assets/world.jpg"
+    "image": "/uploads/defaults/world.jpg"
   },
   {
     "id": "digital-twins-industry",
@@ -77,7 +77,7 @@
     "date": "Jan 18, 2025",
     "summary": "Virtual replicas of real assets are helping teams test scenarios before real-world changes.",
     "body": "Manufacturing and logistics teams use digital twins to simulate performance, detect risks, and optimize maintenance schedules. The result is better reliability, lower downtime, and faster planning cycles.",
-    "image": "/src/assets/health2.png"
+    "image": "/uploads/defaults/health2.png"
   },
   {
     "id": "robotics-logistics-automation",
@@ -87,6 +87,6 @@
     "date": "Jan 16, 2025",
     "summary": "Warehouses are deploying adaptive robotics to improve throughput and reduce repetitive tasks.",
     "body": "AI-driven robotics platforms are improving pick-and-pack workflows and real-time inventory movement. Teams are pairing these systems with predictive maintenance to keep operations reliable during peak demand cycles.",
-    "image": "/src/assets/sport.jpg"
+    "image": "/uploads/defaults/sport.jpg"
   }
 ]

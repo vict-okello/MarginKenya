@@ -8,7 +8,7 @@
     "channel": "Politics & Business",
     "description": "A tactical breakdown of policy moves and capital flows shaping the week ahead for East Africa.",
     "color": "from-[#1f2937] to-[#0f172a]",
-    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "watchUrl": ""
   },
   {
     "id": "pod-tech-policy",
@@ -19,7 +19,7 @@
     "channel": "Technology",
     "description": "How regulators, startups, and enterprise teams are negotiating speed, safety, and trust.",
     "color": "from-[#0f766e] to-[#134e4a]",
-    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "watchUrl": ""
   },
   {
     "id": "pod-health-access",
@@ -30,7 +30,7 @@
     "channel": "Health",
     "description": "A field-report format covering telehealth, mobile clinics, and digital triage in underserved regions.",
     "color": "from-[#7f1d1d] to-[#450a0a]",
-    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "watchUrl": ""
   },
   {
     "id": "pod-culture-signal",
@@ -41,7 +41,7 @@
     "channel": "Culture",
     "description": "Creators and editors discuss narrative, identity, and the economics of modern cultural publishing.",
     "color": "from-[#312e81] to-[#1e1b4b]",
-    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "watchUrl": ""
   },
   {
     "id": "pod-sports-sunday",
@@ -52,6 +52,6 @@
     "channel": "Sports",
     "description": "A concise review of weekend performances and what to watch before the next fixtures.",
     "color": "from-[#9a3412] to-[#7c2d12]",
-    "watchUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "watchUrl": ""
   }
 ]

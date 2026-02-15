@@ -256,10 +256,10 @@ export default function AdminNewsletter() {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-black uppercase tracking-[0.04em] text-zinc-900 md:text-4xl">
-              Newsletter
+              Newsletter Edits
             </h1>
             <p className="mt-1 text-sm text-zinc-600">
-              Monitor subscriber growth and newsletter momentum.
+              Edit newsletter settings while monitoring subscriber growth and momentum.
             </p>
           </div>
 

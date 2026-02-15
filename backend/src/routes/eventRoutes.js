@@ -2,7 +2,6 @@ import express from "express";
 import Event from "../models/Event.js";
 import requireAdmin from "../middleware/requireAdmin.js";
 import createRateLimiter from "../middleware/rateLimit.js";
-import { appendFallbackEvent, readFallbackEvents } from "../utils/eventFallbackStore.js";
 
 const router = express.Router();
 const ingestRateLimiter = createRateLimiter({ windowMs: 5 * 60 * 1000, max: 600 });
@@ -70,21 +69,16 @@ router.post("/", ingestRateLimiter, async (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    let event = null;
-    try {
-      event = await Event.create(payload);
-    } catch {
-      appendFallbackEvent(payload);
-    }
+    const event = await Event.create(payload);
 
     return res.json({
       ok: true,
-      id: event?._id || `fallback-${Date.now()}`,
-      source: event ? "db" : "fallback",
+      id: event?._id || "",
+      source: "db",
     });
   } catch (err) {
     console.error("POST /api/events failed:", err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Failed to store event" });
   }
 });
 
@@ -94,17 +88,10 @@ router.post("/", ingestRateLimiter, async (req, res) => {
  */
 router.get("/recent", requireAdmin, debugRateLimiter, async (req, res) => {
   try {
-    let events = [];
-    try {
-      events = await Event.find()
-        .sort({ createdAt: -1 })
-        .limit(30)
-        .lean();
-    } catch {
-      events = readFallbackEvents()
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 30);
-    }
+    const events = await Event.find()
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .lean();
 
     return res.json(
       events.map((e) => ({

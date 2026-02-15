@@ -17,19 +17,19 @@
       "title": "BUSINESS",
       "blurb": "Markets, startups, and policy that shape the economy",
       "to": "/business",
-      "imageUrl": ""
+      "imageUrl": "/uploads/hero/stories/d519d010f49c2cc78e72488ab8616e57.png"
     },
     {
       "title": "SPORTS",
       "blurb": "Major updates across the sports world",
       "to": "/sports",
-      "imageUrl": "/uploads/hero/stories/1770897025793-218737089.jpg"
+      "imageUrl": "/uploads/hero/stories/fb6cf9c986bb9aace4fbd229951c6da2.png"
     }
   ],
   "featured": {
     "imageUrl": "/uploads/hero/featured/1770822976114-173351161.png",
     "category": "Health",
-    "author": "Edgar Kore",
+    "author": "Edgar Victor",
     "date": "Feb 7, 2026",
     "readTime": "9 min read",
     "headline": "Health Foundation & Science",

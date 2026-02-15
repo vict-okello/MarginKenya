@@ -628,5 +628,61 @@
     "ip": "::1",
     "createdAt": "2026-02-15T12:51:48.918Z",
     "_source": "fallback"
+  },
+  {
+    "type": "page_view",
+    "sessionId": "a3073d50-a725-4f3e-9a95-4b756244fd01",
+    "path": "/",
+    "articleId": "",
+    "title": "",
+    "category": "",
+    "section": "",
+    "readTimeSec": 0,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "createdAt": "2026-02-15T13:06:25.096Z",
+    "_source": "fallback"
+  },
+  {
+    "type": "page_view",
+    "sessionId": "a3073d50-a725-4f3e-9a95-4b756244fd01",
+    "path": "/",
+    "articleId": "",
+    "title": "",
+    "category": "",
+    "section": "",
+    "readTimeSec": 0,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "createdAt": "2026-02-15T13:06:25.144Z",
+    "_source": "fallback"
+  },
+  {
+    "type": "page_view",
+    "sessionId": "a3073d50-a725-4f3e-9a95-4b756244fd01",
+    "path": "/",
+    "articleId": "",
+    "title": "",
+    "category": "",
+    "section": "",
+    "readTimeSec": 0,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "createdAt": "2026-02-15T13:10:11.028Z",
+    "_source": "fallback"
+  },
+  {
+    "type": "page_view",
+    "sessionId": "a3073d50-a725-4f3e-9a95-4b756244fd01",
+    "path": "/",
+    "articleId": "",
+    "title": "",
+    "category": "",
+    "section": "",
+    "readTimeSec": 0,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "createdAt": "2026-02-15T13:10:11.075Z",
+    "_source": "fallback"
   }
 ]

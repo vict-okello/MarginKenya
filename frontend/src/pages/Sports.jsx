@@ -44,20 +44,22 @@ export default function Sports() {
   const [categoryStart, setCategoryStart] = useState(0);
   const [stories, setStories] = useState(() => normalizeStories(sportsArticles));
   const [categories, setCategories] = useState(() => normalizeCategories(sportsCategories));
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
     async function loadSports() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/sports`);
         const json = await res.json().catch(() => []);
         if (!res.ok) return;
 
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-        if (mounted && next.length > 0) setStories(normalizeStories(next));
+        if (mounted) setStories(normalizeStories(next));
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live sports feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -76,9 +78,9 @@ export default function Sports() {
         const json = await res.json().catch(() => []);
         if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-        if (mounted && next.length > 0) setCategories(normalizeCategories(next));
+        if (mounted) setCategories(normalizeCategories(next));
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live sports categories are unavailable. Showing fallback content.");
       }
     }
 
@@ -170,6 +172,12 @@ export default function Sports() {
             ))}
           </div>
         </div>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         <MotionDiv
           variants={containerVariants}

@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 const dataDir = path.join(__dirname, "../data");
 const latestNewsFile = path.join(dataDir, "latestNews.json");
-const uploadsDir = path.join(__dirname, "../uploads/latest-news");
+const uploadsDir = path.join(__dirname, "../../uploads/latest-news");
 
 function ensureDirs() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });

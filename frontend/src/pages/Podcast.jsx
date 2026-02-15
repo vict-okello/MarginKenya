@@ -6,76 +6,14 @@ const MotionSection = motion.section;
 const MotionDiv = motion.div;
 const MotionButton = motion.button;
 
-const fallbackEpisodes = [
-  {
-    id: "pod-market-after-hours",
-    title: "After Hours: Markets, Elections, and What Changes Next",
-    host: "Host: Amina Otieno",
-    duration: "42 min",
-    mood: "Analysis",
-    channel: "Politics & Business",
-    description:
-      "A tactical breakdown of policy moves and capital flows shaping the week ahead for East Africa.",
-    color: "from-[#1f2937] to-[#0f172a]",
-    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: "pod-tech-policy",
-    title: "Code & Cabinet: The New Rules for AI Adoption",
-    host: "Host: Daniel Kimani",
-    duration: "35 min",
-    mood: "Strategy",
-    channel: "Technology",
-    description:
-      "How regulators, startups, and enterprise teams are negotiating speed, safety, and trust.",
-    color: "from-[#0f766e] to-[#134e4a]",
-    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: "pod-health-access",
-    title: "Care Lines: Expanding Access Beyond Major Cities",
-    host: "Host: Leah Njeri",
-    duration: "28 min",
-    mood: "Explainer",
-    channel: "Health",
-    description:
-      "A field-report format covering telehealth, mobile clinics, and digital triage in underserved regions.",
-    color: "from-[#7f1d1d] to-[#450a0a]",
-    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: "pod-culture-signal",
-    title: "Culture Signal: Why Local Stories Travel Globally",
-    host: "Host: Brian Mugo",
-    duration: "31 min",
-    mood: "Interview",
-    channel: "Culture",
-    description:
-      "Creators and editors discuss narrative, identity, and the economics of modern cultural publishing.",
-    color: "from-[#312e81] to-[#1e1b4b]",
-    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-  {
-    id: "pod-sports-sunday",
-    title: "Sunday Tape: Tactics, Transfers, and Team Building",
-    host: "Host: Jake W.",
-    duration: "39 min",
-    mood: "Recap",
-    channel: "Sports",
-    description:
-      "A concise review of weekend performances and what to watch before the next fixtures.",
-    color: "from-[#9a3412] to-[#7c2d12]",
-    watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  },
-];
-
 const moods = ["All", "Analysis", "Strategy", "Explainer", "Interview", "Recap"];
 function Podcast() {
   const API = import.meta.env.VITE_API_URL;
   const [activeMood, setActiveMood] = useState("All");
-  const [episodes, setEpisodes] = useState(fallbackEpisodes);
-  const [activeEpisodeId, setActiveEpisodeId] = useState(fallbackEpisodes[0].id);
+  const [episodes, setEpisodes] = useState([]);
+  const [activeEpisodeId, setActiveEpisodeId] = useState("");
   const [visibleLibraryCount, setVisibleLibraryCount] = useState(2);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -86,16 +24,18 @@ function Podcast() {
         const json = await res.json();
         if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-        if (mounted && next.length > 0) {
+        if (mounted) {
           setEpisodes(next);
-          setActiveEpisodeId(next[0]?.id || fallbackEpisodes[0].id);
+          setActiveEpisodeId(next[0]?.id || "");
+          setLoadError("");
         }
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Podcast feed is unavailable right now.");
       }
     }
 
     if (API) loadPodcast();
+    else setLoadError("VITE_API_URL is missing.");
     return () => {
       mounted = false;
     };
@@ -107,8 +47,10 @@ function Podcast() {
   );
 
   const activeEpisode =
-    filteredEpisodes.find((episode) => episode.id === activeEpisodeId) || filteredEpisodes[0] || episodes[0] || fallbackEpisodes[0];
-  const queueEpisodes = filteredEpisodes.filter((episode) => episode.id !== activeEpisode.id).slice(0, 3);
+    filteredEpisodes.find((episode) => episode.id === activeEpisodeId) || filteredEpisodes[0] || episodes[0] || null;
+  const queueEpisodes = activeEpisode
+    ? filteredEpisodes.filter((episode) => episode.id !== activeEpisode.id).slice(0, 3)
+    : [];
   const visibleLibraryEpisodes = filteredEpisodes.slice(0, visibleLibraryCount);
   const canLoadMoreLibrary = visibleLibraryCount < filteredEpisodes.length;
 
@@ -149,7 +91,7 @@ function Podcast() {
                 setActiveMood(mood);
                 setVisibleLibraryCount(2);
                 const nextEpisodes = mood === "All" ? episodes : episodes.filter((episode) => episode.mood === mood);
-                selectEpisode(nextEpisodes[0]?.id || episodes[0]?.id || fallbackEpisodes[0].id);
+                selectEpisode(nextEpisodes[0]?.id || episodes[0]?.id || "");
               }}
               className={`rounded border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] transition ${
                 activeMood === mood
@@ -164,41 +106,59 @@ function Podcast() {
         </div>
 
         <div className="mt-5 grid gap-5 lg:grid-cols-[1.45fr_0.8fr]">
-          <MotionDiv
-            key={activeEpisode.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className={`rounded-2xl border border-black/20 bg-gradient-to-br ${activeEpisode.color} p-5 text-white`}
-          >
-            <p className="text-xs uppercase tracking-[0.14em] text-white/80">Featured Episode</p>
-            <h2 className="pt-2 text-3xl leading-tight md:text-4xl">{activeEpisode.title}</h2>
-            <p className="pt-2 text-sm text-white/75">
-              {activeEpisode.host} <span className="px-2">-</span> {activeEpisode.channel}
-              <span className="px-2">-</span>
-              {activeEpisode.duration}
-            </p>
-            <p className="max-w-3xl pt-4 text-white/85">{activeEpisode.description}</p>
+          {activeEpisode ? (
+            <MotionDiv
+              key={activeEpisode.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className={`rounded-2xl border border-black/20 bg-gradient-to-br ${activeEpisode.color} p-5 text-white`}
+            >
+              <p className="text-xs uppercase tracking-[0.14em] text-white/80">Featured Episode</p>
+              <h2 className="pt-2 text-3xl leading-tight md:text-4xl">{activeEpisode.title}</h2>
+              <p className="pt-2 text-sm text-white/75">
+                {activeEpisode.host} <span className="px-2">-</span> {activeEpisode.channel}
+                <span className="px-2">-</span>
+                {activeEpisode.duration}
+              </p>
+              <p className="max-w-3xl pt-4 text-white/85">{activeEpisode.description}</p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              <a
-                href={activeEpisode.watchUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-black"
-              >
-                Watch Episode
-              </a>
-              <a
-                href={activeEpisode.watchUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded border border-white/35 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white"
-              >
-                Open Link
-              </a>
-            </div>
-          </MotionDiv>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {activeEpisode.watchUrl ? (
+                  <>
+                    <a
+                      href={activeEpisode.watchUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-black"
+                    >
+                      Watch Episode
+                    </a>
+                    <a
+                      href={activeEpisode.watchUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded border border-white/35 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-white"
+                    >
+                      Open Link
+                    </a>
+                  </>
+                ) : (
+                  <p className="text-xs uppercase tracking-[0.12em] text-white/70">Watch link not set</p>
+                )}
+              </div>
+            </MotionDiv>
+          ) : (
+            <MotionDiv
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="rounded-2xl border border-black/20 bg-[#cfd4db] p-5 text-black/75"
+            >
+              <p className="text-sm uppercase tracking-[0.14em]">No podcast episodes published yet.</p>
+              {loadError ? <p className="pt-2 text-xs uppercase tracking-[0.12em] text-black/55">{loadError}</p> : null}
+            </MotionDiv>
+          )}
 
           <MotionDiv
             initial={{ opacity: 0, x: 12 }}
@@ -234,7 +194,7 @@ function Podcast() {
               whileHover={{ y: -3 }}
               whileTap={{ scale: 0.98 }}
               className={`rounded border p-4 text-left transition ${
-                episode.id === activeEpisode.id
+                episode.id === activeEpisode?.id
                   ? "border-black/50 bg-white/60"
                   : "border-black/15 bg-white/30 hover:border-black/30"
               }`}
@@ -245,15 +205,21 @@ function Podcast() {
               <h3 className="pt-2 text-2xl leading-tight text-black/85">{episode.title}</h3>
               <p className="pt-2 text-sm text-black/70">{episode.host}</p>
               <div className="pt-3">
-                <a
-                  href={episode.watchUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex rounded border border-black/30 bg-white/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-black/80 hover:bg-white"
-                >
-                  Watch Episode
-                </a>
+                {episode.watchUrl ? (
+                  <a
+                    href={episode.watchUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex rounded border border-black/30 bg-white/70 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-black/80 hover:bg-white"
+                  >
+                    Watch Episode
+                  </a>
+                ) : (
+                  <span className="inline-flex rounded border border-black/20 bg-white/60 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-black/50">
+                    Link not set
+                  </span>
+                )}
               </div>
             </MotionButton>
           ))}

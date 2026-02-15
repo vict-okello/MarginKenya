@@ -29,6 +29,7 @@ export default function Technology() {
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const [visibleCount, setVisibleCount] = useState(3);
   const [stories, setStories] = useState(technologyArticles);
+  const [loadError, setLoadError] = useState("");
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -45,13 +46,14 @@ export default function Technology() {
 
     async function loadTechnology() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/technology`);
         const json = await res.json();
         if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-        if (mounted && next.length > 0) setStories(next);
+        if (mounted) setStories(next);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live technology feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -123,6 +125,12 @@ export default function Technology() {
             ))}
           </div>
         </div>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         <MotionDiv
           variants={containerVariants}

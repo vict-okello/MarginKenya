@@ -33,8 +33,10 @@ import testEmailRoutes from "./routes/testEmailRoutes.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// uploads folder is at backend/uploads (one level above src)
+// Canonical uploads folder at backend/uploads (one level above src)
 const uploadsRoot = path.join(__dirname, "../uploads");
+// Legacy uploads folder at backend/src/uploads (older routes wrote here)
+const legacyUploadsRoot = path.join(__dirname, "./uploads");
 
 const app = express();
 const apiRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
@@ -88,10 +90,19 @@ app.use("/api", (req, res, next) => {
 });
 app.use("/api", apiRateLimit);
 
-//  Serve uploads from backend/uploads (correct path)
+// Serve uploads from backend/uploads first, then fallback to legacy backend/src/uploads.
 app.use(
   "/uploads",
   express.static(uploadsRoot, {
+    index: false,
+    dotfiles: "deny",
+    maxAge: "7d",
+    fallthrough: true,
+  })
+);
+app.use(
+  "/uploads",
+  express.static(legacyUploadsRoot, {
     index: false,
     dotfiles: "deny",
     maxAge: "7d",

@@ -137,7 +137,7 @@ function ArticlesResourcesArticle() {
         </MotionWrap>
 
         <MotionTitle
-          className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]"
+          className="article-title pt-6 font-semibold text-black"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, delay: 0.1, ease: "easeOut" }}
@@ -155,7 +155,7 @@ function ArticlesResourcesArticle() {
         </MotionText>
 
         <MotionText
-          className="whitespace-pre-line pt-5 text-lg leading-relaxed text-black/75 md:text-xl"
+          className="article-content whitespace-pre-line pt-5 text-black/75"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.36, delay: 0.22, ease: "easeOut" }}
@@ -164,7 +164,7 @@ function ArticlesResourcesArticle() {
         </MotionText>
 
         <MotionText
-          className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg"
+          className="article-content whitespace-pre-line pt-6 text-black/85"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.36, delay: 0.28, ease: "easeOut" }}

@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 const dataDir = path.join(__dirname, "../data");
 const resourcesFile = path.join(dataDir, "resources.json");
-const uploadsDir = path.join(__dirname, "../uploads/resources");
+const uploadsDir = path.join(__dirname, "../../uploads/resources");
 const ALLOWED_CATEGORIES = new Set(["Guide", "Research", "Toolkit", "Deep Dive"]);
 
 function ensureDirs() {

@@ -116,7 +116,7 @@ export default function HeroArticlePage() {
           </MotionWrap>
         ) : null}
 
-        <MotionTitle className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
+        <MotionTitle className="article-title pt-6 font-semibold text-black">
           {article.title}
         </MotionTitle>
 
@@ -128,11 +128,11 @@ export default function HeroArticlePage() {
         </MotionText>
 
         {article.summary ? (
-          <MotionText className="pt-4 text-black/75">{article.summary}</MotionText>
+          <MotionText className="article-content pt-4 text-black/75">{article.summary}</MotionText>
         ) : null}
 
         {article.body ? (
-          <MotionText className="pt-4 text-black/80 whitespace-pre-line">
+          <MotionText className="article-content pt-4 text-black/80 whitespace-pre-line">
             {article.body}
           </MotionText>
         ) : null}

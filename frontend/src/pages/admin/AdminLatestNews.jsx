@@ -249,11 +249,11 @@ export default function AdminLatestNewsPage() {
       className="bg-[#d8d8dc] px-4 py-12"
     >
       <div className="mx-auto w-full max-w-5xl pb-6">
-        <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
-          Latest News
+        <h1 className="text-3xl font-black uppercase tracking-[0.04em] text-black/90 md:text-4xl">
+          Latest News Edits
         </h1>
         <p className="pt-2 text-sm text-black/65">
-          Manage stories, update details, and publish changes to the live feed.
+          Edit stories, update details, and publish changes to the live feed.
         </p>
         <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
 

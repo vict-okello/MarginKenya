@@ -5,11 +5,25 @@
     "label": "World News",
     "date": "2026-02-12",
     "title": "US AI fight",
+    "summary": "The United States is currently engaged in an intense global race to dominate artificial intelligence (AI), often described as an “AI fight.” This competition involves both geopolitical rivals and domestic tech giants",
+    "content": "The United States is currently engaged in an intense global race to dominate artificial intelligence (AI), often described as an “AI fight.” This competition involves both geopolitical rivals and domestic tech giants. At the center of the global rivalry is the strategic tension between the U.S. and countries like China, where AI development is seen as critical for economic power, national security, and military advancement. American policymakers have responded with major investments, export controls on advanced semiconductor chips, and incentives to boost local manufacturing.\n\n\nDomestically, the competition includes leading companies such as OpenAI, Google, Microsoft, and Meta, all racing to build more powerful AI systems. The U.S. government has also introduced AI safety guidelines to balance innovation with security concerns. This AI fight is not just about technology—it is about influence, economic leadership, and shaping the future of global digital standards.",
     "image": "/uploads/worldnews/60313d4b485fc3575aee67b426df4c46.png",
     "articleId": "lead-worldnews",
     "status": "draft"
   },
   "stories": [
+    {
+      "id": "1dde6e3f-d712-4c86-8d3d-fdb7c90a5f8a",
+      "type": "side",
+      "label": "World News",
+      "date": "2026-02-15",
+      "title": "",
+      "to": "/worldnews",
+      "color": "bg-[#6358e8]",
+      "region": "all",
+      "image": "",
+      "status": "draft"
+    },
     {
       "id": "7cc9bf0f-6bf4-4da2-ae5c-61a41d6c6223",
       "type": "side",
@@ -19,7 +33,7 @@
       "to": "/sports",
       "color": "bg-[#6358e8]",
       "region": "all",
-      "image": "",
+      "image": "/uploads/worldnews/045c62bab3cfdd8e5eac0a911e459413.png",
       "status": "published"
     },
     {
@@ -31,7 +45,7 @@
       "to": "/sport",
       "color": "bg-[#6358e8]",
       "region": "all",
-      "image": "",
+      "image": "/uploads/worldnews/b6e8a90c360a1d28850d1259003d146f.png",
       "status": "published"
     },
     {
@@ -39,7 +53,7 @@
       "type": "side",
       "label": "World News",
       "date": "2026-02-12",
-      "title": "US ",
+      "title": "US",
       "to": "/worldnews",
       "color": "bg-[#6358e8]",
       "region": "all",

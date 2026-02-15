@@ -52,6 +52,8 @@ const makeLead = () => ({
   label: "World News",
   date: new Date().toISOString().slice(0, 10),
   title: "",
+  summary: "",
+  content: "",
   image: "",
   articleId: "lead-worldnews",
   status: "draft", // draft | published
@@ -258,16 +260,16 @@ export default function AdminWorld({ variant = "page" }) {
         <div className="flex flex-wrap items-end justify-between gap-3 pb-5">
           <div>
             {isPage ? (
-              <h1 className="text-5xl font-black uppercase tracking-[0.05em] text-black/90 md:text-6xl">
-                World News
+              <h1 className="text-3xl font-black uppercase tracking-[0.04em] text-black/90 md:text-4xl">
+                World News Edits
               </h1>
             ) : (
-              <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">World News</h2>
+              <h2 className="text-3xl font-black uppercase tracking-[0.04em] text-black/90">World News Edits</h2>
             )}
             <div className="mt-2 h-[3px] w-20 rounded bg-black/70" />
             {isPage ? (
               <p className="pt-3 text-sm text-black/65">
-                Global headlines, analysis, and the stories shaping markets and policy.
+                Edit global headlines, analysis, and stories shaping markets and policy.
               </p>
             ) : null}
           </div>
@@ -356,100 +358,120 @@ export default function AdminWorld({ variant = "page" }) {
           </div>
         )}
 
-        {/* PREVIEW GRID — MATCHES YOUR Worldnews.jsx */}
-        <MotionDiv
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="mt-5 grid gap-6 lg:grid-cols-[1.65fr_0.95fr]"
-        >
-          {/* Lead Preview (click to edit) */}
-          <MotionArticle variants={itemVariants}>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedKey("lead");
-                setPanelOpen(true);
-              }}
-              className="group block w-full text-left"
-            >
-              <div className="overflow-hidden rounded-[2px]">
-                <MotionImage
-                  src={
-                    buildPreviewImg(API, lead.image) ||
-                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect width='1200' height='700' fill='%23cfd5dc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='40'%3EUpload Lead Image%3C/text%3E%3C/svg%3E"
-                  }
-                  alt="World News lead"
-                  className="h-[250px] w-full object-cover sm:h-[360px] lg:h-[460px]"
-                  whileHover={{ scale: 1.03 }}
-                  transition={{ duration: 0.32 }}
-                />
-              </div>
+        {/* PREVIEW GRID */}
+        <div className="mt-5 rounded-2xl border border-black/15 bg-gradient-to-br from-[#e7ebf0] via-[#dfe5ec] to-[#d6dde6] p-4 md:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/65">Live Preview</p>
+            <p className="text-xs text-black/55">Click a card to edit it</p>
+          </div>
 
-              <motion.h2
-                className="pt-5 text-4xl font-semibold leading-tight text-black/90 transition group-hover:text-black md:text-[48px]"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.42, delay: 0.08, ease: "easeOut" }}
+          <MotionDiv
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_0.95fr]"
+          >
+            {/* Lead Preview */}
+            <MotionArticle variants={itemVariants}>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedKey("lead");
+                  setPanelOpen(true);
+                }}
+                className={`group block w-full overflow-hidden rounded-2xl border bg-white/80 text-left shadow-[0_10px_24px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 ${
+                  selectedKey === "lead" ? "border-black/45 ring-2 ring-black/20" : "border-black/15"
+                }`}
               >
-                {lead.title || "Set the lead headline"}
-              </motion.h2>
-
-              <motion.div
-                className="pt-4 text-xs uppercase tracking-wide text-black/55"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.36, delay: 0.12, ease: "easeOut" }}
-              >
-                <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">
-                  {lead.label || "World News"}
-                </span>
-                <span className="px-3">-</span>
-                <span>{safeDateStr(lead.date) || "—"}</span>
-              </motion.div>
-            </button>
-          </MotionArticle>
-
-          {/* Side Preview (exact look) */}
-          <MotionAside variants={itemVariants} className="rounded-[2px] bg-[#d8d8dc]">
-            {visibleSideStories.map((story, index) => (
-              <motion.div
-                key={story.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.34, delay: 0.12 + index * 0.055, ease: "easeOut" }}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedKey(story.id);
-                    setPanelOpen(true);
-                  }}
-                  className="block w-full border-b border-black/15 py-5 text-left first:pt-0"
-                >
-                  <div className="text-xs uppercase tracking-wide text-black/60">
-                    <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
-                      {story.label}
+                <div className="relative overflow-hidden">
+                  <MotionImage
+                    src={
+                      buildPreviewImg(API, lead.image) ||
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='700'%3E%3Crect width='1200' height='700' fill='%23cfd5dc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='40'%3EUpload Lead Image%3C/text%3E%3C/svg%3E"
+                    }
+                    alt="World News lead"
+                    className="h-56 w-full object-cover md:h-72"
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ duration: 0.28 }}
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
+                  <div className="absolute left-3 top-3">
+                    <span className="rounded-full border border-white/30 bg-black/40 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+                      {lead.status || "draft"}
                     </span>
-                    <span className="px-3">-</span>
-                    <span>{safeDateStr(story.date)}</span>
                   </div>
+                </div>
 
-                  <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
-                    {story.title}
+                <div className="p-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.12em] text-black/60">
+                    <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">
+                      {lead.label || "World News"}
+                    </span>
+                    <span>{safeDateStr(lead.date) || "-"}</span>
+                  </div>
+                  <h2 className="pt-3 text-3xl font-semibold leading-tight text-black/90 transition group-hover:text-black md:text-[40px] [font-family:Georgia,Times,serif]">
+                    {lead.title || "Set the lead headline"}
                   </h2>
-                </button>
-              </motion.div>
-            ))}
+                </div>
+              </button>
+            </MotionArticle>
 
-            {visibleSideStories.length === 0 ? (
-              <div className="rounded border border-black/15 bg-white/30 p-4 text-sm text-black/65">
-                No stories for this region yet.
-              </div>
-            ) : null}
-          </MotionAside>
-        </MotionDiv>
+            {/* Side Preview */}
+            <MotionAside variants={itemVariants} className="grid content-start gap-3">
+              {visibleSideStories.map((story, index) => (
+                <motion.div
+                  key={story.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 + index * 0.05, ease: "easeOut" }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedKey(story.id);
+                      setPanelOpen(true);
+                    }}
+                    className={`group block w-full rounded-2xl border bg-white/80 p-3 text-left shadow-[0_8px_18px_rgba(0,0,0,0.05)] transition hover:-translate-y-0.5 ${
+                      selectedKey === story.id ? "border-black/45 ring-2 ring-black/20" : "border-black/15"
+                    }`}
+                  >
+                    <div className="grid gap-3 sm:grid-cols-[1fr_108px] sm:items-center">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.12em] text-black/60">
+                          <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
+                            {story.label}
+                          </span>
+                          <span>{safeDateStr(story.date)}</span>
+                        </div>
+                        <h3 className="pt-2 text-3xl leading-tight text-black/85 transition group-hover:text-black md:text-[34px] [font-family:Georgia,Times,serif]">
+                          {story.title || "Untitled side story"}
+                        </h3>
+                      </div>
 
+                      <div className="overflow-hidden rounded-xl border border-black/10 bg-zinc-200">
+                        <img
+                          src={
+                            buildPreviewImg(API, story.image) ||
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='220'%3E%3Crect width='320' height='220' fill='%23d9dee5'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23666' font-size='22'%3ENo Image%3C/text%3E%3C/svg%3E"
+                          }
+                          alt={story.title || "Side story"}
+                          className="h-20 w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                  </button>
+                </motion.div>
+              ))}
+
+              {visibleSideStories.length === 0 ? (
+                <div className="rounded-2xl border border-black/15 bg-white/70 p-4 text-sm text-black/65">
+                  No published side stories for this region yet.
+                </div>
+              ) : null}
+            </MotionAside>
+          </MotionDiv>
+        </div>
         {/* EDITOR PANEL — sits BELOW preview so the preview layout stays identical */}
         <div className="mt-6 rounded border border-black/20 bg-[#dfe3e8]">
           <button
@@ -492,6 +514,36 @@ export default function AdminWorld({ variant = "page" }) {
                         className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
                       />
                     </div>
+
+                    {selectedKey === "lead" ? (
+                      <div className="grid gap-2">
+                        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">
+                          Summary
+                        </label>
+                        <textarea
+                          value={selected.summary || ""}
+                          onChange={(e) => patchSelected({ summary: e.target.value })}
+                          placeholder="Short article summary..."
+                          rows={3}
+                          className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                        />
+                      </div>
+                    ) : null}
+
+                    {selectedKey === "lead" ? (
+                      <div className="grid gap-2">
+                        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">
+                          Article Content
+                        </label>
+                        <textarea
+                          value={selected.content || ""}
+                          onChange={(e) => patchSelected({ content: e.target.value })}
+                          placeholder="Write full article content here..."
+                          rows={8}
+                          className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                        />
+                      </div>
+                    ) : null}
 
                     <div className="grid gap-2 md:grid-cols-2">
                       <div className="grid gap-2">
@@ -686,10 +738,6 @@ export default function AdminWorld({ variant = "page" }) {
                       />
                     </div>
 
-                    <p className="text-xs text-black/55">
-                      Backend expected: <span className="font-semibold">GET/PUT /api/worldnews-admin</span> and{" "}
-                      <span className="font-semibold">POST /api/worldnews-admin/upload</span>.
-                    </p>
                   </div>
                 </div>
               )}

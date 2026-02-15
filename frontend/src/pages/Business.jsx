@@ -16,6 +16,7 @@ function Business() {
   const [tag, setTag] = useState("All");
   const [visibleCount, setVisibleCount] = useState(3);
   const [stories, setStories] = useState(businessArticles);
+  const [loadError, setLoadError] = useState("");
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -32,13 +33,14 @@ function Business() {
 
     async function loadBusiness() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/business`);
         const json = await res.json();
         if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-        if (mounted && next.length > 0) setStories(next);
+        if (mounted) setStories(next);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live business feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -136,6 +138,12 @@ function Business() {
         >
           {pulseLabel}
         </MotionDiv>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         <div className="mt-5 flex flex-wrap gap-2">
           {tags.map((itemTag) => (

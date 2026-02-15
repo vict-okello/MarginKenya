@@ -83,7 +83,7 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
           />
         </MotionWrap>
 
-        <MotionTitle className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
+        <MotionTitle className="article-title pt-6 font-semibold text-black">
           {article.title}
         </MotionTitle>
 
@@ -91,8 +91,8 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
           {(article.category || sectionName)} - {article.date}
         </MotionText>
 
-        <MotionText className="pt-4 text-black/75">{article.summary}</MotionText>
-        <MotionText className="pt-4 text-black/80">{article.body}</MotionText>
+        <MotionText className="article-content pt-4 text-black/75">{article.summary}</MotionText>
+        <MotionText className="article-content whitespace-pre-line pt-4 text-black/80">{article.body}</MotionText>
         <ArticleAuthorBox article={article} fallbackName={`${sectionName || "News"} Desk`} />
       </div>
       <NewsletterBanner variant="sports" />

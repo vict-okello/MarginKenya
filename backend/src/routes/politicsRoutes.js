@@ -16,7 +16,7 @@ const dataDir = path.join(__dirname, "../data");
 const politicsFile = path.join(dataDir, "politics.json");
 
 // Upload folder: backend/uploads/politics
-const uploadsDir = path.join(__dirname, "../uploads/politics");
+const uploadsDir = path.join(__dirname, "../../uploads/politics");
 
 function ensureDirs() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });

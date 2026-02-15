@@ -4,7 +4,6 @@ import crypto from "crypto";
 import Event from "../models/Event.js";
 import createRateLimiter from "../middleware/rateLimit.js";
 import requireAdmin from "../middleware/requireAdmin.js";
-import { readFallbackEvents } from "../utils/eventFallbackStore.js";
 import adminInvitesRoutes from "./adminInvitesRoutes.js";
 
 
@@ -264,21 +263,9 @@ router.get("/stats", requireAdmin, async (req, res) => {
     start.setDate(start.getDate() - 6); // last 7 days
     start.setHours(0, 0, 0, 0);
 
-    let dbEvents = [];
-    try {
-      dbEvents = await Event.find({
-        createdAt: { $gte: start, $lte: now },
-      }).lean();
-    } catch {
-      dbEvents = [];
-    }
-
-    const fallbackEvents = readFallbackEvents().filter((e) => {
-      const t = new Date(e.createdAt || 0).getTime();
-      return Number.isFinite(t) && t >= start.getTime() && t <= now.getTime();
-    });
-
-    const events = [...dbEvents, ...fallbackEvents];
+    const events = await Event.find({
+      createdAt: { $gte: start, $lte: now },
+    }).lean();
     return res.json(buildStatsFromEvents(events));
   } catch (err) {
     console.error("GET /api/admin/stats error:", err);

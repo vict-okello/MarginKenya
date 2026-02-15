@@ -7,18 +7,20 @@ function Culture() {
   const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
   const [stories, setStories] = useState(cultureArticles);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
     async function loadCulture() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/culture`);
         const json = await res.json();
         if (!res.ok) return;
-        if (mounted && Array.isArray(json) && json.length > 0) setStories(json);
+        if (mounted) setStories(Array.isArray(json) ? json : []);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live culture feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -58,6 +60,12 @@ function Culture() {
             Culture Pulse: creative voices, identity shifts, and emerging ideas.
           </div>
         </div>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {topStories.map((story) => (

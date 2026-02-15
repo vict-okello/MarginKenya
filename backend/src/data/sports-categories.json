@@ -5,7 +5,7 @@
     "title": "Football Category",
     "summary": "Latest football updates, match previews, and transfer highlights.",
     "body": "This section covers league fixtures, player form, and tactical analysis across top football competitions.",
-    "image": "/src/assets/sport.jpg"
+    "image": "/uploads/defaults/sport.jpg"
   },
   {
     "id": "car-sport",
@@ -13,7 +13,7 @@
     "title": "Car Sport Category",
     "summary": "Track reports, qualifying pace, and race-weekend insights.",
     "body": "Follow practice sessions, setup choices, and performance comparisons across major car sport events.",
-    "image": "/src/assets/sport1.png"
+    "image": "/uploads/defaults/sport1.png"
   },
   {
     "id": "basketball",
@@ -21,7 +21,7 @@
     "title": "Basketball Category",
     "summary": "Game recaps, player rankings, and season storylines.",
     "body": "Get coverage on team form, key matchups, and standout performances from domestic and international basketball.",
-    "image": "/src/assets/sport1.png"
+    "image": "/uploads/defaults/sport1.png"
   },
   {
     "id": "table-tennis",
@@ -29,6 +29,6 @@
     "title": "Table Tennis Category",
     "summary": "Tournament highlights, technique notes, and rising talents.",
     "body": "Read about match tempo, spin control, and player consistency from local and global table tennis events.",
-    "image": "/src/assets/sport.jpg"
+    "image": "/uploads/defaults/sport.jpg"
   }
 ]

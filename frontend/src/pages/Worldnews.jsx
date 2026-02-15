@@ -88,6 +88,7 @@ const fallbackLead = {
   label: "World News",
   date: "Jan 25, 2025",
   title: "Revolutionizing manufacturing emerging trends shaping the industry",
+  summary: "",
   image: "",
 };
 
@@ -115,6 +116,7 @@ function normalizeWorld(payload) {
         label: leadRaw.label || "World News",
         date: leadRaw.date || "Jan 25, 2025",
         title: leadRaw.title || "",
+        summary: leadRaw.summary || "",
         image: leadRaw.image || "",
         status: leadRaw.status || "published",
       }
@@ -128,6 +130,7 @@ function normalizeWorld(payload) {
     to: story?.to || "/worldnews",
     color: story?.color || "bg-[#6358e8]",
     region: story?.region || "all",
+    image: story?.image || "",
     status: story?.status || "published",
   })).map((story) => {
     const inferred = inferCategoryFromTo(story.to);
@@ -152,6 +155,12 @@ function getStoryHref(story) {
   if (/^https?:\/\//i.test(raw)) return raw;
   if (raw.startsWith("/")) return raw;
   return `/${raw}`;
+}
+
+function resolveImageUrl(API, path, fallback = "") {
+  if (!path) return fallback;
+  if (/^https?:\/\//i.test(path)) return path;
+  return API ? `${API}${path}` : path;
 }
 
 function Worldnews({ showViewAll = true, variant = "home", withSection = true }) {
@@ -183,9 +192,7 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
 
   const lead = useMemo(() => worldData.lead || fallbackLead, [worldData.lead]);
   const leadImage = useMemo(() => {
-    if (!lead?.image) return worldImage;
-    if (/^https?:\/\//i.test(lead.image)) return lead.image;
-    return API ? `${API}${lead.image}` : lead.image;
+    return resolveImageUrl(API, lead?.image, worldImage);
   }, [lead, API]);
 
   const visibleSideStories = useMemo(
@@ -279,7 +286,7 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
                 <MotionImage
                   src={leadImage}
                   alt="Manufacturing and industrial landscape"
-                  className="h-[250px] w-full object-cover sm:h-[360px] lg:h-[460px]"
+                  className="h-[250px] w-full bg-white/60 object-contain sm:h-[360px] lg:h-[460px]"
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.32 }}
                 />
@@ -293,6 +300,16 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
               >
                 {lead.title}
               </motion.h2>
+              {lead.summary ? (
+                <motion.p
+                  className="line-clamp-3 max-w-3xl pt-3 text-base leading-relaxed text-black/75"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.34, delay: 0.1, ease: "easeOut" }}
+                >
+                  {lead.summary}
+                </motion.p>
+              ) : null}
 
               <motion.div
                 className="pt-4 text-xs uppercase tracking-wide text-black/55"
@@ -300,7 +317,7 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.36, delay: 0.12, ease: "easeOut" }}
               >
-                <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">World News</span>
+                <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">{lead.label || "World News"}</span>
                 <span className="px-3">-</span>
                 <span>{lead.date}</span>
               </motion.div>
@@ -345,6 +362,16 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
                       >
                         {story.title}
                       </motion.h2>
+                      {story.image ? (
+                        <div className="mt-3 overflow-hidden rounded-xl border border-black/10 bg-white/70">
+                          <img
+                            src={resolveImageUrl(API, story.image)}
+                            alt={story.title || "World story"}
+                            className="h-24 w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   </motion.a>
                 ) : (
@@ -377,6 +404,16 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
                       >
                         {story.title}
                       </motion.h2>
+                      {story.image ? (
+                        <div className="mt-3 overflow-hidden rounded-xl border border-black/10 bg-white/70">
+                          <img
+                            src={resolveImageUrl(API, story.image)}
+                            alt={story.title || "World story"}
+                            className="h-24 w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     </Link>
                   </motion.div>

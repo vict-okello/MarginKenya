@@ -13,8 +13,8 @@ const uploadRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 40 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// uploads root folder is: backend/src/uploads
-const uploadsRoot = path.join(__dirname, "../uploads");
+// uploads root folder is: backend/uploads (one level above src)
+const uploadsRoot = path.join(__dirname, "../../uploads");
 if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true });
 
 const SECTION_DIRS = {

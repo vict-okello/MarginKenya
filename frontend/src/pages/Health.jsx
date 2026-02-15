@@ -37,6 +37,7 @@ function Health() {
   const [visibleCount, setVisibleCount] = useState(3);
   const [stories, setStories] = useState(healthArticles);
   const [publishedCount, setPublishedCount] = useState(null);
+  const [loadError, setLoadError] = useState("");
 
   const resolveImageUrl = useCallback((url) => {
     if (!url) return "";
@@ -53,6 +54,7 @@ function Health() {
 
     async function loadHealth() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/health-news`);
         const json = await res.json();
         if (!res.ok) return;
@@ -60,10 +62,10 @@ function Health() {
         const liveCount = next.filter((item) => String(item?.title || "").trim().length > 0).length;
         if (mounted) {
           setPublishedCount(liveCount);
-          if (next.length > 0) setStories(next);
+          setStories(next);
         }
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setLoadError("Live health feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -127,6 +129,12 @@ function Health() {
             ))}
           </div>
         </div>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         {lead ? (
           <MotionDiv

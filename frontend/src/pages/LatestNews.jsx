@@ -45,19 +45,21 @@ function LatestNews({ withSection = true, showHeader = true }) {
   const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
   const [articles, setArticles] = useState(latestNewsArticles);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let mounted = true;
 
     async function loadLatestNews() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/latest-news`);
         const data = await res.json();
         if (!res.ok) return;
         const list = normalizeLatestNews(data);
-        if (mounted && list.length > 0) setArticles(list);
+        if (mounted) setArticles(list);
       } catch {
-        // Keep static fallback data when API is unavailable.
+        if (mounted) setLoadError("Live latest news feed is unavailable. Showing fallback content.");
       }
     }
 
@@ -106,6 +108,12 @@ function LatestNews({ withSection = true, showHeader = true }) {
       className={withSection ? "bg-[#d8d8dc] px-4 pb-10" : ""}
     >
       <div className="mx-auto w-full max-w-5xl">
+        {loadError ? (
+          <div className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
+
         {showHeader ? (
           <>
             <div className="flex items-center">

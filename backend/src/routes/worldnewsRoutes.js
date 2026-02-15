@@ -15,8 +15,8 @@ const __dirname = path.dirname(__filename);
 const dataDir = path.join(__dirname, "../data");
 const worldFile = path.join(dataDir, "worldnews.json");
 
-// Upload folder served by app.use("/uploads", express.static(path.join(__dirname, "uploads")))
-const uploadsDir = path.join(__dirname, "../uploads/worldnews");
+// Upload folder served by app.use("/uploads", express.static(path.join(__dirname, "../uploads")))
+const uploadsDir = path.join(__dirname, "../../uploads/worldnews");
 
 const MAX_STORIES = 40;
 const STATUS_VALUES = new Set(["draft", "published"]);
@@ -36,6 +36,15 @@ function cleanText(value, maxLen = 300) {
   return value.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, maxLen);
 }
 
+function cleanMultilineText(value, maxLen = 20000) {
+  if (typeof value !== "string") return "";
+  // Preserve user-entered spacing/newlines while removing only unsafe control chars.
+  return value
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .slice(0, maxLen);
+}
+
 function cleanPath(value) {
   const raw = cleanText(value, 300);
   if (!raw) return "/worldnews";
@@ -52,6 +61,8 @@ function normalizeLead(lead) {
     label: cleanText(lead.label, 40) || "World News",
     date: cleanText(lead.date, 40) || new Date().toISOString().slice(0, 10),
     title: cleanText(lead.title, 220),
+    summary: cleanMultilineText(lead.summary, 2500),
+    content: cleanMultilineText(lead.content, 20000),
     image: cleanText(lead.image, 300),
     articleId: cleanText(lead.articleId, 120) || "lead-worldnews",
     status: STATUS_VALUES.has(lead.status) ? lead.status : "draft",

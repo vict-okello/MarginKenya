@@ -29,7 +29,7 @@ function HealthArticle() {
         const res = await fetch(`${API}/api/health-news`);
         const json = await res.json();
         if (!res.ok) return;
-        if (mounted && Array.isArray(json) && json.length > 0) setArticles(json);
+        if (mounted) setArticles(Array.isArray(json) ? json : []);
       } catch {
         // Keep static fallback when API is unavailable.
       }
@@ -108,7 +108,7 @@ function HealthArticle() {
           />
         </MotionWrap>
         <MotionTitle
-          className="pt-6 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]"
+          className="article-title pt-6 font-semibold text-black"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12, ease: "easeOut" }}
@@ -124,7 +124,7 @@ function HealthArticle() {
           {article.author} - {article.date}
         </MotionText>
         <MotionText
-          className="pt-4 text-black/75"
+          className="article-content pt-4 text-black/75"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.28, ease: "easeOut" }}
@@ -132,7 +132,7 @@ function HealthArticle() {
           {article.summary}
         </MotionText>
         <MotionText
-          className="pt-4 text-black/80"
+          className="article-content pt-4 text-black/80"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, delay: 0.36, ease: "easeOut" }}

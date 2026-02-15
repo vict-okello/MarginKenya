@@ -138,7 +138,7 @@ function PoliticsArticle() {
           {article.scope} - {article.tag} - {article.date}
         </MotionText>
 
-        <MotionTitle className="pt-2 text-4xl font-semibold leading-tight text-black md:text-5xl [font-family:Georgia,Times,serif]">
+        <MotionTitle className="article-title pt-2 font-semibold text-black">
           {article.title}
         </MotionTitle>
 
@@ -151,11 +151,11 @@ function PoliticsArticle() {
             transition={{ duration: 0.25 }}
           />
 
-          <MotionText className="pt-5 text-lg leading-relaxed text-black/75 md:text-xl">
+          <MotionText className="article-content pt-5 text-black/75">
             {article.summary}
           </MotionText>
 
-          <MotionText className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg">
+          <MotionText className="article-content whitespace-pre-line pt-6 text-black/85">
             {bodyText}
           </MotionText>
           <ArticleAuthorBox article={article} fallbackName="Politics Desk" />

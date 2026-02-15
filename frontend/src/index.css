@@ -38,3 +38,15 @@
     animation: none;
   }
 }
+
+.article-title {
+  font-family: Georgia, Times, serif;
+  font-size: clamp(2.25rem, 4.6vw, 3rem);
+  line-height: 1.1;
+}
+
+.article-content {
+  font-family: Georgia, Times, serif;
+  font-size: 1.125rem;
+  line-height: 1.8;
+}

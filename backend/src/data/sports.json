@@ -6,8 +6,11 @@
     "body": "This feature breaks down the moments that defined the final, how the top scorer created space, and what this performance means for the next stage of the season.",
     "date": "",
     "author": "",
+    "authorName": "",
+    "authorRole": "Super Admin",
+    "authorBio": "",
     "category": "Sports",
-    "image": "/src/assets/sport1.png"
+    "image": "/uploads/defaults/sport1.png"
   },
   {
     "id": "runners-top-four",
@@ -16,8 +19,11 @@
     "body": "From start control to final surge, this report covers split times, pace strategy, and why this race may be remembered as one of the strongest team displays this year.",
     "date": "",
     "author": "",
+    "authorName": "",
+    "authorRole": "",
+    "authorBio": "",
     "category": "Sports",
-    "image": "/src/assets/sport1.png"
+    "image": "/uploads/defaults/sport1.png"
   },
   {
     "id": "indycar-dixon-practice",
@@ -26,7 +32,10 @@
     "body": "We review lap consistency, setup choices, and how conditions shaped the second practice order heading into race weekend.",
     "date": "",
     "author": "",
+    "authorName": "",
+    "authorRole": "",
+    "authorBio": "",
     "category": "Sports",
-    "image": "/src/assets/sport1.png"
+    "image": "/uploads/defaults/sport1.png"
   }
 ]
