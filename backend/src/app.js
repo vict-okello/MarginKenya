@@ -49,6 +49,9 @@ const allowedOrigins = [
     .filter(Boolean)),
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+
+  // ✅ ADD YOUR VERCEL FRONTEND ORIGIN HERE:
+  "https://marginke.vercel.app",
 ].filter(Boolean);
 
 app.disable("x-powered-by");
@@ -59,6 +62,7 @@ app.use(securityHeaders);
 app.use(
   cors({
     origin: (origin, cb) => {
+      // allow server-to-server / curl / same-origin requests without Origin header
       if (!origin) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
       return cb(null, false);
@@ -70,6 +74,7 @@ app.use(
   })
 );
 
+// Extra hard block (returns 403 JSON) if Origin is not allowed
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && !allowedOrigins.includes(origin)) {
@@ -81,6 +86,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "5mb", strict: true }));
 app.use(express.urlencoded({ extended: false, limit: "100kb" }));
 app.use(sanitizeRequest);
+
 app.use("/api/invites", invitesRoutes);
 
 app.use("/api", (req, res, next) => {
@@ -140,6 +146,8 @@ app.use("/api/sports", sportsRoutes);
 app.use("/api/sports-categories", sportsCategoriesRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/test-email", testEmailRoutes);
+
+// SEO / robots / sitemap etc.
 app.use("/", seoRoutes);
 
 // 404 for API routes (JSON)
