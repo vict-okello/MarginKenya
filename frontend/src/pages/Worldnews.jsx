@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import worldImage from "../assets/world.jpg";
 import NewsletterBanner from "./NewsletterBanner";
+import { API_BASE_URL } from "../config/api";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -164,7 +165,7 @@ function resolveImageUrl(API, path, fallback = "") {
 }
 
 function Worldnews({ showViewAll = true, variant = "home", withSection = true }) {
-  const API = import.meta.env.VITE_API_URL;
+  const API = API_BASE_URL;
   const isPage = variant === "page";
   const [activeRegion, setActiveRegion] = useState("all");
   const [worldData, setWorldData] = useState({ lead: null, stories: sideStories });

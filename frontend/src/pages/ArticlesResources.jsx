@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { articlesResourcesArticles } from "../data/articlesResourcesArticles";
+import { API_BASE_URL } from "../config/api";
 
 function normalizeResources(payload) {
   const list = Array.isArray(payload)
@@ -22,7 +23,7 @@ function normalizeResources(payload) {
 }
 
 function ArticlesResources({ withSection = true, showHeader = true }) {
-  const API = import.meta.env.VITE_API_URL;
+  const API = API_BASE_URL;
   const [visibleCount, setVisibleCount] = useState(3);
   const [articles, setArticles] = useState(articlesResourcesArticles);
 

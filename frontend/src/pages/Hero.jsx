@@ -7,6 +7,7 @@ import technologyImage from "../assets/technology.jpg";
 import healthImage from "../assets/health.jpg";
 import sportImage from "../assets/sport.jpg";
 import featuredFallbackImage from "../assets/hero1.png";
+import { API_BASE_URL } from "../config/api";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -69,7 +70,7 @@ function normalizeRoute(route, fallbackRoute = "/") {
 
 function Hero({ withSection = true }) {
   const prefersReducedMotion = useReducedMotion();
-  const API = import.meta.env.VITE_API_URL;
+  const API = API_BASE_URL;
 
   const [heroData, setHeroData] = useState(() => deepClone(DEFAULT_HERO));
   const [heroArticle, setHeroArticle] = useState(null);
