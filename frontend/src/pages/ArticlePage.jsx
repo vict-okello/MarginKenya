@@ -6,6 +6,7 @@ import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import NewsletterBanner from "./NewsletterBanner";
 import useSeo from "../hooks/useSeo";
 import slugify from "../utils/slugify";
+import ArticleAuthorBox from "../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -92,6 +93,7 @@ export default function ArticlePage({ data, backTo = "/", backLabel = "Back", se
 
         <MotionText className="pt-4 text-black/75">{article.summary}</MotionText>
         <MotionText className="pt-4 text-black/80">{article.body}</MotionText>
+        <ArticleAuthorBox article={article} fallbackName={`${sectionName || "News"} Desk`} />
       </div>
       <NewsletterBanner variant="sports" />
     </MotionSection>

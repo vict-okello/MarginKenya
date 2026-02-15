@@ -154,7 +154,7 @@ function getStoryHref(story) {
   return `/${raw}`;
 }
 
-function Worldnews({ showViewAll = true, variant = "home" }) {
+function Worldnews({ showViewAll = true, variant = "home", withSection = true }) {
   const API = import.meta.env.VITE_API_URL;
   const isPage = variant === "page";
   const [activeRegion, setActiveRegion] = useState("all");
@@ -203,7 +203,7 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.36 }}
-      className={`bg-[#d8d8dc] px-4 ${isPage ? "py-12" : "py-10"}`}
+      className={withSection ? `bg-[#d8d8dc] px-4 ${isPage ? "py-12" : "py-10"}` : ""}
     >
       <div className="mx-auto w-full max-w-5xl">
         <div className={`flex flex-wrap items-end justify-between gap-3 ${isPage ? "rounded-2xl border border-black/15 bg-gradient-to-r from-[#e6ebf3] via-[#d9e2ef] to-[#d0dceb] p-6" : "pb-5"}`}>
@@ -223,8 +223,14 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
             )}
           </div>
           {showViewAll ? (
-            <Link to="/worldnews" className="text-sm text-black/70 transition hover:text-black">
-              View All -&gt;
+            <Link
+              to="/worldnews"
+              className="group inline-flex items-center gap-3 rounded-full border border-[#e25b4a]/45 bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c94f40] transition hover:-translate-y-0.5 hover:border-[#c94f40] hover:bg-[#fff3f1] hover:text-[#a94033] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e25b4a]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#d8d8dc]"
+            >
+              <span>View All</span>
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e25b4a] text-[10px] font-bold text-white transition group-hover:translate-x-0.5 group-hover:bg-[#c94f40]">
+                -&gt;
+              </span>
             </Link>
           ) : null}
         </div>
@@ -301,48 +307,79 @@ function Worldnews({ showViewAll = true, variant = "home" }) {
             </Link>
           </MotionArticle>
 
-          <MotionAside variants={itemVariants} className="rounded-[2px] bg-[#d8d8dc]">
+          <MotionAside variants={itemVariants} className="grid gap-3">
             {visibleSideStories.map((story, index) => (
               <motion.div
                 key={story.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.34, delay: 0.12 + index * 0.055, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 16, scale: 0.985 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.36, delay: 0.12 + index * 0.055, ease: "easeOut" }}
               >
                 {/^https?:\/\//i.test(getStoryHref(story)) ? (
-                  <a
+                  <motion.a
                     href={getStoryHref(story)}
                     target="_blank"
                     rel="noreferrer"
-                    className="block border-b border-black/15 py-5 first:pt-0"
+                    className="group relative block overflow-hidden rounded-2xl border border-black/15 bg-gradient-to-br from-white/70 to-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(18,18,18,0.06)] transition hover:border-black/25"
+                    whileHover={{ y: -3, scale: 1.008 }}
+                    transition={{ type: "spring", stiffness: 280, damping: 20 }}
                   >
-                    <div className="text-xs uppercase tracking-wide text-black/60">
-                      <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
-                        {story.label}
-                      </span>
-                      <span className="px-3">-</span>
-                      <span>{story.date}</span>
+                    <motion.div
+                      className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-black/15 to-black/5"
+                      initial={false}
+                      whileHover={{ width: 10 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    />
+                    <div className="pl-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-black/60">
+                        <motion.span className={`rounded-md px-2.5 py-1 font-semibold text-white ${story.color}`} whileHover={{ y: -1 }}>
+                          {story.label}
+                        </motion.span>
+                        <span className="text-black/30">|</span>
+                        <span className="font-medium">{story.date}</span>
+                      </div>
+                      <motion.h2
+                        className="pt-3 text-[34px] leading-[1.08] text-black/85 transition group-hover:text-black md:text-[36px]"
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                      >
+                        {story.title}
+                      </motion.h2>
                     </div>
-                    <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
-                      {story.title}
-                    </h2>
-                  </a>
+                  </motion.a>
                 ) : (
-                  <Link
-                    to={getStoryHref(story)}
-                    className="block border-b border-black/15 py-5 first:pt-0"
+                  <motion.div
+                    whileHover={{ y: -3, scale: 1.008 }}
+                    transition={{ type: "spring", stiffness: 280, damping: 20 }}
                   >
-                    <div className="text-xs uppercase tracking-wide text-black/60">
-                      <span className={`rounded px-2 py-1 font-semibold text-white ${story.color}`}>
-                        {story.label}
-                      </span>
-                      <span className="px-3">-</span>
-                      <span>{story.date}</span>
+                    <Link
+                    to={getStoryHref(story)}
+                    className="group relative block overflow-hidden rounded-2xl border border-black/15 bg-gradient-to-br from-white/70 to-white/45 px-4 py-4 shadow-[0_8px_22px_rgba(18,18,18,0.06)] transition hover:border-black/25"
+                  >
+                    <motion.div
+                      className="pointer-events-none absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-black/15 to-black/5"
+                      initial={false}
+                      whileHover={{ width: 10 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    />
+                    <div className="pl-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-black/60">
+                        <motion.span className={`rounded-md px-2.5 py-1 font-semibold text-white ${story.color}`} whileHover={{ y: -1 }}>
+                          {story.label}
+                        </motion.span>
+                        <span className="text-black/30">|</span>
+                        <span className="font-medium">{story.date}</span>
+                      </div>
+                      <motion.h2
+                        className="pt-3 text-[34px] leading-[1.08] text-black/85 transition group-hover:text-black md:text-[36px]"
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                      >
+                        {story.title}
+                      </motion.h2>
                     </div>
-                    <h2 className="pt-3 text-[30px] leading-tight text-black/85 transition hover:text-black md:text-[32px]">
-                      {story.title}
-                    </h2>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 )}
               </motion.div>
             ))}

@@ -24,9 +24,28 @@ function ensureDirs() {
 }
 
 function normalizeDesk(payload) {
+  function normalizeStory(item, idx, scopeLabel) {
+    return {
+      id: item?.id || `${Date.now()}-${idx}`,
+      title: item?.title || "",
+      summary: item?.summary || "",
+      tag: item?.tag || "Politics",
+      date: item?.date || new Date().toISOString().slice(0, 10),
+      image: item?.image || "",
+      content: item?.content || item?.body || "",
+      author: item?.author || item?.authorName || "",
+      authorName: item?.authorName || item?.author || "",
+      authorRole: item?.authorRole || "",
+      authorBio: item?.authorBio || "",
+      scope: item?.scope || scopeLabel,
+    };
+  }
+
   return {
-    local: Array.isArray(payload?.local) ? payload.local : [],
-    international: Array.isArray(payload?.international) ? payload.international : [],
+    local: Array.isArray(payload?.local) ? payload.local.map((item, idx) => normalizeStory(item, idx, "Local")) : [],
+    international: Array.isArray(payload?.international)
+      ? payload.international.map((item, idx) => normalizeStory(item, idx, "International"))
+      : [],
   };
 }
 

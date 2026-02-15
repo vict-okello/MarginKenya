@@ -21,6 +21,10 @@ const emptyResource = () => ({
   url: "",
   publishedAt: new Date().toISOString().slice(0, 16),
   status: "draft", // draft | published
+  author: "",
+  authorName: "",
+  authorRole: "",
+  authorBio: "",
 });
 
 function normalize(payload) {
@@ -37,6 +41,10 @@ function normalize(payload) {
     title: r?.title || "",
     summary: r?.summary || "",
     content: r?.content || "",
+    author: r?.author || r?.authorName || "",
+    authorName: r?.authorName || r?.author || "",
+    authorRole: r?.authorRole || "",
+    authorBio: r?.authorBio || "",
   }));
 }
 
@@ -453,6 +461,39 @@ export default function AdminResources() {
                     value={selected.content}
                     onChange={(e) => patchSelected({ content: e.target.value })}
                     placeholder="Full resource content"
+                    className="w-full resize-none rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Author Name</label>
+                    <input
+                      value={selected.authorName || selected.author || ""}
+                      onChange={(e) => patchSelected({ author: e.target.value, authorName: e.target.value })}
+                      placeholder="Writer name"
+                      className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Author Role</label>
+                    <input
+                      value={selected.authorRole || ""}
+                      onChange={(e) => patchSelected({ authorRole: e.target.value })}
+                      placeholder="Analyst / Editor"
+                      className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">Author Credibility Line</label>
+                  <textarea
+                    rows={2}
+                    value={selected.authorBio || ""}
+                    onChange={(e) => patchSelected({ authorBio: e.target.value })}
+                    placeholder="One sentence on expertise"
                     className="w-full resize-none rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
                   />
                 </div>

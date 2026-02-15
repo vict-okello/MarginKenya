@@ -16,6 +16,10 @@ function cloneStories(input = []) {
     scope: s?.scope || "Local",
     tag: s?.tag || "Business",
     title: s?.title || "",
+    author: s?.author || s?.authorName || "",
+    authorName: s?.authorName || s?.author || "",
+    authorRole: s?.authorRole || "",
+    authorBio: s?.authorBio || "",
     summary: s?.summary || "",
     body: s?.body || "",
     date: s?.date || "",
@@ -135,6 +139,10 @@ export default function AdminBusiness() {
       scope: activeScope,
       tag: "Business",
       title: "",
+      author: "",
+      authorName: "",
+      authorRole: "",
+      authorBio: "",
       summary: "",
       body: "",
       date: new Date().toISOString().slice(0, 10),
@@ -439,6 +447,12 @@ export default function AdminBusiness() {
                   <>
                     <div className="grid gap-3 md:grid-cols-2">
                       <Field label="Title" value={selected.title} onChange={(v) => patchSelected({ title: v })} />
+                      <Field
+                        label="Author Name"
+                        value={selected.authorName || selected.author}
+                        onChange={(v) => patchSelected({ author: v, authorName: v })}
+                      />
+                      <Field label="Author Role" value={selected.authorRole} onChange={(v) => patchSelected({ authorRole: v })} />
                       <Field label="Scope" value={selected.scope} onChange={(v) => patchSelected({ scope: v })} />
                       <Field label="Tag" value={selected.tag} onChange={(v) => patchSelected({ tag: v })} />
                       <Field label="Date" value={selected.date} onChange={(v) => patchSelected({ date: v })} />
@@ -469,6 +483,16 @@ export default function AdminBusiness() {
                         />
                         <span className="text-xs text-zinc-600">{selected.image ? "Image is set." : "No image selected."}</span>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Author Credibility Line</label>
+                      <textarea
+                        value={selected.authorBio}
+                        onChange={(e) => patchSelected({ authorBio: e.target.value })}
+                        rows={2}
+                        className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                      />
                     </div>
 
                     <div>

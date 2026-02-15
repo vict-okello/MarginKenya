@@ -7,6 +7,7 @@ import useReadTracker from "../../hooks/useReadTracker";
 import useSeo from "../../hooks/useSeo";
 import slugify from "../../utils/slugify";
 import NewsletterBanner from "../NewsletterBanner";
+import ArticleAuthorBox from "../../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -135,6 +136,7 @@ export default function HeroArticlePage() {
             {article.body}
           </MotionText>
         ) : null}
+        <ArticleAuthorBox article={article} fallbackName="World Desk" />
       </div>
       <NewsletterBanner variant="sports" />
     </MotionSection>

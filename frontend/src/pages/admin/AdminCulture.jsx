@@ -15,6 +15,9 @@ function cloneStories(input = []) {
     title: s?.title || "",
     date: s?.date || "",
     author: s?.author || "",
+    authorName: s?.authorName || s?.author || "",
+    authorRole: s?.authorRole || "",
+    authorBio: s?.authorBio || "",
     summary: s?.summary || "",
     body: s?.body || "",
     image: s?.image || "",
@@ -102,6 +105,9 @@ export default function AdminCulture() {
       title: "",
       date: new Date().toISOString().slice(0, 10),
       author: "",
+      authorName: "",
+      authorRole: "",
+      authorBio: "",
       summary: "",
       body: "",
       image: "",
@@ -363,7 +369,12 @@ export default function AdminCulture() {
                   <>
                     <div className="grid gap-3 md:grid-cols-2">
                       <Field label="Title" value={selected.title} onChange={(v) => patchSelected({ title: v })} />
-                      <Field label="Author" value={selected.author} onChange={(v) => patchSelected({ author: v })} />
+                      <Field
+                        label="Author Name"
+                        value={selected.authorName || selected.author}
+                        onChange={(v) => patchSelected({ author: v, authorName: v })}
+                      />
+                      <Field label="Author Role" value={selected.authorRole} onChange={(v) => patchSelected({ authorRole: v })} />
                       <Field label="Date" value={selected.date} onChange={(v) => patchSelected({ date: v })} />
                       <Field label="Image URL" value={selected.image} onChange={(v) => patchSelected({ image: v })} />
                     </div>
@@ -394,6 +405,16 @@ export default function AdminCulture() {
                           {selected.image ? "Image is set." : "No image selected."}
                         </span>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Author Credibility Line</label>
+                      <textarea
+                        value={selected.authorBio}
+                        onChange={(e) => patchSelected({ authorBio: e.target.value })}
+                        rows={2}
+                        className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                      />
                     </div>
 
                     <div>

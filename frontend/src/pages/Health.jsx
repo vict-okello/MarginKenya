@@ -24,6 +24,12 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
+function limitChars(value, max) {
+  const text = String(value || "").trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, max).trimEnd()}...`;
+}
+
 function Health() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
@@ -145,7 +151,7 @@ function Health() {
                   <h2 className="pt-3 text-4xl leading-tight text-black/90 md:text-[44px] [font-family:Georgia,Times,serif]">
                     {lead.title}
                   </h2>
-                  <p className="pt-4 text-black/75">{lead.summary}</p>
+                  <p className="pt-4 text-black/75">{limitChars(lead.summary, 220)}</p>
                   <p className="pt-3 text-sm text-black/60">{lead.author}</p>
                 </div>
               </Link>
@@ -167,7 +173,7 @@ function Health() {
                     <div>
                       <p className="text-xs uppercase tracking-[0.13em] text-black/55">{story.date}</p>
                       <h3 className="pt-2 text-2xl leading-tight text-black/85">{story.title}</h3>
-                      <p className="pt-2 text-sm text-black/70">{story.summary}</p>
+                      <p className="pt-2 text-sm text-black/70">{limitChars(story.summary, 140)}</p>
                     </div>
                   </Link>
                 </MotionArticle>

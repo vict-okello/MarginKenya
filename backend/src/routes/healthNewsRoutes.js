@@ -21,7 +21,10 @@ function normalizeStories(payload) {
   return payload.map((item, idx) => ({
     id: item?.id || `${Date.now()}-${idx}`,
     title: item?.title || "",
-    author: item?.author || "",
+    author: item?.author || item?.authorName || "",
+    authorName: item?.authorName || item?.author || "",
+    authorRole: item?.authorRole || "",
+    authorBio: item?.authorBio || "",
     date: item?.date || "",
     summary: item?.summary || "",
     body: item?.body || item?.content || "",
@@ -56,4 +59,3 @@ router.put("/", requireAdmin, (req, res) => {
 });
 
 export default router;
-

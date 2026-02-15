@@ -16,6 +16,10 @@ function makeNewStory() {
     date: new Date().toISOString().slice(0, 10),
     image: "",
     content: "",
+    author: "",
+    authorName: "",
+    authorRole: "",
+    authorBio: "",
   };
 }
 
@@ -428,6 +432,12 @@ export default function AdminPolitics() {
                       <>
                         <div className="grid gap-3 md:grid-cols-2">
                           <Field label="Title" value={selected.title} onChange={(v) => patchSelected({ title: v })} />
+                          <Field
+                            label="Author Name"
+                            value={selected.authorName || selected.author}
+                            onChange={(v) => patchSelected({ author: v, authorName: v })}
+                          />
+                          <Field label="Author Role" value={selected.authorRole} onChange={(v) => patchSelected({ authorRole: v })} />
                           <Field label="Tag" value={selected.tag} onChange={(v) => patchSelected({ tag: v })} />
                           <Field label="Date" value={selected.date} onChange={(v) => patchSelected({ date: v })} />
                           <Field label="Image URL" value={selected.image} onChange={(v) => patchSelected({ image: v })} />
@@ -457,6 +467,16 @@ export default function AdminPolitics() {
                               }}
                             />
                           </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold uppercase tracking-wide text-zinc-700">Author Credibility Line</label>
+                          <textarea
+                            value={selected.authorBio || ""}
+                            onChange={(e) => patchSelected({ authorBio: e.target.value })}
+                            rows={2}
+                            className="mt-2 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+                          />
                         </div>
 
                         <div>

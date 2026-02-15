@@ -8,6 +8,7 @@ import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
 import useSeo from "../hooks/useSeo";
 import slugify from "../utils/slugify";
+import ArticleAuthorBox from "../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -143,6 +144,7 @@ function TechnologyArticle() {
         >
           {article.body}
         </MotionText>
+        <ArticleAuthorBox article={article} fallbackName="Technology Desk" />
       </div>
       <NewsletterBanner variant="sports" />
     </MotionSection>

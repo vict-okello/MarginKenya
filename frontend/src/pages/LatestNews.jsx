@@ -108,7 +108,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
       <div className="mx-auto w-full max-w-5xl">
         {showHeader ? (
           <>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <motion.h2
                 initial={{ opacity: 0, x: -14 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -117,22 +117,6 @@ function LatestNews({ withSection = true, showHeader = true }) {
               >
                 Latest News
               </motion.h2>
-              {remainingArticles.length > 0 ? (
-                <MotionButton
-                  type="button"
-                  onClick={() => setVisibleCount((prev) => Math.min(prev + 3, remainingArticles.length))}
-                  disabled={!canLoadMore}
-                  className={`text-sm transition ${
-                    canLoadMore
-                      ? "text-black/70 hover:text-black"
-                      : "cursor-not-allowed text-black/35"
-                  }`}
-                  whileHover={canLoadMore ? { y: -2, scale: 1.04 } : {}}
-                  whileTap={canLoadMore ? { scale: 0.96 } : {}}
-                >
-                  {canLoadMore ? "Load More \u25cb" : "All Loaded"}
-                </MotionButton>
-              ) : null}
             </div>
             <div className="mt-3 h-px w-full bg-black/30" />
           </>
@@ -245,6 +229,25 @@ function LatestNews({ withSection = true, showHeader = true }) {
             </Link>
           ))}
         </MotionDiv>
+
+        {remainingArticles.length > 0 ? (
+          <div className="mt-6 flex justify-start">
+            <MotionButton
+              type="button"
+              onClick={() => setVisibleCount((prev) => Math.min(prev + 3, remainingArticles.length))}
+              disabled={!canLoadMore}
+              className={`rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition ${
+                canLoadMore
+                  ? "border-[#e25b4a]/45 bg-white/70 text-[#c94f40] hover:-translate-y-0.5 hover:border-[#c94f40] hover:bg-[#fff3f1] hover:text-[#a94033]"
+                  : "cursor-not-allowed border-black/15 bg-white/35 text-black/35"
+              }`}
+              whileHover={canLoadMore ? { y: -2 } : {}}
+              whileTap={canLoadMore ? { scale: 0.98 } : {}}
+            >
+              {canLoadMore ? "Load More" : "All Loaded"}
+            </MotionButton>
+          </div>
+        ) : null}
       </div>
     </Wrapper>
   );

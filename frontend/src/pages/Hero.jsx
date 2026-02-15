@@ -6,6 +6,7 @@ import worldImage from "../assets/world.jpg";
 import technologyImage from "../assets/technology.jpg";
 import healthImage from "../assets/health.jpg";
 import sportImage from "../assets/sport.jpg";
+import featuredFallbackImage from "../assets/hero1.png";
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -60,7 +61,13 @@ function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
-function Hero() {
+function normalizeRoute(route, fallbackRoute = "/") {
+  const value = `${route || ""}`.trim();
+  if (!value) return fallbackRoute;
+  return value.startsWith("/") ? value : `/${value}`;
+}
+
+function Hero({ withSection = true }) {
   const prefersReducedMotion = useReducedMotion();
   const API = import.meta.env.VITE_API_URL;
 
@@ -208,15 +215,20 @@ function Hero() {
       : DEFAULT_HERO.topStories;
 
   const featured = heroData.featured || DEFAULT_HERO.featured;
+  const ctaLabel = (featured.ctaText || "Read Article")
+    .replace(/\s*[-=]*>\s*$/, "")
+    .trim();
 
-  const featuredImageSrc = featured.imageUrl ? resolveUrl(featured.imageUrl) : "";
+  const featuredImageSrc = featured.imageUrl
+    ? resolveUrl(featured.imageUrl)
+    : featuredFallbackImage;
 
   return (
     <MotionSection
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: prefersReducedMotion ? 0 : 0.35 }}
-      className="bg-[#d8d8dc] px-4 pb-8 pt-5"
+      className={withSection ? "bg-[#d8d8dc] px-4 pb-8 pt-5" : ""}
     >
       <div className="mx-auto w-full max-w-5xl">
         <MotionDiv
@@ -225,17 +237,18 @@ function Hero() {
           animate="show"
           className="grid grid-cols-1 gap-4 pb-5 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {topStories.slice(0, 4).map((story) => {
+          {topStories.slice(0, 4).map((story, idx) => {
             const fallbackImg =
               fallbackStoryImageByTitle[story.title] || worldImage;
             const imageSrc = story.imageUrl
               ? resolveUrl(story.imageUrl)
               : fallbackImg;
+            const to = normalizeRoute(story.to, DEFAULT_HERO.topStories[idx]?.to || "/");
 
             return (
               <Link
                 key={`${story.title}-${story.to}`}
-                to={story.to}
+                to={to}
                 className="group block"
               >
                 <MotionArticle
@@ -275,15 +288,14 @@ function Hero() {
         >
           <Link to={`/hero/article/${featuredArticleId}`} className="block">
             <div className="relative overflow-hidden rounded-[2px] bg-white/70">
-              {featured.imageUrl ? (
-                <MotionImg
-                  src={featuredImageSrc}
-                  alt="Featured story"
-                  className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
-                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
-                  transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
-                />
-              ) : null}
+              <MotionImg
+                src={featuredImageSrc}
+                alt={featured.headline || "Featured story"}
+                className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           </Link>
         </MotionDiv>
@@ -296,19 +308,21 @@ function Hero() {
             delay: prefersReducedMotion ? 0 : 0.22,
             ease: "easeOut",
           }}
-          className="flex flex-wrap items-center justify-between gap-3 pt-4"
+          className="mt-4 rounded-2xl border border-black/10 bg-white/65 px-4 py-3 shadow-[0_8px_24px_rgba(20,20,20,0.06)] backdrop-blur-sm"
         >
-          <div className="flex items-center gap-2">
-            <span className="rounded border border-black/40 px-3 py-1 text-xs font-medium uppercase text-black/80">
-              {featured.category || "Category"}
-            </span>
-            <span className="rounded border border-black/40 px-3 py-1 text-xs font-medium uppercase text-black/80">
-              {featured.author || "Author"}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-black/35 bg-white/75 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-black/80">
+                {featured.category || "Category"}
+              </span>
+              <span className="rounded-full border border-black/35 bg-white/75 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-black/80">
+                {featured.author || "Author"}
+              </span>
+            </div>
+            <p className="text-xs font-medium text-black/70">
+              {(featured.date || "Date")} | {(featured.readTime || "Read time")}
+            </p>
           </div>
-          <p className="text-xs text-black/70">
-            {(featured.date || "Date")} • {(featured.readTime || "Read time")}
-          </p>
         </MotionDiv>
 
         <MotionDiv
@@ -319,18 +333,18 @@ function Hero() {
             delay: prefersReducedMotion ? 0 : 0.28,
             ease: "easeOut",
           }}
-          className="flex flex-col justify-between gap-4 pt-3 md:flex-row md:items-start"
+          className="mt-4 flex flex-col justify-between gap-5 rounded-2xl bg-gradient-to-r from-white/85 to-white/65 px-4 py-5 shadow-[0_12px_32px_rgba(20,20,20,0.08)] md:flex-row md:items-start md:px-6"
         >
           <div className="w-full md:flex-1">
             <Link to={`/hero/article/${featuredArticleId}`} className="block">
-              <h1 className="text-3xl leading-tight text-black/85 transition hover:text-black md:text-[42px]">
+              <h1 className="text-3xl font-semibold leading-[1.12] tracking-[-0.01em] text-black/90 transition hover:text-black md:text-[46px]">
                 {featured.headline ||
                   "A deep dive into the influence of cultural movements on contemporary society"}
               </h1>
             </Link>
 
             {heroArticle?.summary?.trim() ? (
-              <p className="mt-4 w-full text-[17px] leading-relaxed text-black/75 line-clamp-3">
+              <p className="mt-4 w-full max-w-4xl text-[18px] leading-relaxed text-black/75 line-clamp-4">
                 {heroArticle.summary}
               </p>
             ) : null}
@@ -338,9 +352,12 @@ function Hero() {
 
           <Link
             to={`/hero/article/${featuredArticleId}`}
-            className="pt-1 text-sm text-black/75 transition hover:text-black md:shrink-0"
+            className="group mt-1 inline-flex items-center gap-3 self-start rounded-full border border-[#e25b4a]/45 bg-white/90 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#c94f40] transition hover:-translate-y-0.5 hover:border-[#c94f40] hover:bg-[#fff3f1] hover:text-[#a94033] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e25b4a]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#d8d8dc] md:shrink-0"
           >
-            {featured.ctaText || "Read Article ->"}
+            <span>{ctaLabel || "Read Article"}</span>
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e25b4a] text-[10px] font-bold text-white transition group-hover:translate-x-0.5 group-hover:bg-[#c94f40]">
+              -&gt;
+            </span>
           </Link>
         </MotionDiv>
       </div>

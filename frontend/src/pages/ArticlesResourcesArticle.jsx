@@ -8,6 +8,7 @@ import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
 import useSeo from "../hooks/useSeo";
 import slugify from "../utils/slugify";
+import ArticleAuthorBox from "../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -28,6 +29,10 @@ function normalizeResources(payload) {
     category: item?.category || "Guide",
     date: (item?.publishedAt || "").slice(0, 10) || "",
     image: item?.image || "",
+    author: item?.author || item?.authorName || "",
+    authorName: item?.authorName || item?.author || "",
+    authorRole: item?.authorRole || "",
+    authorBio: item?.authorBio || "",
     summary: item?.summary || "",
     body: item?.content || item?.body || "",
     status: item?.status || "draft",
@@ -166,6 +171,7 @@ function ArticlesResourcesArticle() {
         >
           {article.body}
         </MotionText>
+        <ArticleAuthorBox article={article} fallbackName="Resources Desk" />
       </div>
       <NewsletterBanner variant="sports" />
     </MotionSection>

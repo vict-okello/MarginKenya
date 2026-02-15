@@ -24,7 +24,10 @@ function normalizeStories(payload) {
     summary: item?.summary || "",
     body: item?.body || item?.content || "",
     date: item?.date || "",
-    author: item?.author || "",
+    author: item?.author || item?.authorName || "",
+    authorName: item?.authorName || item?.author || "",
+    authorRole: item?.authorRole || "",
+    authorBio: item?.authorBio || "",
     category: item?.category || "Sports",
     image: item?.image || "",
   }));

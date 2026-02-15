@@ -7,6 +7,7 @@ import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
 import useSeo from "../hooks/useSeo";
 import slugify from "../utils/slugify";
+import ArticleAuthorBox from "../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionImage = motion.img;
@@ -157,6 +158,7 @@ function PoliticsArticle() {
           <MotionText className="whitespace-pre-line pt-6 text-[17px] leading-8 text-black/85 md:text-lg">
             {bodyText}
           </MotionText>
+          <ArticleAuthorBox article={article} fallbackName="Politics Desk" />
         </div>
 
       </div>

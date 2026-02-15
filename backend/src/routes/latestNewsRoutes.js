@@ -28,6 +28,10 @@ function normalizeArticles(payload) {
     category: item?.category || "Latest News",
     date: item?.date || new Date().toISOString().slice(0, 10),
     image: item?.image || "",
+    author: item?.author || item?.authorName || "",
+    authorName: item?.authorName || item?.author || "",
+    authorRole: item?.authorRole || "",
+    authorBio: item?.authorBio || "",
     summary: item?.summary || "",
     body: item?.body || item?.content || "",
   }));

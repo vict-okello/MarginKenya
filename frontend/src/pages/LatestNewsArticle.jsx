@@ -8,6 +8,7 @@ import useReadTracker from "../hooks/useReadTracker";
 import NewsletterBanner from "./NewsletterBanner";
 import useSeo from "../hooks/useSeo";
 import slugify from "../utils/slugify";
+import ArticleAuthorBox from "../components/ArticleAuthorBox";
 
 const MotionSection = motion.section;
 const MotionWrap = motion.div;
@@ -28,6 +29,10 @@ function normalizeLatestNews(payload) {
     category: item?.category || "Latest News",
     date: item?.date || new Date().toISOString().slice(0, 10),
     image: item?.image || "",
+    author: item?.author || item?.authorName || "",
+    authorName: item?.authorName || item?.author || "",
+    authorRole: item?.authorRole || "",
+    authorBio: item?.authorBio || "",
     summary: item?.summary || "",
     body: item?.body || item?.content || "",
   }));
@@ -168,6 +173,7 @@ function LatestNewsArticle() {
         >
           {article.body}
         </MotionText>
+        <ArticleAuthorBox article={article} fallbackName="Latest News Desk" />
       </div>
       <NewsletterBanner variant="sports" />
     </MotionSection>

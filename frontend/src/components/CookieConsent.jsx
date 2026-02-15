@@ -55,18 +55,18 @@ export default function CookieConsent() {
     <AnimatePresence>
       {visible ? (
         <MotionDiv
-          className="fixed inset-x-0 bottom-4 z-[80] px-4"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 14 }}
+          className="fixed bottom-4 left-4 right-4 z-[80] sm:bottom-6 sm:left-auto sm:right-6 sm:w-[390px]"
+          initial={{ opacity: 0, x: 20, y: 8 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          exit={{ opacity: 0, x: 12, y: 8 }}
           transition={{ duration: 0.28, ease: "easeOut" }}
         >
-          <div className="mx-auto w-full max-w-5xl rounded-2xl border border-black/20 bg-[#ece8df] p-4 shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="w-full rounded-2xl border border-black/20 bg-[#ece8df] p-4 shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
+            <div className="flex flex-col gap-3">
               <p className="text-sm text-black/80">
                 MarginKenya uses cookies and similar technologies to enhance your browsing experience, analyze site traffic, and deliver relevant content. You can manage your preferences at any time.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <MotionButton
                   type="button"
                   onClick={rejectCookies}

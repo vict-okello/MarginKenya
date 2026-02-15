@@ -18,6 +18,10 @@ const emptyStory = () => ({
   url: "",
   publishedAt: new Date().toISOString().slice(0, 16),
   status: "draft",
+  author: "",
+  authorName: "",
+  authorRole: "",
+  authorBio: "",
 });
 
 function normalizeList(payload) {
@@ -37,6 +41,10 @@ function normalizeList(payload) {
     url: s?.url || "",
     publishedAt: s?.date ? `${s.date}T00:00` : new Date().toISOString().slice(0, 16),
     status: s?.status || "published",
+    author: s?.author || s?.authorName || "",
+    authorName: s?.authorName || s?.author || "",
+    authorRole: s?.authorRole || "",
+    authorBio: s?.authorBio || "",
   }));
 }
 
@@ -47,6 +55,10 @@ function toBackendPayload(stories) {
     category: s.source || "Latest News",
     date: (s.publishedAt || "").slice(0, 10) || new Date().toISOString().slice(0, 10),
     image: s.image || "",
+    author: s.author || s.authorName || "",
+    authorName: s.authorName || s.author || "",
+    authorRole: s.authorRole || "",
+    authorBio: s.authorBio || "",
     summary: s.summary || "",
     body: s.content || "",
   }));
@@ -471,6 +483,43 @@ export default function AdminLatestNewsPage() {
                   onChange={(e) => patchSelected({ title: e.target.value })}
                   placeholder="Headline"
                   className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">
+                  Author Name
+                </label>
+                <input
+                  value={selected.authorName || selected.author || ""}
+                  onChange={(e) => patchSelected({ author: e.target.value, authorName: e.target.value })}
+                  placeholder="Reporter name"
+                  className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">
+                  Author Role
+                </label>
+                <input
+                  value={selected.authorRole || ""}
+                  onChange={(e) => patchSelected({ authorRole: e.target.value })}
+                  placeholder="Correspondent / Editor"
+                  className="w-full rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.12em] text-black/70">
+                  Author Credibility Line
+                </label>
+                <textarea
+                  rows={2}
+                  value={selected.authorBio || ""}
+                  onChange={(e) => patchSelected({ authorBio: e.target.value })}
+                  placeholder="One-line credibility profile"
+                  className="w-full resize-none rounded border border-black/20 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/50"
                 />
               </div>
 

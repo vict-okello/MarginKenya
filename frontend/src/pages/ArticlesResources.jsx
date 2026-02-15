@@ -96,9 +96,12 @@ function ArticlesResources({ withSection = true, showHeader = true }) {
 
                 <Link
                   to={`/resources/article/${item.id}`}
-                  className="inline-block pt-5 text-xs font-semibold text-[#e25b4a] transition hover:text-[#c94f40]"
+                  className="group mt-5 inline-flex items-center gap-3 rounded-full border border-[#e25b4a]/45 bg-white/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c94f40] transition hover:-translate-y-0.5 hover:border-[#c94f40] hover:bg-[#fff3f1] hover:text-[#a94033] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e25b4a]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#d8d8dc]"
                 >
-                  Read More -&gt;
+                  <span>Read Article</span>
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-[#e25b4a] text-[10px] font-bold text-white transition group-hover:translate-x-0.5 group-hover:bg-[#c94f40]">
+                    -&gt;
+                  </span>
                 </Link>
               </div>
 
