@@ -52,7 +52,10 @@ const allowedOrigins = [
 
   // ✅ ADD YOUR VERCEL FRONTEND ORIGIN HERE:
   "https://marginke.vercel.app",
+  "https://marginkenya.vercel.app",
 ].filter(Boolean);
+
+const isAllowedOrigin = (origin) => allowedOrigins.includes(origin);
 
 app.disable("x-powered-by");
 app.set("trust proxy", process.env.TRUST_PROXY === "true" ? 1 : false);
@@ -64,7 +67,7 @@ app.use(
     origin: (origin, cb) => {
       // allow server-to-server / curl / same-origin requests without Origin header
       if (!origin) return cb(null, true);
-      if (allowedOrigins.includes(origin)) return cb(null, true);
+      if (isAllowedOrigin(origin)) return cb(null, true);
       return cb(null, false);
     },
     credentials: true,
@@ -77,7 +80,7 @@ app.use(
 // Extra hard block (returns 403 JSON) if Origin is not allowed
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (origin && !allowedOrigins.includes(origin)) {
+  if (origin && !isAllowedOrigin(origin)) {
     return res.status(403).json({ message: "Origin not allowed" });
   }
   return next();
