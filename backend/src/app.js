@@ -55,7 +55,9 @@ const allowedOrigins = [
   "https://marginkenya.vercel.app",
 ].filter(Boolean);
 
-const isAllowedOrigin = (origin) => allowedOrigins.includes(origin);
+const VERCEL_PREVIEW_PATTERN = /^https:\/\/([a-z0-9-]+)\.vercel\.app$/i;
+const isVercelPreviewOrigin = (origin) => VERCEL_PREVIEW_PATTERN.test(origin);
+const isAllowedOrigin = (origin) => allowedOrigins.includes(origin) || isVercelPreviewOrigin(origin);
 
 app.disable("x-powered-by");
 app.set("trust proxy", process.env.TRUST_PROXY === "true" ? 1 : false);
