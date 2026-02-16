@@ -41,17 +41,17 @@ function NewsletterBanner({ variant = "home" }) {
   };
 
   return (
-    <section className="bg-[#d8d8dc] px-3 pb-6 pt-2 sm:px-4 sm:pb-8">
+    <section className="bg-[#d8d8dc] px-2 pb-6 pt-2 sm:px-4 sm:pb-8">
       <div
-        className={`mx-auto w-full max-w-5xl overflow-hidden rounded px-4 py-5 sm:px-6 sm:py-7 md:px-8 ${
+        className={`mx-auto w-full max-w-5xl overflow-hidden rounded px-3 py-5 sm:px-6 sm:py-7 md:px-8 ${
           isSports ? "bg-[#d1d4d9]" : "bg-[#b84a3d]"
         }`}
       >
         <div className="grid gap-5 sm:gap-6 md:grid-cols-[1fr_280px] md:items-center">
-          <div>
+          <div className="min-w-0">
             {isSports ? (
               <>
-                <h2 className="max-w-lg text-3xl font-extrabold uppercase leading-[0.95] text-black/70 sm:text-4xl md:text-6xl">
+                <h2 className="max-w-lg break-words text-[clamp(1.85rem,11vw,3rem)] font-extrabold uppercase leading-[0.95] text-black/70 md:text-6xl">
                   Newsletter
                   <br />
                   Subscription
@@ -62,7 +62,7 @@ function NewsletterBanner({ variant = "home" }) {
               </>
             ) : (
               <>
-                <h2 className="max-w-lg text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-[34px]">
+                <h2 className="max-w-lg text-[clamp(1.5rem,7vw,2rem)] font-semibold leading-tight text-white md:text-[34px]">
                   Stay informed with our latest news and updates.
                 </h2>
                 <p className="max-w-lg pt-2 text-xs text-white/90 md:pt-3 md:text-sm">
@@ -73,7 +73,7 @@ function NewsletterBanner({ variant = "home" }) {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3 md:max-w-[280px]" noValidate>
+          <form onSubmit={handleSubmit} className="w-full space-y-3 md:max-w-[280px] md:justify-self-end" noValidate>
             <input
               type="email"
               value={email}
