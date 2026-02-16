@@ -40,6 +40,8 @@ const legacyUploadsRoot = path.join(__dirname, "./uploads");
 
 const app = express();
 const apiRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
+const enableLocalUploads =
+  process.env.NODE_ENV !== "production" || process.env.ENABLE_LOCAL_UPLOADS === "true";
 
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
@@ -101,25 +103,27 @@ app.use("/api", (req, res, next) => {
 });
 app.use("/api", apiRateLimit);
 
-// Serve uploads from backend/uploads first, then fallback to legacy backend/src/uploads.
-app.use(
-  "/uploads",
-  express.static(uploadsRoot, {
-    index: false,
-    dotfiles: "deny",
-    maxAge: "7d",
-    fallthrough: true,
-  })
-);
-app.use(
-  "/uploads",
-  express.static(legacyUploadsRoot, {
-    index: false,
-    dotfiles: "deny",
-    maxAge: "7d",
-    fallthrough: false,
-  })
-);
+// Serve local uploads only in non-production or when explicitly enabled.
+if (enableLocalUploads) {
+  app.use(
+    "/uploads",
+    express.static(uploadsRoot, {
+      index: false,
+      dotfiles: "deny",
+      maxAge: "7d",
+      fallthrough: true,
+    })
+  );
+  app.use(
+    "/uploads",
+    express.static(legacyUploadsRoot, {
+      index: false,
+      dotfiles: "deny",
+      maxAge: "7d",
+      fallthrough: false,
+    })
+  );
+}
 
 // Routes
 app.get("/api/health", (req, res) => res.json({ ok: true }));
