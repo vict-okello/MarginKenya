@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { fileURLToPath } from "url";
 import requireAdmin from "../middleware/requireAdmin.js";
 import createRateLimiter from "../middleware/rateLimit.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 const uploadRateLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 40 });
@@ -51,6 +52,14 @@ function getUploadTarget(req) {
   return { sectionKey, relativeDir, absoluteDir };
 }
 
+function hasCloudinaryConfig() {
+  return (
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+    Boolean(process.env.CLOUDINARY_API_KEY) &&
+    Boolean(process.env.CLOUDINARY_API_SECRET)
+  );
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const target = getUploadTarget(req);
@@ -74,13 +83,22 @@ const upload = multer({
   },
 });
 
-function sendUploadResponse(req, res) {
+async function sendUploadResponse(req, res) {
   if (!req.file) return res.status(400).json({ message: "No image uploaded" });
+  if (!hasCloudinaryConfig()) {
+    return res.status(500).json({ message: "Cloudinary is not configured" });
+  }
 
   const target = req._uploadTarget || getUploadTarget(req);
-  const prefix = target.relativeDir ? `/uploads/${target.relativeDir.replace(/\\/g, "/")}` : "/uploads";
+  const folderSuffix = target.relativeDir ? `/${target.relativeDir.replace(/\\/g, "/")}` : "";
+  const uploaded = await cloudinary.uploader.upload(req.file.path, {
+    folder: `marginkenya${folderSuffix}`,
+    resource_type: "image",
+  });
+  fs.unlink(req.file.path, () => {});
+
   return res.json({
-    url: `${prefix}/${req.file.filename}`,
+    url: String(uploaded.secure_url || ""),
     section: target.sectionKey,
   });
 }

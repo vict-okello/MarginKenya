@@ -96,6 +96,15 @@ function hasCloudinaryConfig() {
   );
 }
 
+async function uploadSettingsAsset(localPath, folder) {
+  const uploaded = await cloudinary.uploader.upload(localPath, {
+    folder,
+    resource_type: "image",
+  });
+  fs.unlink(localPath, () => {});
+  return String(uploaded.secure_url || "");
+}
+
 const filenameStorage = {
   filename: (req, file, cb) => {
     const safe = String(file.originalname || "file")
@@ -148,7 +157,7 @@ router.patch(
     { name: "favicon", maxCount: 1 },
     { name: "defaultOgImage", maxCount: 1 },
   ]),
-  (req, res) => {
+  async (req, res) => {
     if (!isSuperAdmin(req)) {
       return res.status(403).json({ message: "Super admin only" });
     }
@@ -170,14 +179,29 @@ router.patch(
     if (clearFavicon) settings.branding.favicon = "";
     if (clearDefaultOgImage) settings.branding.defaultOgImage = "";
 
+    if (req.files?.logo?.[0] || req.files?.favicon?.[0] || req.files?.defaultOgImage?.[0]) {
+      if (!hasCloudinaryConfig()) {
+        return res.status(500).json({ message: "Cloudinary is not configured" });
+      }
+    }
+
     if (req.files?.logo?.[0]) {
-      settings.branding.logo = `/uploads/branding/${req.files.logo[0].filename}`;
+      settings.branding.logo = await uploadSettingsAsset(
+        req.files.logo[0].path,
+        "marginkenya/branding"
+      );
     }
     if (req.files?.favicon?.[0]) {
-      settings.branding.favicon = `/uploads/branding/${req.files.favicon[0].filename}`;
+      settings.branding.favicon = await uploadSettingsAsset(
+        req.files.favicon[0].path,
+        "marginkenya/branding"
+      );
     }
     if (req.files?.defaultOgImage?.[0]) {
-      settings.branding.defaultOgImage = `/uploads/branding/${req.files.defaultOgImage[0].filename}`;
+      settings.branding.defaultOgImage = await uploadSettingsAsset(
+        req.files.defaultOgImage[0].path,
+        "marginkenya/branding"
+      );
     }
 
     writeSettings(settings);

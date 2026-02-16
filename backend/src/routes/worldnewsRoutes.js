@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import crypto from "crypto";
 import requireAdmin from "../middleware/requireAdmin.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -89,6 +90,14 @@ function ensureDirs() {
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+function hasCloudinaryConfig() {
+  return (
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+    Boolean(process.env.CLOUDINARY_API_KEY) &&
+    Boolean(process.env.CLOUDINARY_API_SECRET)
+  );
+}
+
 function normalizeWorld(payload) {
   const lead = normalizeLead(payload?.lead);
   const storiesRaw = Array.isArray(payload?.stories) ? payload.stories : [];
@@ -158,12 +167,22 @@ router.post(
   "/upload",
   requireAdmin,
   upload.single("image"),
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No image uploaded" });
-    res.json({
-      imageUrl: `/uploads/worldnews/${req.file.filename}`,
-      url: `/uploads/worldnews/${req.file.filename}`,
-    });
+    if (!hasCloudinaryConfig()) {
+      return res.status(500).json({ message: "Cloudinary is not configured" });
+    }
+    try {
+      const uploaded = await cloudinary.uploader.upload(req.file.path, {
+        folder: "marginkenya/worldnews",
+        resource_type: "image",
+      });
+      fs.unlink(req.file.path, () => {});
+      const url = String(uploaded.secure_url || "");
+      return res.json({ imageUrl: url, url });
+    } catch {
+      return res.status(500).json({ message: "Image upload failed" });
+    }
   }
 );
 

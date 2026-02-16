@@ -5,6 +5,7 @@ import multer from "multer";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
 import requireAdmin from "../middleware/requireAdmin.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -19,6 +20,14 @@ const ALLOWED_CATEGORIES = new Set(["Guide", "Research", "Toolkit", "Deep Dive"]
 function ensureDirs() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+function hasCloudinaryConfig() {
+  return (
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+    Boolean(process.env.CLOUDINARY_API_KEY) &&
+    Boolean(process.env.CLOUDINARY_API_SECRET)
+  );
 }
 
 function cleanSingleLine(value, maxLen = 5000) {
@@ -129,10 +138,22 @@ router.put("/", requireAdmin, (req, res) => {
   res.json({ ok: true, resources: next });
 });
 
-router.post("/upload", requireAdmin, upload.single("image"), (req, res) => {
+router.post("/upload", requireAdmin, upload.single("image"), async (req, res) => {
   if (!req.file) return res.status(400).json({ message: "No image uploaded" });
-  const url = `/uploads/resources/${req.file.filename}`;
-  res.json({ ok: true, url, imageUrl: url });
+  if (!hasCloudinaryConfig()) {
+    return res.status(500).json({ message: "Cloudinary is not configured" });
+  }
+  try {
+    const uploaded = await cloudinary.uploader.upload(req.file.path, {
+      folder: "marginkenya/resources",
+      resource_type: "image",
+    });
+    fs.unlink(req.file.path, () => {});
+    const url = String(uploaded.secure_url || "");
+    return res.json({ ok: true, url, imageUrl: url });
+  } catch {
+    return res.status(500).json({ message: "Image upload failed" });
+  }
 });
 
 export default router;

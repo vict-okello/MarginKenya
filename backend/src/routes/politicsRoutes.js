@@ -5,6 +5,7 @@ import multer from "multer";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
 import requireAdmin from "../middleware/requireAdmin.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -47,6 +48,14 @@ function normalizeDesk(payload) {
       ? payload.international.map((item, idx) => normalizeStory(item, idx, "International"))
       : [],
   };
+}
+
+function hasCloudinaryConfig() {
+  return (
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+    Boolean(process.env.CLOUDINARY_API_KEY) &&
+    Boolean(process.env.CLOUDINARY_API_SECRET)
+  );
 }
 
 function readPolitics() {
@@ -100,9 +109,21 @@ router.put("/", requireAdmin, (req, res) => {
 });
 
 // POST /api/politics/upload (admin only)
-router.post("/upload", requireAdmin, upload.single("image"), (req, res) => {
+router.post("/upload", requireAdmin, upload.single("image"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  res.json({ ok: true, url: `/uploads/politics/${req.file.filename}` });
+  if (!hasCloudinaryConfig()) {
+    return res.status(500).json({ error: "Cloudinary is not configured" });
+  }
+  try {
+    const uploaded = await cloudinary.uploader.upload(req.file.path, {
+      folder: "marginkenya/politics",
+      resource_type: "image",
+    });
+    fs.unlink(req.file.path, () => {});
+    return res.json({ ok: true, url: String(uploaded.secure_url || "") });
+  } catch {
+    return res.status(500).json({ error: "Image upload failed" });
+  }
 });
 
 export default router;
