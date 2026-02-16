@@ -5,6 +5,7 @@ import path from "path";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import requireAdmin from "../middleware/requireAdmin.js";
+import cloudinary from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -85,6 +86,14 @@ function normalizeHexColor(value, fallback) {
   const raw = String(value || "").trim();
   if (/^#[0-9a-fA-F]{6}$/.test(raw)) return raw.toLowerCase();
   return fallback;
+}
+
+function hasCloudinaryConfig() {
+  return (
+    Boolean(process.env.CLOUDINARY_CLOUD_NAME) &&
+    Boolean(process.env.CLOUDINARY_API_KEY) &&
+    Boolean(process.env.CLOUDINARY_API_SECRET)
+  );
 }
 
 const filenameStorage = {
@@ -203,38 +212,54 @@ router.patch(
   uploadDashboard.fields([
     { name: "profileImage", maxCount: 1 },
   ]),
-  (req, res) => {
+  async (req, res) => {
     if (!isSuperAdmin(req)) {
       return res.status(403).json({ message: "Super admin only" });
     }
 
-    const settings = readSettings();
+    try {
+      const settings = readSettings();
 
-    const title = String(req.body?.title || "").trim();
-    const subtitle = String(req.body?.subtitle || "").trim();
+      const title = String(req.body?.title || "").trim();
+      const subtitle = String(req.body?.subtitle || "").trim();
 
-    if (!title) return res.status(400).json({ message: "Title is required" });
-    if (title.length > 80) return res.status(400).json({ message: "Title must be 80 characters or less" });
-    if (subtitle.length > 180) return res.status(400).json({ message: "Subtitle must be 180 characters or less" });
+      if (!title) return res.status(400).json({ message: "Title is required" });
+      if (title.length > 80) return res.status(400).json({ message: "Title must be 80 characters or less" });
+      if (subtitle.length > 180) return res.status(400).json({ message: "Subtitle must be 180 characters or less" });
 
-    settings.adminDashboard.title = title;
-    settings.adminDashboard.subtitle = subtitle;
-    settings.adminDashboard.headerColorFrom = normalizeHexColor(
-      req.body?.headerColorFrom,
-      settings.adminDashboard.headerColorFrom || "#ffffff"
-    );
-    settings.adminDashboard.headerColorTo = normalizeHexColor(
-      req.body?.headerColorTo,
-      settings.adminDashboard.headerColorTo || "#e4e4e7"
-    );
-    if (isTrue(req.body?.clearProfileImage)) settings.adminDashboard.profileImage = "";
+      settings.adminDashboard.title = title;
+      settings.adminDashboard.subtitle = subtitle;
+      settings.adminDashboard.headerColorFrom = normalizeHexColor(
+        req.body?.headerColorFrom,
+        settings.adminDashboard.headerColorFrom || "#ffffff"
+      );
+      settings.adminDashboard.headerColorTo = normalizeHexColor(
+        req.body?.headerColorTo,
+        settings.adminDashboard.headerColorTo || "#e4e4e7"
+      );
+      if (isTrue(req.body?.clearProfileImage)) settings.adminDashboard.profileImage = "";
 
-    if (req.files?.profileImage?.[0]) {
-      settings.adminDashboard.profileImage = `/uploads/dashboard/${req.files.profileImage[0].filename}`;
+      if (req.files?.profileImage?.[0]) {
+        if (!hasCloudinaryConfig()) {
+          return res.status(500).json({ message: "Cloudinary is not configured" });
+        }
+
+        const uploaded = await cloudinary.uploader.upload(req.files.profileImage[0].path, {
+          folder: "marginkenya/dashboard",
+          resource_type: "image",
+        });
+
+        settings.adminDashboard.profileImage = String(uploaded.secure_url || "");
+
+        fs.unlink(req.files.profileImage[0].path, () => {});
+      }
+
+      writeSettings(settings);
+      return res.json(settings.adminDashboard);
+    } catch (err) {
+      console.error("PATCH /api/settings/dashboard error:", err);
+      return res.status(500).json({ message: "Failed to update dashboard settings" });
     }
-
-    writeSettings(settings);
-    return res.json(settings.adminDashboard);
   }
 );
 
