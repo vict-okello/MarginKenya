@@ -40,8 +40,7 @@ const legacyUploadsRoot = path.join(__dirname, "./uploads");
 
 const app = express();
 const apiRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
-const enableLocalUploads =
-  process.env.NODE_ENV !== "production" || process.env.ENABLE_LOCAL_UPLOADS === "true";
+const enableLocalUploads = process.env.NODE_ENV !== "production";
 
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
