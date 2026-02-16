@@ -8,7 +8,9 @@ export default function securityHeaders(req, res, next) {
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  // Frontend and API are on different origins (e.g., vercel.app + railway.app),
+  // so assets like uploaded images must be embeddable cross-origin.
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
   res.setHeader(
     "Content-Security-Policy",
     "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'"
