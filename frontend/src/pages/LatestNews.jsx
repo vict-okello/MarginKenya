@@ -165,9 +165,9 @@ function LatestNews({ withSection = true, showHeader = true }) {
                 to={`/latest-news/${sideOne.id}`}
                 className="group"
               >
-                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 overflow-hidden rounded" whileHover={{ y: -6 }}>
-                  <div className="my-auto">
-                    <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
+                <MotionArticle className="grid grid-cols-1 gap-3 overflow-hidden rounded sm:grid-cols-[minmax(0,1fr)_180px] sm:gap-4" whileHover={{ y: -6 }}>
+                  <div className="min-w-0 my-auto">
+                    <p className="break-words text-[28px] leading-tight text-black/85 transition group-hover:text-black sm:text-[32px]">
                       {sideOne.title}
                     </p>
                     <p className="pt-2 text-sm text-black/60">
@@ -178,7 +178,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
                     <img
                       src={sideOne.image}
                       alt={sideOne.title}
-                      className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                      className="h-44 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02] sm:h-52"
                     />
                   </div>
                 </MotionArticle>
@@ -190,9 +190,9 @@ function LatestNews({ withSection = true, showHeader = true }) {
                 to={`/latest-news/${sideTwo.id}`}
                 className="group"
               >
-                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 overflow-hidden rounded" whileHover={{ y: -6 }}>
-                  <div className="my-auto">
-                    <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
+                <MotionArticle className="grid grid-cols-1 gap-3 overflow-hidden rounded sm:grid-cols-[minmax(0,1fr)_180px] sm:gap-4" whileHover={{ y: -6 }}>
+                  <div className="min-w-0 my-auto">
+                    <p className="break-words text-[28px] leading-tight text-black/85 transition group-hover:text-black sm:text-[32px]">
                       {sideTwo.title}
                     </p>
                     <p className="pt-2 text-sm text-black/60">
@@ -203,7 +203,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
                     <img
                       src={sideTwo.image}
                       alt={sideTwo.title}
-                      className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                      className="h-44 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02] sm:h-52"
                     />
                   </div>
                 </MotionArticle>

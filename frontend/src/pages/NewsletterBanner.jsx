@@ -51,7 +51,7 @@ function NewsletterBanner({ variant = "home" }) {
           <div className="min-w-0">
             {isSports ? (
               <>
-                <h2 className="max-w-lg break-words text-[clamp(1.85rem,11vw,3rem)] font-extrabold uppercase leading-[0.95] text-black/70 md:text-6xl">
+                <h2 className="max-w-lg break-words text-[clamp(1.55rem,9.5vw,3rem)] font-extrabold uppercase leading-[0.95] text-black/70 md:text-6xl">
                   Newsletter
                   <br />
                   Subscription
