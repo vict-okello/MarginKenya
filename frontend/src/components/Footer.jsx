@@ -6,10 +6,7 @@ function Footer() {
       <div className="mx-auto w-full max-w-5xl">
         <div className="border-t-[3px] border-black/75 pt-3">
           <Link to="/" className="flex items-end justify-center gap-1 text-black">
-            <span
-              className="text-4xl leading-none"
-              style={{ fontFamily: "'Old English Text MT', 'Times New Roman', serif" }}
-            >
+            <span className="font-brand-the text-4xl leading-none">
               The
             </span>
             <span

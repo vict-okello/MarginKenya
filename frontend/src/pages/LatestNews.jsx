@@ -165,7 +165,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
                 to={`/latest-news/${sideOne.id}`}
                 className="group"
               >
-                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
+                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 overflow-hidden rounded" whileHover={{ y: -6 }}>
                   <div className="my-auto">
                     <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
                       {sideOne.title}
@@ -174,11 +174,13 @@ function LatestNews({ withSection = true, showHeader = true }) {
                       {sideOne.category} - {sideOne.date}
                     </p>
                   </div>
-                  <img
-                    src={sideOne.image}
-                    alt={sideOne.title}
-                    className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                  />
+                  <div className="overflow-hidden rounded">
+                    <img
+                      src={sideOne.image}
+                      alt={sideOne.title}
+                      className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                    />
+                  </div>
                 </MotionArticle>
               </Link>
             ) : null}
@@ -188,7 +190,7 @@ function LatestNews({ withSection = true, showHeader = true }) {
                 to={`/latest-news/${sideTwo.id}`}
                 className="group"
               >
-                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 rounded" whileHover={{ y: -6 }}>
+                <MotionArticle className="grid grid-cols-[1fr_180px] gap-4 overflow-hidden rounded" whileHover={{ y: -6 }}>
                   <div className="my-auto">
                     <p className="text-[32px] leading-tight text-black/85 transition group-hover:text-black">
                       {sideTwo.title}
@@ -197,11 +199,13 @@ function LatestNews({ withSection = true, showHeader = true }) {
                       {sideTwo.category} - {sideTwo.date}
                     </p>
                   </div>
-                  <img
-                    src={sideTwo.image}
-                    alt={sideTwo.title}
-                    className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                  />
+                  <div className="overflow-hidden rounded">
+                    <img
+                      src={sideTwo.image}
+                      alt={sideTwo.title}
+                      className="h-52 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                    />
+                  </div>
                 </MotionArticle>
               </Link>
             ) : null}
@@ -222,12 +226,14 @@ function LatestNews({ withSection = true, showHeader = true }) {
               className="group"
             >
               <MotionArticle variants={itemVariants} whileHover={{ y: -8 }}>
-                <MotionImage
-                  src={article.image}
-                  alt={article.title}
-                  className="h-56 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                  whileHover={{ scale: 1.03 }}
-                />
+                <div className="overflow-hidden rounded">
+                  <MotionImage
+                    src={article.image}
+                    alt={article.title}
+                    className="h-56 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                    whileHover={{ scale: 1.03 }}
+                  />
+                </div>
                 <p className="pt-3 text-[32px] leading-tight text-black/85 transition group-hover:text-black">
                   {article.title}
                 </p>

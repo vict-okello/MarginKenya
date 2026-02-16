@@ -41,31 +41,31 @@ function NewsletterBanner({ variant = "home" }) {
   };
 
   return (
-    <section className="bg-[#d8d8dc] px-4 pb-8 pt-2">
+    <section className="bg-[#d8d8dc] px-3 pb-6 pt-2 sm:px-4 sm:pb-8">
       <div
-        className={`mx-auto w-full max-w-5xl overflow-hidden rounded px-6 py-7 md:px-8 ${
+        className={`mx-auto w-full max-w-5xl overflow-hidden rounded px-4 py-5 sm:px-6 sm:py-7 md:px-8 ${
           isSports ? "bg-[#d1d4d9]" : "bg-[#b84a3d]"
         }`}
       >
-        <div className="grid gap-6 md:grid-cols-[1fr_280px] md:items-center">
+        <div className="grid gap-5 sm:gap-6 md:grid-cols-[1fr_280px] md:items-center">
           <div>
             {isSports ? (
               <>
-                <h2 className="max-w-lg text-5xl font-extrabold uppercase leading-[0.9] text-black/70 md:text-6xl">
+                <h2 className="max-w-lg text-3xl font-extrabold uppercase leading-[0.95] text-black/70 sm:text-4xl md:text-6xl">
                   Newsletter
                   <br />
                   Subscription
                 </h2>
-                <p className="max-w-lg pt-3 text-sm text-black/70 md:text-base">
+                <p className="max-w-lg pt-2 text-sm text-black/70 md:pt-3 md:text-base">
                   Get curated updates and weekly highlights directly in your inbox.
                 </p>
               </>
             ) : (
               <>
-                <h2 className="max-w-lg text-3xl font-semibold leading-tight text-white md:text-[34px]">
+                <h2 className="max-w-lg text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-[34px]">
                   Stay informed with our latest news and updates.
                 </h2>
-                <p className="max-w-lg pt-3 text-xs text-white/90 md:text-sm">
+                <p className="max-w-lg pt-2 text-xs text-white/90 md:pt-3 md:text-sm">
                   Get breaking news and curated stories delivered to your inbox every day.
                   Be the first to know what is happening around the world.
                 </p>
@@ -73,7 +73,7 @@ function NewsletterBanner({ variant = "home" }) {
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3 md:max-w-[280px]" noValidate>
             <input
               type="email"
               value={email}
@@ -102,7 +102,7 @@ function NewsletterBanner({ variant = "home" }) {
               <p
                 role="status"
                 aria-live="polite"
-                className={`text-xs ${
+                className={`break-words text-xs ${
                   feedback.type === "success"
                     ? isSports
                       ? "text-black/75"
@@ -119,7 +119,7 @@ function NewsletterBanner({ variant = "home" }) {
         </div>
 
         {!isSports ? (
-          <p className="mt-6 text-4xl font-black uppercase leading-none text-black/12 md:text-6xl">
+          <p className="mt-4 text-3xl font-black uppercase leading-none text-black/12 sm:mt-6 sm:text-4xl md:text-6xl">
             Margin
             <span className="ml-1 align-super text-sm font-semibold tracking-wide md:text-base">ke</span>
           </p>

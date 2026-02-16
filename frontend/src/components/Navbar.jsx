@@ -24,10 +24,7 @@ function Navbar() {
             }`
           }
         >
-          <span
-            className="text-5xl leading-none md:text-6xl"
-            style={{ fontFamily: "'Old English Text MT', 'Times New Roman', serif" }}
-          >
+          <span className="font-brand-the text-5xl leading-none md:text-6xl">
             The
           </span>
           <span
