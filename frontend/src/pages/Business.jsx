@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { businessArticles } from "../data/businessArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -15,7 +14,7 @@ function Business() {
   const [scope, setScope] = useState("Local");
   const [tag, setTag] = useState("All");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState(businessArticles);
+  const [stories, setStories] = useState([]);
   const [loadError, setLoadError] = useState("");
 
   function resolveImageUrl(url) {
@@ -40,7 +39,7 @@ function Business() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-        if (mounted) setLoadError("Live business feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live business feed is unavailable.");
       }
     }
 

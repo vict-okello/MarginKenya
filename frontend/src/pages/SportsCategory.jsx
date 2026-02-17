@@ -1,10 +1,54 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { sportsCategories } from "../data/sportsArticles";
 
 function SportsCategory() {
+  const API = import.meta.env.VITE_API_URL;
+  const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const { categoryId } = useParams();
-  const categoryList = Object.values(sportsCategories);
-  const currentIndex = categoryList.findIndex((item) => item.id === categoryId);
+  const [categoryList, setCategoryList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API}/api/sports-categories`);
+        const json = await res.json().catch(() => []);
+        if (!res.ok) return;
+        const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
+        if (alive) setCategoryList(next);
+      } catch {
+        if (alive) setCategoryList([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+
+    if (API) {
+      loadCategories();
+    } else {
+      setLoading(false);
+    }
+
+    return () => {
+      alive = false;
+    };
+  }, [API]);
+
+  const resolveImageUrl = useMemo(() => {
+    return (url) => {
+      if (!url) return "";
+      if (/^https?:\/\//i.test(url)) return url;
+      if (/^\/?uploads\//i.test(url)) {
+        const normalized = url.startsWith("/") ? url : `/${url}`;
+        return base ? `${base}${normalized}` : normalized;
+      }
+      return url;
+    };
+  }, [base]);
+
+  const currentIndex = categoryList.findIndex((item) => String(item.id) === String(categoryId));
   const category = categoryList[currentIndex];
   const prevCategory =
     currentIndex >= 0
@@ -12,6 +56,10 @@ function SportsCategory() {
       : null;
   const nextCategory =
     currentIndex >= 0 ? categoryList[(currentIndex + 1) % categoryList.length] : null;
+
+  if (loading) {
+    return null;
+  }
 
   if (!category) {
     return (
@@ -40,7 +88,7 @@ function SportsCategory() {
             Next &rarr;
           </Link>
         </div>
-        <img src={category.image} alt={category.name} className="w-full rounded object-contain" />
+        <img src={resolveImageUrl(category.image)} alt={category.name} className="w-full rounded object-contain" />
         <h1 className="pt-6 text-4xl font-semibold text-black">{category.title}</h1>
         <p className="pt-3 text-black/75">{category.summary}</p>
         <p className="pt-4 text-black/80">{category.body}</p>

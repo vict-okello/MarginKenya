@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { sportsArticles, sportsCategories } from "../data/sportsArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -42,8 +41,8 @@ export default function Sports() {
 
   const [visibleCount, setVisibleCount] = useState(4);
   const [categoryStart, setCategoryStart] = useState(0);
-  const [stories, setStories] = useState(() => normalizeStories(sportsArticles));
-  const [categories, setCategories] = useState(() => normalizeCategories(sportsCategories));
+  const [stories, setStories] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -59,7 +58,7 @@ export default function Sports() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(normalizeStories(next));
       } catch {
-        if (mounted) setLoadError("Live sports feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live sports feed is unavailable.");
       }
     }
 
@@ -80,7 +79,7 @@ export default function Sports() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setCategories(normalizeCategories(next));
       } catch {
-        if (mounted) setLoadError("Live sports categories are unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live sports categories are unavailable.");
       }
     }
 

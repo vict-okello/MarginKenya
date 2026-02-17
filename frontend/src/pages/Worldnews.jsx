@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import worldImage from "../assets/world.jpg";
 import NewsletterBanner from "./NewsletterBanner";
 import { API_BASE_URL } from "../config/api";
 
@@ -25,7 +24,6 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: "easeOut" } },
 };
 
-const leadArticleId = "manufacturing-emerging-trends";
 const regionOptions = ["all", "africa", "europe", "asia", "americas", "middle-east"];
 const regionBriefing = {
   all: { title: "Global Blend", signal: "5 tracked stories", risk: "Mixed", tempo: "High" },
@@ -34,63 +32,6 @@ const regionBriefing = {
   asia: { title: "Asia Desk", signal: "Tech acceleration", risk: "Moderate", tempo: "High" },
   americas: { title: "Americas Desk", signal: "Health + AI policy", risk: "Moderate", tempo: "Rising" },
   "middle-east": { title: "Middle East Desk", signal: "Sports + civic momentum", risk: "Low", tempo: "Steady" },
-};
-
-const sideStories = [
-  {
-    id: "business",
-    label: "Business",
-    date: "Feb 10, 2025",
-    title: "Adapting business strategies to meet changing demands",
-    to: "/business",
-    color: "bg-[#d8b73a]",
-    region: "africa",
-  },
-  {
-    id: "technology",
-    label: "Technology",
-    date: "Feb 10, 2025",
-    title: "Smart homes revolution how IoT is transforming living spaces",
-    to: "/technology",
-    color: "bg-[#ee5b45]",
-    region: "asia",
-  },
-  {
-    id: "culture",
-    label: "Culture",
-    date: "Jan 27, 2025",
-    title: "The power of art in connecting and expressing cultural identity",
-    to: "/culture",
-    color: "bg-[#3da5d9]",
-    region: "europe",
-  },
-  {
-    id: "health",
-    label: "Health News",
-    date: "Jan 27, 2025",
-    title: "How artificial intelligence and machine learning are changing the field",
-    to: "/health",
-    color: "bg-[#2ec86b]",
-    region: "americas",
-  },
-  {
-    id: "sports",
-    label: "Sports",
-    date: "Jan 27, 2025",
-    title: "The influence of youth sports programs on developing future champions",
-    to: "/sports",
-    color: "bg-[#f0503a]",
-    region: "middle-east",
-  },
-];
-
-const fallbackLead = {
-  articleId: leadArticleId,
-  label: "World News",
-  date: "Jan 25, 2025",
-  title: "Revolutionizing manufacturing emerging trends shaping the industry",
-  summary: "",
-  image: "",
 };
 
 const categoryByPath = [
@@ -111,11 +52,11 @@ function normalizeWorld(payload) {
   const leadRaw = payload?.lead && typeof payload.lead === "object" ? payload.lead : null;
   const storiesRaw = Array.isArray(payload?.stories) ? payload.stories : [];
 
-  const lead = leadRaw
+const lead = leadRaw
     ? {
-        articleId: leadRaw.articleId || leadRaw.id || leadArticleId,
+        articleId: leadRaw.articleId || leadRaw.id || "lead-worldnews",
         label: leadRaw.label || "World News",
-        date: leadRaw.date || "Jan 25, 2025",
+        date: leadRaw.date || "",
         title: leadRaw.title || "",
         summary: leadRaw.summary || "",
         image: leadRaw.image || "",
@@ -168,20 +109,25 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
   const API = API_BASE_URL;
   const isPage = variant === "page";
   const [activeRegion, setActiveRegion] = useState("all");
-  const [worldData, setWorldData] = useState({ lead: null, stories: sideStories });
+  const [worldData, setWorldData] = useState({ lead: null, stories: [] });
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let alive = true;
 
     async function loadWorld() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/worldnews`);
         const data = await res.json();
         if (!res.ok) return;
         const next = normalizeWorld(data);
         if (alive) setWorldData(next);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (alive) {
+          setWorldData({ lead: null, stories: [] });
+          setLoadError("Live world news feed is unavailable.");
+        }
       }
     }
 
@@ -191,9 +137,10 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
     };
   }, [API]);
 
-  const lead = useMemo(() => worldData.lead || fallbackLead, [worldData.lead]);
+  const lead = useMemo(() => worldData.lead, [worldData.lead]);
+  const hasLead = Boolean(lead?.title);
   const leadImage = useMemo(() => {
-    return resolveImageUrl(API, lead?.image, worldImage);
+    return resolveImageUrl(API, lead?.image);
   }, [lead, API]);
 
   const visibleSideStories = useMemo(
@@ -214,6 +161,12 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
       className={withSection ? `bg-[#d8d8dc] px-4 ${isPage ? "py-12" : "py-10"}` : ""}
     >
       <div className="mx-auto w-full max-w-5xl">
+        {loadError ? (
+          <div className="mb-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
+
         <div className={`flex flex-wrap items-end justify-between gap-3 ${isPage ? "rounded-2xl border border-black/15 bg-gradient-to-r from-[#e6ebf3] via-[#d9e2ef] to-[#d0dceb] p-6" : "pb-5"}`}>
           <div>
             {isPage ? (
@@ -279,50 +232,56 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
           className="mt-5 grid gap-6 lg:grid-cols-[1.65fr_0.95fr]"
         >
           <MotionArticle variants={itemVariants}>
-            <Link
-              to={`/worldnews/article/${lead.articleId || leadArticleId}`}
-              className="group block"
-            >
-              <div className="overflow-hidden rounded-[2px]">
-                <MotionImage
-                  src={leadImage}
-                  alt="Manufacturing and industrial landscape"
-                  className="h-[250px] w-full bg-white/60 object-contain sm:h-[360px] lg:h-[460px]"
-                  whileHover={{ scale: 1.03 }}
-                  transition={{ duration: 0.32 }}
-                />
-              </div>
-
-              <motion.h2
-                className="pt-5 text-4xl font-semibold leading-tight text-black/90 transition group-hover:text-black md:text-[48px]"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.42, delay: 0.08, ease: "easeOut" }}
+            {hasLead ? (
+              <Link
+                to={`/worldnews/article/${lead.articleId || "lead-worldnews"}`}
+                className="group block"
               >
-                {lead.title}
-              </motion.h2>
-              {lead.summary ? (
-                <motion.p
-                  className="line-clamp-3 max-w-3xl pt-3 text-base leading-relaxed text-black/75"
+                <div className="overflow-hidden rounded-[2px]">
+                  <MotionImage
+                    src={leadImage}
+                    alt={lead.title || "World news lead"}
+                    className="h-[250px] w-full bg-white/60 object-contain sm:h-[360px] lg:h-[460px]"
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ duration: 0.32 }}
+                  />
+                </div>
+
+                <motion.h2
+                  className="pt-5 text-4xl font-semibold leading-tight text-black/90 transition group-hover:text-black md:text-[48px]"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.42, delay: 0.08, ease: "easeOut" }}
+                >
+                  {lead.title}
+                </motion.h2>
+                {lead.summary ? (
+                  <motion.p
+                    className="line-clamp-3 max-w-3xl pt-3 text-base leading-relaxed text-black/75"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.34, delay: 0.1, ease: "easeOut" }}
+                  >
+                    {lead.summary}
+                  </motion.p>
+                ) : null}
+
+                <motion.div
+                  className="pt-4 text-xs uppercase tracking-wide text-black/55"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.34, delay: 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.36, delay: 0.12, ease: "easeOut" }}
                 >
-                  {lead.summary}
-                </motion.p>
-              ) : null}
-
-              <motion.div
-                className="pt-4 text-xs uppercase tracking-wide text-black/55"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.36, delay: 0.12, ease: "easeOut" }}
-              >
-                <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">{lead.label || "World News"}</span>
-                <span className="px-3">-</span>
-                <span>{lead.date}</span>
-              </motion.div>
-            </Link>
+                  <span className="rounded bg-[#6358e8] px-2 py-1 font-semibold text-white">{lead.label || "World News"}</span>
+                  <span className="px-3">-</span>
+                  <span>{lead.date}</span>
+                </motion.div>
+              </Link>
+            ) : (
+              <div className="rounded border border-black/15 bg-white/35 p-4 text-sm text-black/70">
+                No world lead story available yet.
+              </div>
+            )}
           </MotionArticle>
 
           <MotionAside variants={itemVariants} className="grid gap-3">

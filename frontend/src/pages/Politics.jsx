@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { politicsDesk as staticPoliticsDesk } from "../data/politicsArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -19,7 +18,8 @@ function normalizeDesk(payload) {
 function Politics() {
   const API = import.meta.env.VITE_API_URL;
   const [desk, setDesk] = useState("local");
-  const [politicsDesk, setPoliticsDesk] = useState(staticPoliticsDesk);
+  const [politicsDesk, setPoliticsDesk] = useState({ local: [], international: [] });
+  const [loadError, setLoadError] = useState("");
   const [visibleCounts, setVisibleCounts] = useState({
     local: 3,
     international: 3,
@@ -39,16 +39,18 @@ function Politics() {
 
     async function loadPolitics() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/politics`, { credentials: "include" });
         if (!res.ok) return;
         const json = await res.json();
         if (!alive) return;
         const next = normalizeDesk(json);
-        if (next.local.length || next.international.length) {
-          setPoliticsDesk(next);
-        }
+        setPoliticsDesk(next);
       } catch {
-        // Keep static fallback on failure.
+        if (alive) {
+          setPoliticsDesk({ local: [], international: [] });
+          setLoadError("Live politics feed is unavailable.");
+        }
       }
     }
 
@@ -82,6 +84,12 @@ function Politics() {
       className="bg-[#d8d8dc] px-4 py-12"
     >
       <div className="mx-auto w-full max-w-5xl">
+        {loadError ? (
+          <div className="mb-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-black/15 bg-gradient-to-r from-[#f1e8e8] via-[#e8dbdb] to-[#dfd1d1] p-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">Politics Desk</p>
@@ -129,62 +137,68 @@ function Politics() {
           {pulseText}
         </MotionDiv>
 
-        <MotionDiv
-          key={`${desk}-grid`}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.42, ease: "easeOut" }}
-          className="mt-5 grid gap-5 lg:grid-cols-[1.3fr_1fr]"
-        >
-          <MotionArticle
-            whileHover={{ y: -4 }}
-            className="overflow-hidden rounded border border-black/15 bg-white/40"
+        {leadStory ? (
+          <MotionDiv
+            key={`${desk}-grid`}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.42, ease: "easeOut" }}
+            className="mt-5 grid gap-5 lg:grid-cols-[1.3fr_1fr]"
           >
-            <Link to={`/politics/article/${leadStory.id}`} className="group block">
-              <img
-                src={resolveImageUrl(leadStory.image)}
-                alt={leadStory.title}
-                className="h-72 w-full object-cover transition duration-300 group-hover:scale-[1.02] md:h-96"
-              />
-              <div className="p-5">
-                <p className="text-xs uppercase tracking-[0.12em] text-black/55">
-                  {leadStory.tag} <span className="px-2">-</span> {leadStory.date}
-                </p>
-                <h2 className="pt-3 text-4xl leading-tight text-black/90 transition group-hover:text-black md:text-[42px]">
-                  {leadStory.title}
-                </h2>
-                <p className="pt-4 text-black/75">{leadStory.summary}</p>
-              </div>
-            </Link>
-          </MotionArticle>
+            <MotionArticle
+              whileHover={{ y: -4 }}
+              className="overflow-hidden rounded border border-black/15 bg-white/40"
+            >
+              <Link to={`/politics/article/${leadStory.id}`} className="group block">
+                <img
+                  src={resolveImageUrl(leadStory.image)}
+                  alt={leadStory.title}
+                  className="h-72 w-full object-cover transition duration-300 group-hover:scale-[1.02] md:h-96"
+                />
+                <div className="p-5">
+                  <p className="text-xs uppercase tracking-[0.12em] text-black/55">
+                    {leadStory.tag} <span className="px-2">-</span> {leadStory.date}
+                  </p>
+                  <h2 className="pt-3 text-4xl leading-tight text-black/90 transition group-hover:text-black md:text-[42px]">
+                    {leadStory.title}
+                  </h2>
+                  <p className="pt-4 text-black/75">{leadStory.summary}</p>
+                </div>
+              </Link>
+            </MotionArticle>
 
-          <div className="grid gap-5">
-            {topSideStories.map((story) => (
-              <MotionArticle
-                key={story.id}
-                whileHover={{ y: -4 }}
-                className="grid gap-4 rounded border border-black/15 bg-white/30 p-4 sm:grid-cols-[170px_1fr]"
-              >
-                <Link to={`/politics/article/${story.id}`} className="group contents">
-                  <img
-                    src={resolveImageUrl(story.image)}
-                    alt={story.title}
-                    className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
-                  />
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.12em] text-black/55">
-                      {story.tag} <span className="px-2">-</span> {story.date}
-                    </p>
-                    <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black">
-                      {story.title}
-                    </h3>
-                    <p className="pt-3 text-sm text-black/70">{story.summary}</p>
-                  </div>
-                </Link>
-              </MotionArticle>
-            ))}
+            <div className="grid gap-5">
+              {topSideStories.map((story) => (
+                <MotionArticle
+                  key={story.id}
+                  whileHover={{ y: -4 }}
+                  className="grid gap-4 rounded border border-black/15 bg-white/30 p-4 sm:grid-cols-[170px_1fr]"
+                >
+                  <Link to={`/politics/article/${story.id}`} className="group contents">
+                    <img
+                      src={resolveImageUrl(story.image)}
+                      alt={story.title}
+                      className="h-36 w-full rounded object-cover transition duration-300 group-hover:scale-[1.02]"
+                    />
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.12em] text-black/55">
+                        {story.tag} <span className="px-2">-</span> {story.date}
+                      </p>
+                      <h3 className="pt-2 text-2xl leading-tight text-black/85 transition group-hover:text-black">
+                        {story.title}
+                      </h3>
+                      <p className="pt-3 text-sm text-black/70">{story.summary}</p>
+                    </div>
+                  </Link>
+                </MotionArticle>
+              ))}
+            </div>
+          </MotionDiv>
+        ) : (
+          <div className="mt-5 rounded border border-black/15 bg-white/35 p-4 text-sm text-black/70">
+            No politics stories available yet.
           </div>
-        </MotionDiv>
+        )}
 
         {extraStories.length > 0 ? (
           <MotionDiv

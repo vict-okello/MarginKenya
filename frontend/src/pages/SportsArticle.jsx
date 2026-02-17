@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import ArticlePage from "./ArticlePage";
-import { sportsArticles } from "../data/sportsArticles";
 
 function normalizeStories(input) {
   if (Array.isArray(input)) return input;
@@ -11,7 +10,8 @@ function normalizeStories(input) {
 export default function SportsArticle() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
-  const [stories, setStories] = useState(() => normalizeStories(sportsArticles));
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -24,11 +24,17 @@ export default function SportsArticle() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(normalizeStories(next));
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setStories([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    if (API) loadSports();
+    if (API) {
+      loadSports();
+    } else {
+      setLoading(false);
+    }
     return () => {
       mounted = false;
     };
@@ -46,6 +52,8 @@ export default function SportsArticle() {
       return item;
     });
   }, [stories, base]);
+
+  if (loading) return null;
 
   return <ArticlePage data={data} backTo="/sports" backLabel="Back to Sports" sectionName="Sports" />;
 }

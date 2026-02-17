@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { cultureArticles } from "../data/cultureArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 function Culture() {
   const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState(cultureArticles);
+  const [stories, setStories] = useState([]);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -20,7 +19,7 @@ function Culture() {
         if (!res.ok) return;
         if (mounted) setStories(Array.isArray(json) ? json : []);
       } catch {
-        if (mounted) setLoadError("Live culture feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live culture feed is unavailable.");
       }
     }
 

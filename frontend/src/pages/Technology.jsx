@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { technologyArticles } from "../data/technologyArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -28,7 +27,7 @@ export default function Technology() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState(technologyArticles);
+  const [stories, setStories] = useState([]);
   const [loadError, setLoadError] = useState("");
 
   function resolveImageUrl(url) {
@@ -53,7 +52,7 @@ export default function Technology() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-        if (mounted) setLoadError("Live technology feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live technology feed is unavailable.");
       }
     }
 

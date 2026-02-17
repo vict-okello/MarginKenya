@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { businessArticles } from "../data/businessArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
@@ -20,7 +19,8 @@ function BusinessArticle() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const { articleId } = useParams();
-  const [stories, setStories] = useState(businessArticles);
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -33,11 +33,17 @@ function BusinessArticle() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (mounted) setStories([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    if (API) loadBusiness();
+    if (API) {
+      loadBusiness();
+    } else {
+      setLoading(false);
+    }
     return () => {
       mounted = false;
     };
@@ -81,6 +87,10 @@ function BusinessArticle() {
     image: resolvedImage,
     type: "article",
   });
+
+  if (loading) {
+    return null;
+  }
 
   if (!article) {
     return <NotFoundMessage backTo="/business" backLabel="Back to Business" />;

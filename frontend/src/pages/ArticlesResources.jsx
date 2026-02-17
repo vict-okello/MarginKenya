@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { articlesResourcesArticles } from "../data/articlesResourcesArticles";
 import { API_BASE_URL } from "../config/api";
 
 function normalizeResources(payload) {
@@ -25,7 +24,7 @@ function normalizeResources(payload) {
 function ArticlesResources({ withSection = true, showHeader = true }) {
   const API = API_BASE_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [articles, setArticles] = useState(articlesResourcesArticles);
+  const [articles, setArticles] = useState([]);
 
   useEffect(() => {
     let alive = true;
@@ -36,9 +35,9 @@ function ArticlesResources({ withSection = true, showHeader = true }) {
         const data = await res.json();
         if (!res.ok) return;
         const next = normalizeResources(data).filter((item) => item.status === "published");
-        if (alive && next.length > 0) setArticles(next);
+        if (alive) setArticles(next);
       } catch {
-        // Keep static fallback if API is unavailable.
+        if (alive) setArticles([]);
       }
     }
 

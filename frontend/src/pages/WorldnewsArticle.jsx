@@ -1,10 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
 import ArticlePage from "./ArticlePage";
-import { worldNewsArticles } from "../data/worldNewsArticles";
+
+function normalizeWorldArticles(payload) {
+  const lead = payload?.lead && typeof payload.lead === "object" ? payload.lead : null;
+  const stories = Array.isArray(payload?.stories) ? payload.stories : [];
+
+  const mappedLead = lead
+    ? [
+        {
+          id: lead.articleId || lead.id || "lead-worldnews",
+          title: lead.title || "",
+          category: lead.label || "World News",
+          date: lead.date || "",
+          image: lead.image || "",
+          summary: lead.summary || "",
+          body: lead.body || lead.content || "",
+        },
+      ]
+    : [];
+
+  const mappedStories = stories.map((story, idx) => ({
+    id: story?.id || `world-story-${idx}`,
+    title: story?.title || "",
+    category: story?.label || "World News",
+    date: story?.date || "",
+    image: story?.image || "",
+    summary: story?.summary || "",
+    body: story?.body || story?.content || "",
+  }));
+
+  return [...mappedLead, ...mappedStories];
+}
 
 export default function WorldnewsArticle() {
   const API = import.meta.env.VITE_API_URL;
-  const [data, setData] = useState(worldNewsArticles);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -14,74 +45,34 @@ export default function WorldnewsArticle() {
         const res = await fetch(`${API}/api/worldnews`);
         const json = await res.json();
         if (!res.ok) return;
-
-        const lead = json?.lead && typeof json.lead === "object" ? json.lead : null;
-        const stories = Array.isArray(json?.stories) ? json.stories : [];
-
-        const mergedLead = lead
-          ? (() => {
-              const leadId = lead.articleId || lead.id || "lead-worldnews";
-              const existing = worldNewsArticles.find((item) => String(item.id) === String(leadId));
-              const resolvedImage = lead.image
-                ? /^https?:\/\//i.test(lead.image)
-                  ? lead.image
-                  : `${API}${lead.image}`
-                : existing?.image || "";
-
-              return {
-                ...(existing || {}),
-                id: leadId,
-                title: lead.title || existing?.title || "",
-                category: lead.label || existing?.category || "World News",
-                date: lead.date || existing?.date || "",
-                image: resolvedImage,
-                summary: lead.summary || existing?.summary || "",
-                body: lead.body || lead.content || existing?.body || "",
-              };
-            })()
-          : null;
-
-        const mappedStories = stories.map((story, idx) => {
-          const id = story?.id || `world-story-${idx}`;
-          const existing = worldNewsArticles.find((item) => String(item.id) === String(id));
-          const resolvedImage = story?.image
-            ? /^https?:\/\//i.test(story.image)
-              ? story.image
-              : `${API}${story.image}`
-            : existing?.image || "";
-
-          return {
-            ...(existing || {}),
-            id,
-            title: story?.title || existing?.title || "",
-            category: story?.label || existing?.category || "World News",
-            date: story?.date || existing?.date || "",
-            image: resolvedImage,
-            summary: story?.summary || existing?.summary || "",
-            body: story?.body || story?.content || existing?.body || "",
-          };
+        const next = normalizeWorldArticles(json).map((item) => {
+          const image = String(item.image || "");
+          if (!image || /^https?:\/\//i.test(image)) return item;
+          return { ...item, image: `${API}${image}` };
         });
-
-        if (alive) {
-          const staticFiltered = worldNewsArticles.filter((item) => {
-            if (mergedLead && String(item.id) === String(mergedLead.id)) return false;
-            return !mappedStories.some((s) => String(s.id) === String(item.id));
-          });
-
-          setData([...(mergedLead ? [mergedLead] : []), ...mappedStories, ...staticFiltered]);
-        }
+        if (alive) setData(next);
       } catch {
-        // Keep static fallback when API is unavailable.
+        if (alive) setData([]);
+      } finally {
+        if (alive) setLoading(false);
       }
     }
 
-    if (API) loadWorldArticle();
+    if (API) {
+      loadWorldArticle();
+    } else {
+      setLoading(false);
+    }
     return () => {
       alive = false;
     };
   }, [API]);
 
   const mergedData = useMemo(() => data, [data]);
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <ArticlePage

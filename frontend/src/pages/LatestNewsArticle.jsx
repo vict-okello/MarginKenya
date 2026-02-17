@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { latestNewsArticles } from "../data/latestNewsArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
@@ -41,7 +40,7 @@ function normalizeLatestNews(payload) {
 function LatestNewsArticle() {
   const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
-  const [articles, setArticles] = useState(latestNewsArticles);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -56,7 +55,7 @@ function LatestNewsArticle() {
         const list = normalizeLatestNews(data);
         if (mounted) setArticles(list);
       } catch {
-        // Keep static fallback data when API is unavailable.
+        if (mounted) setArticles([]);
       } finally {
         if (mounted) setLoading(false);
       }

@@ -2,11 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 
-import worldImage from "../assets/world.jpg";
-import technologyImage from "../assets/technology.jpg";
-import healthImage from "../assets/health.jpg";
-import sportImage from "../assets/sport.jpg";
-import featuredFallbackImage from "../assets/hero1.png";
 import { API_BASE_URL } from "../config/api";
 
 const MotionSection = motion.section;
@@ -14,43 +9,17 @@ const MotionDiv = motion.div;
 const MotionArticle = motion.article;
 const MotionImg = motion.img;
 
-const DEFAULT_HERO = {
-  featuredArticleId: "cultural-movements-deep-dive",
-  topStories: [
-    {
-      title: "WORLD NEWS",
-      blurb: "Economic policies are shaping international markets",
-      to: "/worldnews",
-      imageUrl: "",
-    },
-    {
-      title: "TECHNOLOGY",
-      blurb: "The latest trends in AI and innovation",
-      to: "/technology",
-      imageUrl: "",
-    },
-    {
-      title: "HEALTH",
-      blurb: "Analyzing the effects of global health policies",
-      to: "/health",
-      imageUrl: "",
-    },
-    {
-      title: "SPORTS",
-      blurb: "Affect the integrity and future of professional sports",
-      to: "/sports",
-      imageUrl: "",
-    },
-  ],
+const EMPTY_HERO = {
+  featuredArticleId: "",
+  topStories: [],
   featured: {
     imageUrl: "",
-    category: "Culture",
-    author: "Guy Hawkins",
-    date: "Sep 9, 2024",
-    readTime: "6 min read",
-    headline:
-      "A deep dive into the influence of cultural movements on contemporary society",
-    ctaText: "Read Article ->",
+    category: "",
+    author: "",
+    date: "",
+    readTime: "",
+    headline: "",
+    ctaText: "",
   },
 };
 
@@ -72,7 +41,7 @@ function Hero({ withSection = true }) {
   const prefersReducedMotion = useReducedMotion();
   const API = API_BASE_URL;
 
-  const [heroData, setHeroData] = useState(() => deepClone(DEFAULT_HERO));
+  const [heroData, setHeroData] = useState(() => deepClone(EMPTY_HERO));
   const [heroArticle, setHeroArticle] = useState(null);
 
   const resolveUrl = useMemo(() => {
@@ -105,15 +74,6 @@ function Hero({ withSection = true }) {
         },
       };
 
-  const fallbackStoryImageByTitle = useMemo(() => {
-    return {
-      "WORLD NEWS": worldImage,
-      TECHNOLOGY: technologyImage,
-      HEALTH: healthImage,
-      SPORTS: sportImage,
-    };
-  }, []);
-
   // Load hero layout/settings
   useEffect(() => {
     let alive = true;
@@ -128,33 +88,28 @@ function Hero({ withSection = true }) {
         const data = await res.json();
         if (!alive) return;
 
-        const merged = deepClone(DEFAULT_HERO);
+        const merged = deepClone(EMPTY_HERO);
 
         if (data?.featuredArticleId) merged.featuredArticleId = data.featuredArticleId;
 
         if (Array.isArray(data?.topStories)) {
-          merged.topStories = data.topStories.slice(0, 4).map((s, idx) => ({
-            title: s?.title ?? DEFAULT_HERO.topStories[idx]?.title ?? "",
+          merged.topStories = data.topStories.slice(0, 4).map((s) => ({
+            title: s?.title ?? "",
             blurb: s?.blurb ?? "",
-            to: s?.to ?? DEFAULT_HERO.topStories[idx]?.to ?? "",
+            to: s?.to ?? "",
             imageUrl: s?.imageUrl ?? "",
           }));
-          while (merged.topStories.length < 4) {
-            merged.topStories.push(
-              deepClone(DEFAULT_HERO.topStories[merged.topStories.length])
-            );
-          }
         }
 
         if (data?.featured && typeof data.featured === "object") {
           merged.featured = {
             imageUrl: data.featured.imageUrl ?? "",
-            category: data.featured.category ?? DEFAULT_HERO.featured.category,
-            author: data.featured.author ?? DEFAULT_HERO.featured.author,
-            date: data.featured.date ?? DEFAULT_HERO.featured.date,
-            readTime: data.featured.readTime ?? DEFAULT_HERO.featured.readTime,
-            headline: data.featured.headline ?? DEFAULT_HERO.featured.headline,
-            ctaText: data.featured.ctaText ?? DEFAULT_HERO.featured.ctaText,
+            category: data.featured.category ?? "",
+            author: data.featured.author ?? "",
+            date: data.featured.date ?? "",
+            readTime: data.featured.readTime ?? "",
+            headline: data.featured.headline ?? "",
+            ctaText: data.featured.ctaText ?? "",
           };
         }
 
@@ -207,22 +162,17 @@ function Hero({ withSection = true }) {
     };
   }, [API, heroData?.featuredArticleId]);
 
-  const featuredArticleId =
-    heroData.featuredArticleId || DEFAULT_HERO.featuredArticleId;
+  const featuredArticleId = heroData.featuredArticleId || "";
+  const featuredHref = featuredArticleId ? `/hero/article/${featuredArticleId}` : "/";
 
-  const topStories =
-    Array.isArray(heroData.topStories) && heroData.topStories.length
-      ? heroData.topStories
-      : DEFAULT_HERO.topStories;
+  const topStories = Array.isArray(heroData.topStories) ? heroData.topStories : [];
 
-  const featured = heroData.featured || DEFAULT_HERO.featured;
+  const featured = heroData.featured || EMPTY_HERO.featured;
   const ctaLabel = (featured.ctaText || "Read Article")
     .replace(/\s*[-=]*>\s*$/, "")
     .trim();
 
-  const featuredImageSrc = featured.imageUrl
-    ? resolveUrl(featured.imageUrl)
-    : featuredFallbackImage;
+  const featuredImageSrc = featured.imageUrl ? resolveUrl(featured.imageUrl) : "";
 
   return (
     <MotionSection
@@ -238,13 +188,9 @@ function Hero({ withSection = true }) {
           animate="show"
           className="grid grid-cols-1 gap-4 pb-5 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {topStories.slice(0, 4).map((story, idx) => {
-            const fallbackImg =
-              fallbackStoryImageByTitle[story.title] || worldImage;
-            const imageSrc = story.imageUrl
-              ? resolveUrl(story.imageUrl)
-              : fallbackImg;
-            const to = normalizeRoute(story.to, DEFAULT_HERO.topStories[idx]?.to || "/");
+          {topStories.slice(0, 4).map((story) => {
+            const imageSrc = story.imageUrl ? resolveUrl(story.imageUrl) : "";
+            const to = normalizeRoute(story.to, "/");
 
             return (
               <Link
@@ -257,13 +203,17 @@ function Hero({ withSection = true }) {
                   whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                   className="flex items-start gap-3"
                 >
-                  <MotionImg
-                    src={imageSrc}
-                    alt={story.title}
-                    className="h-14 w-14 shrink-0 rounded object-cover"
-                    whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
-                    transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-                  />
+                  {imageSrc ? (
+                    <MotionImg
+                      src={imageSrc}
+                      alt={story.title}
+                      className="h-14 w-14 shrink-0 rounded object-cover"
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                    />
+                  ) : (
+                    <div className="h-14 w-14 shrink-0 rounded border border-black/15 bg-white/45" />
+                  )}
                   <div>
                     <h3 className="text-xs font-semibold tracking-wide text-black transition group-hover:text-black/90">
                       {story.title}
@@ -287,15 +237,19 @@ function Hero({ withSection = true }) {
             ease: "easeOut",
           }}
         >
-          <Link to={`/hero/article/${featuredArticleId}`} className="block">
+          <Link to={featuredHref} className="block">
             <div className="relative overflow-hidden rounded-[2px] bg-white/70">
-              <MotionImg
-                src={featuredImageSrc}
-                alt={featured.headline || "Featured story"}
-                className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
-                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
-              />
+              {featuredImageSrc ? (
+                <MotionImg
+                  src={featuredImageSrc}
+                  alt={featured.headline || "Featured story"}
+                  className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+                />
+              ) : (
+                <div className="h-[100px] w-full bg-white/60 sm:h-[300px] md:h-[420px]" />
+              )}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           </Link>
@@ -337,10 +291,9 @@ function Hero({ withSection = true }) {
           className="mt-4 flex flex-col justify-between gap-5 rounded-2xl bg-gradient-to-r from-white/85 to-white/65 px-4 py-5 shadow-[0_12px_32px_rgba(20,20,20,0.08)] md:flex-row md:items-start md:px-6"
         >
           <div className="w-full md:flex-1">
-            <Link to={`/hero/article/${featuredArticleId}`} className="block">
+            <Link to={featuredHref} className="block">
               <h1 className="text-3xl font-semibold leading-[1.12] tracking-[-0.01em] text-black/90 transition hover:text-black md:text-[46px]">
-                {featured.headline ||
-                  "A deep dive into the influence of cultural movements on contemporary society"}
+                {featured.headline || "Featured story"}
               </h1>
             </Link>
 
@@ -352,7 +305,7 @@ function Hero({ withSection = true }) {
           </div>
 
           <Link
-            to={`/hero/article/${featuredArticleId}`}
+            to={featuredHref}
             className="group mt-1 inline-flex items-center gap-3 self-start rounded-full border border-[#e25b4a]/45 bg-white/90 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#c94f40] transition hover:-translate-y-0.5 hover:border-[#c94f40] hover:bg-[#fff3f1] hover:text-[#a94033] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e25b4a]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#d8d8dc] md:shrink-0"
           >
             <span>{ctaLabel || "Read Article"}</span>

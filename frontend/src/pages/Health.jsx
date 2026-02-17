@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { healthArticles } from "../data/healthArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -35,7 +34,7 @@ function Health() {
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const batchSize = 3;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState(healthArticles);
+  const [stories, setStories] = useState([]);
   const [publishedCount, setPublishedCount] = useState(null);
   const [loadError, setLoadError] = useState("");
 
@@ -65,7 +64,7 @@ function Health() {
           setStories(next);
         }
       } catch {
-        if (mounted) setLoadError("Live health feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live health feed is unavailable.");
       }
     }
 
