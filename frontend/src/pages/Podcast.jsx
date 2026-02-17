@@ -13,9 +13,11 @@ function Podcast() {
   const [episodes, setEpisodes] = useState([]);
   const [activeEpisodeId, setActiveEpisodeId] = useState("");
   const [visibleLibraryCount, setVisibleLibraryCount] = useState(2);
-  const [loadError, setLoadError] = useState("");
+  const [loadError, setLoadError] = useState(() => (API ? "" : "VITE_API_URL is missing."));
 
   useEffect(() => {
+    if (!API) return undefined;
+
     let mounted = true;
 
     async function loadPodcast() {
@@ -34,8 +36,7 @@ function Podcast() {
       }
     }
 
-    if (API) loadPodcast();
-    else setLoadError("VITE_API_URL is missing.");
+    loadPodcast();
     return () => {
       mounted = false;
     };
