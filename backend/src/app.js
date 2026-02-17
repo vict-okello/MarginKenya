@@ -40,7 +40,7 @@ const legacyUploadsRoot = path.join(__dirname, "./uploads");
 
 const app = express();
 const apiRateLimit = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 400 });
-const enableLocalUploads = process.env.NODE_ENV !== "production";
+const enableLocalUploads = process.env.ENABLE_LOCAL_UPLOADS !== "false";
 
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
@@ -102,7 +102,8 @@ app.use("/api", (req, res, next) => {
 });
 app.use("/api", apiRateLimit);
 
-// Serve local uploads only in non-production or when explicitly enabled.
+// Serve local uploads by default in every environment.
+// Set ENABLE_LOCAL_UPLOADS=false to disable this behavior.
 if (enableLocalUploads) {
   app.use(
     "/uploads",
