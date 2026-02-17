@@ -2,11 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 
-import worldImage from "../assets/world.jpg";
-import technologyImage from "../assets/technology.jpg";
-import healthImage from "../assets/health.jpg";
-import sportImage from "../assets/sport.jpg";
-import featuredFallbackImage from "../assets/hero1.png";
 import { API_BASE_URL } from "../config/api";
 
 const MotionSection = motion.section;
@@ -74,6 +69,7 @@ function Hero({ withSection = true }) {
 
   const [heroData, setHeroData] = useState(() => deepClone(DEFAULT_HERO));
   const [heroArticle, setHeroArticle] = useState(null);
+  const [loadingHero, setLoadingHero] = useState(true);
 
   const resolveUrl = useMemo(() => {
     return (url) => {
@@ -104,15 +100,6 @@ function Hero({ withSection = true }) {
           transition: { duration: 0.35, ease: "easeOut" },
         },
       };
-
-  const fallbackStoryImageByTitle = useMemo(() => {
-    return {
-      "WORLD NEWS": worldImage,
-      TECHNOLOGY: technologyImage,
-      HEALTH: healthImage,
-      SPORTS: sportImage,
-    };
-  }, []);
 
   // Load hero layout/settings
   useEffect(() => {
@@ -160,11 +147,16 @@ function Hero({ withSection = true }) {
 
         setHeroData(merged);
       } catch {
-        // keep defaults
+      } finally {
+        if (alive) setLoadingHero(false);
       }
     };
 
-    loadHero();
+    if (API) {
+      loadHero();
+    } else {
+      setLoadingHero(false);
+    }
 
     return () => {
       alive = false;
@@ -210,19 +202,18 @@ function Hero({ withSection = true }) {
   const featuredArticleId =
     heroData.featuredArticleId || DEFAULT_HERO.featuredArticleId;
 
-  const topStories =
-    Array.isArray(heroData.topStories) && heroData.topStories.length
-      ? heroData.topStories
-      : DEFAULT_HERO.topStories;
+  const topStories = Array.isArray(heroData.topStories) ? heroData.topStories : [];
 
   const featured = heroData.featured || DEFAULT_HERO.featured;
   const ctaLabel = (featured.ctaText || "Read Article")
     .replace(/\s*[-=]*>\s*$/, "")
     .trim();
 
-  const featuredImageSrc = featured.imageUrl
-    ? resolveUrl(featured.imageUrl)
-    : featuredFallbackImage;
+  const featuredImageSrc = resolveUrl(featured.imageUrl || "");
+
+  if (loadingHero) {
+    return null;
+  }
 
   return (
     <MotionSection
@@ -239,11 +230,7 @@ function Hero({ withSection = true }) {
           className="grid grid-cols-1 gap-4 pb-5 sm:grid-cols-2 lg:grid-cols-4"
         >
           {topStories.slice(0, 4).map((story, idx) => {
-            const fallbackImg =
-              fallbackStoryImageByTitle[story.title] || worldImage;
-            const imageSrc = story.imageUrl
-              ? resolveUrl(story.imageUrl)
-              : fallbackImg;
+            const imageSrc = resolveUrl(story.imageUrl || "");
             const to = normalizeRoute(story.to, DEFAULT_HERO.topStories[idx]?.to || "/");
 
             return (
@@ -257,13 +244,17 @@ function Hero({ withSection = true }) {
                   whileHover={prefersReducedMotion ? undefined : { y: -4 }}
                   className="flex items-start gap-3"
                 >
-                  <MotionImg
-                    src={imageSrc}
-                    alt={story.title}
-                    className="h-14 w-14 shrink-0 rounded object-cover"
-                    whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
-                    transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-                  />
+                  {imageSrc ? (
+                    <MotionImg
+                      src={imageSrc}
+                      alt={story.title}
+                      className="h-14 w-14 shrink-0 rounded object-cover"
+                      whileHover={prefersReducedMotion ? undefined : { scale: 1.05 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+                    />
+                  ) : (
+                    <div className="h-14 w-14 shrink-0 rounded bg-black/10" />
+                  )}
                   <div>
                     <h3 className="text-xs font-semibold tracking-wide text-black transition group-hover:text-black/90">
                       {story.title}
@@ -289,13 +280,17 @@ function Hero({ withSection = true }) {
         >
           <Link to={`/hero/article/${featuredArticleId}`} className="block">
             <div className="relative overflow-hidden rounded-[2px] bg-white/70">
-              <MotionImg
-                src={featuredImageSrc}
-                alt={featured.headline || "Featured story"}
-                className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
-                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
-              />
+              {featuredImageSrc ? (
+                <MotionImg
+                  src={featuredImageSrc}
+                  alt={featured.headline || "Featured story"}
+                  className="h-[100px] w-full object-cover object-center sm:h-[300px] md:h-[420px]"
+                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+                />
+              ) : (
+                <div className="h-[100px] w-full bg-black/10 sm:h-[300px] md:h-[420px]" />
+              )}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           </Link>

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { latestNewsArticles } from "../data/latestNewsArticles";
 import { API_BASE_URL } from "../config/api";
 
 const MotionSection = motion.section;
@@ -45,8 +44,9 @@ function normalizeLatestNews(payload) {
 function LatestNews({ withSection = true, showHeader = true }) {
   const API = API_BASE_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [articles, setArticles] = useState(latestNewsArticles);
+  const [articles, setArticles] = useState([]);
   const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -56,15 +56,25 @@ function LatestNews({ withSection = true, showHeader = true }) {
         setLoadError("");
         const res = await fetch(`${API}/api/latest-news`);
         const data = await res.json();
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (mounted) setLoadError("Failed to load latest news.");
+          return;
+        }
         const list = normalizeLatestNews(data);
         if (mounted) setArticles(list);
       } catch {
-        if (mounted) setLoadError("Live latest news feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live latest news feed is unavailable.");
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    if (API) loadLatestNews();
+    if (API) {
+      loadLatestNews();
+    } else {
+      setLoadError("VITE_API_URL is missing.");
+      setLoading(false);
+    }
     return () => {
       mounted = false;
     };
@@ -88,6 +98,10 @@ function LatestNews({ withSection = true, showHeader = true }) {
   const canLoadMore = visibleCount < remainingArticles.length;
 
   const Wrapper = withSection ? MotionSection : MotionDiv;
+
+  if (loading) {
+    return null;
+  }
 
   if (!featured) {
     return (

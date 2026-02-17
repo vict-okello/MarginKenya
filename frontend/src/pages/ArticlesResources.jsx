@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { articlesResourcesArticles } from "../data/articlesResourcesArticles";
 import { API_BASE_URL } from "../config/api";
 
 function normalizeResources(payload) {
@@ -25,24 +24,37 @@ function normalizeResources(payload) {
 function ArticlesResources({ withSection = true, showHeader = true }) {
   const API = API_BASE_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [articles, setArticles] = useState(articlesResourcesArticles);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let alive = true;
 
     async function loadResources() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/resources`);
         const data = await res.json();
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (alive) setLoadError("Failed to load resources.");
+          return;
+        }
         const next = normalizeResources(data).filter((item) => item.status === "published");
-        if (alive && next.length > 0) setArticles(next);
+        if (alive) setArticles(next);
       } catch {
-        // Keep static fallback if API is unavailable.
+        if (alive) setLoadError("Live resources feed is unavailable.");
+      } finally {
+        if (alive) setLoading(false);
       }
     }
 
-    if (API) loadResources();
+    if (API) {
+      loadResources();
+    } else {
+      setLoadError("VITE_API_URL is missing.");
+      setLoading(false);
+    }
     return () => {
       alive = false;
     };
@@ -68,9 +80,16 @@ function ArticlesResources({ withSection = true, showHeader = true }) {
   const Wrapper = withSection ? "section" : "div";
   const wrapperClassName = withSection ? "bg-[#d8d8dc] px-4 pb-12 pt-6" : "";
 
+  if (loading) return null;
+
   return (
     <Wrapper className={wrapperClassName}>
       <div className="mx-auto w-full max-w-5xl">
+        {loadError ? (
+          <div className="rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
         {showHeader ? (
           <div>
             <h2 className="text-4xl font-black uppercase tracking-[0.05em] text-black/90">Articles & Resources</h2>

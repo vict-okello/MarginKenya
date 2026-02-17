@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { technologyArticles } from "../data/technologyArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -28,8 +27,9 @@ export default function Technology() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState(technologyArticles);
+  const [stories, setStories] = useState([]);
   const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -49,15 +49,25 @@ export default function Technology() {
         setLoadError("");
         const res = await fetch(`${API}/api/technology`);
         const json = await res.json();
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (mounted) setLoadError("Failed to load technology feed.");
+          return;
+        }
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-        if (mounted) setLoadError("Live technology feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live technology feed is unavailable.");
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    if (API) loadTechnology();
+    if (API) {
+      loadTechnology();
+    } else {
+      setLoadError("VITE_API_URL is missing.");
+      setLoading(false);
+    }
     return () => {
       mounted = false;
     };
@@ -79,6 +89,10 @@ export default function Technology() {
   }, [stories]);
 
   const topicLanes = ["AI Systems", "Cybersecurity", "Data Platforms", "Consumer Tech"];
+
+  if (loading) {
+    return null;
+  }
 
   if (!featuredArticle) {
     return (

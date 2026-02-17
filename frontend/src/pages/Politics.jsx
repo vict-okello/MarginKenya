@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { politicsDesk as staticPoliticsDesk } from "../data/politicsArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -19,11 +18,13 @@ function normalizeDesk(payload) {
 function Politics() {
   const API = import.meta.env.VITE_API_URL;
   const [desk, setDesk] = useState("local");
-  const [politicsDesk, setPoliticsDesk] = useState(staticPoliticsDesk);
+  const [politicsDesk, setPoliticsDesk] = useState({ local: [], international: [] });
   const [visibleCounts, setVisibleCounts] = useState({
     local: 3,
     international: 3,
   });
+  const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const resolveImageUrl = useMemo(() => {
     const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
@@ -39,20 +40,29 @@ function Politics() {
 
     async function loadPolitics() {
       try {
+        setLoadError("");
         const res = await fetch(`${API}/api/politics`, { credentials: "include" });
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (alive) setLoadError("Failed to load politics feed.");
+          return;
+        }
         const json = await res.json();
         if (!alive) return;
         const next = normalizeDesk(json);
-        if (next.local.length || next.international.length) {
-          setPoliticsDesk(next);
-        }
+        setPoliticsDesk(next);
       } catch {
-        // Keep static fallback on failure.
+        if (alive) setLoadError("Live politics feed is unavailable.");
+      } finally {
+        if (alive) setLoading(false);
       }
     }
 
-    if (API) loadPolitics();
+    if (API) {
+      loadPolitics();
+    } else {
+      setLoadError("VITE_API_URL is missing.");
+      setLoading(false);
+    }
     return () => {
       alive = false;
     };
@@ -73,6 +83,21 @@ function Politics() {
         : "Global Pulse: diplomacy, multilateral policy shifts, and election watch.",
     [desk]
   );
+
+  if (loading) {
+    return null;
+  }
+
+  if (!leadStory) {
+    return (
+      <section className="bg-[#d8d8dc] px-4 py-12">
+        <div className="mx-auto w-full max-w-5xl rounded border border-black/15 bg-white/35 p-6 text-black/75">
+          {loadError || "No politics stories available."}
+        </div>
+        <NewsletterBanner variant="sports" />
+      </section>
+    );
+  }
 
   return (
     <MotionSection
@@ -128,6 +153,12 @@ function Politics() {
         >
           {pulseText}
         </MotionDiv>
+
+        {loadError ? (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </div>
+        ) : null}
 
         <MotionDiv
           key={`${desk}-grid`}

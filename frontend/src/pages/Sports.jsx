@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { sportsArticles, sportsCategories } from "../data/sportsArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -42,9 +41,10 @@ export default function Sports() {
 
   const [visibleCount, setVisibleCount] = useState(4);
   const [categoryStart, setCategoryStart] = useState(0);
-  const [stories, setStories] = useState(() => normalizeStories(sportsArticles));
-  const [categories, setCategories] = useState(() => normalizeCategories(sportsCategories));
+  const [stories, setStories] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -54,16 +54,26 @@ export default function Sports() {
         setLoadError("");
         const res = await fetch(`${API}/api/sports`);
         const json = await res.json().catch(() => []);
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (mounted) setLoadError("Failed to load sports feed.");
+          return;
+        }
 
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(normalizeStories(next));
       } catch {
-        if (mounted) setLoadError("Live sports feed is unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live sports feed is unavailable.");
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
-    if (API) loadSports();
+    if (API) {
+      loadSports();
+    } else {
+      setLoadError("VITE_API_URL is missing.");
+      setLoading(false);
+    }
     return () => {
       mounted = false;
     };
@@ -80,7 +90,7 @@ export default function Sports() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setCategories(normalizeCategories(next));
       } catch {
-        if (mounted) setLoadError("Live sports categories are unavailable. Showing fallback content.");
+        if (mounted) setLoadError("Live sports categories are unavailable.");
       }
     }
 
@@ -126,6 +136,10 @@ export default function Sports() {
       { label: "Focus", value: "Football, Track, Motorsport" },
     ];
   }, [stories, categories.length]);
+
+  if (loading) {
+    return null;
+  }
 
   if (!featured) {
     return (

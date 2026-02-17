@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { articlesResourcesArticles } from "../data/articlesResourcesArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
@@ -42,7 +41,8 @@ function normalizeResources(payload) {
 function ArticlesResourcesArticle() {
   const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
-  const [articles, setArticles] = useState(articlesResourcesArticles);
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
@@ -54,13 +54,18 @@ function ArticlesResourcesArticle() {
         const data = await res.json();
         if (!res.ok) return;
         const next = normalizeResources(data);
-        if (alive && next.length > 0) setArticles(next);
+        if (alive) setArticles(next);
       } catch {
-        // Keep static fallback if API is unavailable.
+      } finally {
+        if (alive) setLoading(false);
       }
     }
 
-    if (API) loadResources();
+    if (API) {
+      loadResources();
+    } else {
+      setLoading(false);
+    }
     return () => {
       alive = false;
     };
@@ -101,6 +106,10 @@ function ArticlesResourcesArticle() {
     image: resolvedImage,
     type: "article",
   });
+
+  if (loading) {
+    return null;
+  }
 
   if (!article) {
     return <NotFoundMessage backTo="/" backLabel="Back to Home" />;
