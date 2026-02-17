@@ -993,7 +993,7 @@ export default function AdminBrandingSettings() {
 
 function UploadCard({ title, subtitle, previewUrl, onPick, onClear, hasFile }) {
   return (
-    <div className="rounded-2xl border border-zinc-300 p-4">
+    <div className="rounded-2xl border border-zinc-300 bg-white p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-zinc-900">{title}</p>
@@ -1005,15 +1005,15 @@ function UploadCard({ title, subtitle, previewUrl, onPick, onClear, hasFile }) {
             Selected
           </span>
         ) : (
-          <span className="rounded-full border border-zinc-300 px-2 py-1 text-[11px] font-medium text-zinc-700">
+          <span className="rounded-full border border-zinc-300 bg-zinc-50 px-2 py-1 text-[11px] font-medium text-zinc-700">
             Current
           </span>
         )}
       </div>
 
-      <div className="mt-3 flex h-24 items-center justify-center overflow-hidden rounded-xl border border-zinc-300">
+      <div className="mt-3 flex h-24 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
         {previewUrl ? (
-          <img src={previewUrl} alt={title} className="h-full w-full rounded-lg border border-zinc-300 object-contain" />
+          <img src={previewUrl} alt={title} className="h-full w-full object-contain" />
         ) : (
           <p className="text-xs text-zinc-500">No image</p>
         )}

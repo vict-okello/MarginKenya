@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import worldImage from "../assets/world.jpg";
 import NewsletterBanner from "./NewsletterBanner";
 import { API_BASE_URL } from "../config/api";
 
@@ -33,6 +34,63 @@ const regionBriefing = {
   asia: { title: "Asia Desk", signal: "Tech acceleration", risk: "Moderate", tempo: "High" },
   americas: { title: "Americas Desk", signal: "Health + AI policy", risk: "Moderate", tempo: "Rising" },
   "middle-east": { title: "Middle East Desk", signal: "Sports + civic momentum", risk: "Low", tempo: "Steady" },
+};
+
+const sideStories = [
+  {
+    id: "business",
+    label: "Business",
+    date: "Feb 10, 2025",
+    title: "Adapting business strategies to meet changing demands",
+    to: "/business",
+    color: "bg-[#d8b73a]",
+    region: "africa",
+  },
+  {
+    id: "technology",
+    label: "Technology",
+    date: "Feb 10, 2025",
+    title: "Smart homes revolution how IoT is transforming living spaces",
+    to: "/technology",
+    color: "bg-[#ee5b45]",
+    region: "asia",
+  },
+  {
+    id: "culture",
+    label: "Culture",
+    date: "Jan 27, 2025",
+    title: "The power of art in connecting and expressing cultural identity",
+    to: "/culture",
+    color: "bg-[#3da5d9]",
+    region: "europe",
+  },
+  {
+    id: "health",
+    label: "Health News",
+    date: "Jan 27, 2025",
+    title: "How artificial intelligence and machine learning are changing the field",
+    to: "/health",
+    color: "bg-[#2ec86b]",
+    region: "americas",
+  },
+  {
+    id: "sports",
+    label: "Sports",
+    date: "Jan 27, 2025",
+    title: "The influence of youth sports programs on developing future champions",
+    to: "/sports",
+    color: "bg-[#f0503a]",
+    region: "middle-east",
+  },
+];
+
+const fallbackLead = {
+  articleId: leadArticleId,
+  label: "World News",
+  date: "Jan 25, 2025",
+  title: "Revolutionizing manufacturing emerging trends shaping the industry",
+  summary: "",
+  image: "",
 };
 
 const categoryByPath = [
@@ -110,45 +168,32 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
   const API = API_BASE_URL;
   const isPage = variant === "page";
   const [activeRegion, setActiveRegion] = useState("all");
-  const [worldData, setWorldData] = useState({ lead: null, stories: [] });
-  const [loadError, setLoadError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [worldData, setWorldData] = useState({ lead: null, stories: sideStories });
 
   useEffect(() => {
     let alive = true;
 
     async function loadWorld() {
       try {
-        setLoadError("");
         const res = await fetch(`${API}/api/worldnews`);
         const data = await res.json();
-        if (!res.ok) {
-          if (alive) setLoadError("Failed to load world news.");
-          return;
-        }
+        if (!res.ok) return;
         const next = normalizeWorld(data);
         if (alive) setWorldData(next);
       } catch {
-        if (alive) setLoadError("Live world news feed is unavailable.");
-      } finally {
-        if (alive) setLoading(false);
+        // Keep static fallback when API is unavailable.
       }
     }
 
-    if (API) {
-      loadWorld();
-    } else {
-      setLoadError("VITE_API_URL is missing.");
-      setLoading(false);
-    }
+    if (API) loadWorld();
     return () => {
       alive = false;
     };
   }, [API]);
 
-  const lead = useMemo(() => worldData.lead, [worldData.lead]);
+  const lead = useMemo(() => worldData.lead || fallbackLead, [worldData.lead]);
   const leadImage = useMemo(() => {
-    return resolveImageUrl(API, lead?.image, "");
+    return resolveImageUrl(API, lead?.image, worldImage);
   }, [lead, API]);
 
   const visibleSideStories = useMemo(
@@ -160,21 +205,6 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
     [activeRegion, worldData.stories]
   );
   const activeBriefing = regionBriefing[activeRegion];
-
-  if (loading) {
-    return null;
-  }
-
-  if (!lead) {
-    return (
-      <section className={withSection ? `bg-[#d8d8dc] px-4 ${isPage ? "py-12" : "py-10"}` : ""}>
-        <div className="mx-auto w-full max-w-5xl rounded border border-black/15 bg-white/30 p-6 text-black/70">
-          {loadError || "No world stories available."}
-        </div>
-        {isPage ? <NewsletterBanner variant="sports" /> : null}
-      </section>
-    );
-  }
 
   return (
     <MotionSection
@@ -241,12 +271,6 @@ function Worldnews({ showViewAll = true, variant = "home", withSection = true })
             <p className="rounded border border-black/15 bg-white/40 px-2 py-1">Tempo: {activeBriefing.tempo}</p>
           </div>
         </div>
-
-        {loadError ? (
-          <div className="mt-3 rounded border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-            {loadError}
-          </div>
-        ) : null}
 
         <MotionDiv
           variants={containerVariants}

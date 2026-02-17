@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { businessArticles } from "../data/businessArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -14,9 +15,8 @@ function Business() {
   const [scope, setScope] = useState("Local");
   const [tag, setTag] = useState("All");
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(businessArticles);
   const [loadError, setLoadError] = useState("");
-  const [loading, setLoading] = useState(true);
 
   function resolveImageUrl(url) {
     if (!url) return "";
@@ -36,25 +36,15 @@ function Business() {
         setLoadError("");
         const res = await fetch(`${API}/api/business`);
         const json = await res.json();
-        if (!res.ok) {
-          if (mounted) setLoadError("Failed to load business feed.");
-          return;
-        }
+        if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-        if (mounted) setLoadError("Live business feed is unavailable.");
-      } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadError("Live business feed is unavailable. Showing fallback content.");
       }
     }
 
-    if (API) {
-      loadBusiness();
-    } else {
-      setLoadError("VITE_API_URL is missing.");
-      setLoading(false);
-    }
+    if (API) loadBusiness();
     return () => {
       mounted = false;
     };
@@ -93,10 +83,6 @@ function Business() {
     scope === "Local"
       ? "Business Pulse: financing, policy, and growth strategies across Kenya."
       : "Business Pulse: trade, capital markets, and global industry signals.";
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <MotionSection

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { technologyArticles } from "../data/technologyArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
@@ -19,8 +20,7 @@ function TechnologyArticle() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const { articleId } = useParams();
-  const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stories, setStories] = useState(technologyArticles);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
@@ -34,16 +34,11 @@ function TechnologyArticle() {
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(next);
       } catch {
-      } finally {
-        if (mounted) setLoading(false);
+        // Keep static fallback when API is unavailable.
       }
     }
 
-    if (API) {
-      loadTechnology();
-    } else {
-      setLoading(false);
-    }
+    if (API) loadTechnology();
     return () => {
       mounted = false;
     };
@@ -86,10 +81,6 @@ function TechnologyArticle() {
     image: resolvedImage,
     type: "article",
   });
-
-  if (loading) {
-    return null;
-  }
 
   if (!article) {
     return <NotFoundMessage backTo="/technology" backLabel="Back to Technology" />;

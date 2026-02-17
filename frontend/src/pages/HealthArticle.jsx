@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import { healthArticles } from "../data/healthArticles";
 import NotFoundMessage from "../components/NotFoundMessage";
 import useArticleViewTracker from "../hooks/useArticleViewTracker";
 import useReadTracker from "../hooks/useReadTracker";
@@ -18,8 +19,7 @@ const MotionText = motion.p;
 function HealthArticle() {
   const API = import.meta.env.VITE_API_URL;
   const { articleId } = useParams();
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [articles, setArticles] = useState(healthArticles);
 
   useEffect(() => {
     let mounted = true;
@@ -31,16 +31,11 @@ function HealthArticle() {
         if (!res.ok) return;
         if (mounted) setArticles(Array.isArray(json) ? json : []);
       } catch {
-      } finally {
-        if (mounted) setLoading(false);
+        // Keep static fallback when API is unavailable.
       }
     }
 
-    if (API) {
-      loadHealth();
-    } else {
-      setLoading(false);
-    }
+    if (API) loadHealth();
     return () => {
       mounted = false;
     };
@@ -85,10 +80,6 @@ function HealthArticle() {
     image: resolvedImage,
     type: "article",
   });
-
-  if (loading) {
-    return null;
-  }
 
   if (!article) {
     return <NotFoundMessage backTo="/health" backLabel="Back to Health" />;

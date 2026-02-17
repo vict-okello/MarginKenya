@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import ArticlePage from "./ArticlePage";
+import { worldNewsArticles } from "../data/worldNewsArticles";
 
 export default function WorldnewsArticle() {
   const API = import.meta.env.VITE_API_URL;
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(worldNewsArticles);
 
   useEffect(() => {
     let alive = true;
@@ -19,62 +19,69 @@ export default function WorldnewsArticle() {
         const stories = Array.isArray(json?.stories) ? json.stories : [];
 
         const mergedLead = lead
-          ? {
-              id: lead.articleId || lead.id || "lead-worldnews",
-              title: lead.title || "",
-              category: lead.label || "World News",
-              date: lead.date || "",
-              image: lead.image
+          ? (() => {
+              const leadId = lead.articleId || lead.id || "lead-worldnews";
+              const existing = worldNewsArticles.find((item) => String(item.id) === String(leadId));
+              const resolvedImage = lead.image
                 ? /^https?:\/\//i.test(lead.image)
                   ? lead.image
                   : `${API}${lead.image}`
-                : "",
-              summary: lead.summary || "",
-              body: lead.body || lead.content || "",
-            }
+                : existing?.image || "";
+
+              return {
+                ...(existing || {}),
+                id: leadId,
+                title: lead.title || existing?.title || "",
+                category: lead.label || existing?.category || "World News",
+                date: lead.date || existing?.date || "",
+                image: resolvedImage,
+                summary: lead.summary || existing?.summary || "",
+                body: lead.body || lead.content || existing?.body || "",
+              };
+            })()
           : null;
 
         const mappedStories = stories.map((story, idx) => {
           const id = story?.id || `world-story-${idx}`;
+          const existing = worldNewsArticles.find((item) => String(item.id) === String(id));
           const resolvedImage = story?.image
             ? /^https?:\/\//i.test(story.image)
               ? story.image
               : `${API}${story.image}`
-            : "";
+            : existing?.image || "";
 
           return {
+            ...(existing || {}),
             id,
-            title: story?.title || "",
-            category: story?.label || "World News",
-            date: story?.date || "",
+            title: story?.title || existing?.title || "",
+            category: story?.label || existing?.category || "World News",
+            date: story?.date || existing?.date || "",
             image: resolvedImage,
-            summary: story?.summary || "",
-            body: story?.body || story?.content || "",
+            summary: story?.summary || existing?.summary || "",
+            body: story?.body || story?.content || existing?.body || "",
           };
         });
 
         if (alive) {
-          setData([...(mergedLead ? [mergedLead] : []), ...mappedStories]);
+          const staticFiltered = worldNewsArticles.filter((item) => {
+            if (mergedLead && String(item.id) === String(mergedLead.id)) return false;
+            return !mappedStories.some((s) => String(s.id) === String(item.id));
+          });
+
+          setData([...(mergedLead ? [mergedLead] : []), ...mappedStories, ...staticFiltered]);
         }
       } catch {
-      } finally {
-        if (alive) setLoading(false);
+        // Keep static fallback when API is unavailable.
       }
     }
 
-    if (API) {
-      loadWorldArticle();
-    } else {
-      setLoading(false);
-    }
+    if (API) loadWorldArticle();
     return () => {
       alive = false;
     };
   }, [API]);
 
   const mergedData = useMemo(() => data, [data]);
-
-  if (loading) return null;
 
   return (
     <ArticlePage

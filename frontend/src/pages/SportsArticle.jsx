@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ArticlePage from "./ArticlePage";
+import { sportsArticles } from "../data/sportsArticles";
 
 function normalizeStories(input) {
   if (Array.isArray(input)) return input;
@@ -10,7 +11,7 @@ function normalizeStories(input) {
 export default function SportsArticle() {
   const API = import.meta.env.VITE_API_URL;
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(() => normalizeStories(sportsArticles));
 
   useEffect(() => {
     let mounted = true;
@@ -22,7 +23,9 @@ export default function SportsArticle() {
         if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         if (mounted) setStories(normalizeStories(next));
-      } catch {}
+      } catch {
+        // Keep static fallback when API is unavailable.
+      }
     }
 
     if (API) loadSports();

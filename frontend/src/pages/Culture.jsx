@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { cultureArticles } from "../data/cultureArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 function Culture() {
   const API = import.meta.env.VITE_API_URL;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(cultureArticles);
   const [loadError, setLoadError] = useState("");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -17,24 +17,14 @@ function Culture() {
         setLoadError("");
         const res = await fetch(`${API}/api/culture`);
         const json = await res.json();
-        if (!res.ok) {
-          if (mounted) setLoadError("Failed to load culture feed.");
-          return;
-        }
+        if (!res.ok) return;
         if (mounted) setStories(Array.isArray(json) ? json : []);
       } catch {
-        if (mounted) setLoadError("Live culture feed is unavailable.");
-      } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadError("Live culture feed is unavailable. Showing fallback content.");
       }
     }
 
-    if (API) {
-      loadCulture();
-    } else {
-      setLoadError("VITE_API_URL is missing.");
-      setLoading(false);
-    }
+    if (API) loadCulture();
     return () => {
       mounted = false;
     };
@@ -50,10 +40,6 @@ function Culture() {
     if (!url) return "";
     if (/^https?:\/\//i.test(url)) return url;
     return base ? `${base}${url}` : url;
-  }
-
-  if (loading) {
-    return null;
   }
 
   return (

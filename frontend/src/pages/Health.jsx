@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { healthArticles } from "../data/healthArticles";
 import NewsletterBanner from "./NewsletterBanner";
 
 const MotionSection = motion.section;
@@ -34,10 +35,9 @@ function Health() {
   const base = (API || "").replace(/\/+$/, "").replace(/\/api$/i, "");
   const batchSize = 3;
   const [visibleCount, setVisibleCount] = useState(3);
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState(healthArticles);
   const [publishedCount, setPublishedCount] = useState(null);
   const [loadError, setLoadError] = useState("");
-  const [loading, setLoading] = useState(true);
 
   const resolveImageUrl = useCallback((url) => {
     if (!url) return "";
@@ -57,10 +57,7 @@ function Health() {
         setLoadError("");
         const res = await fetch(`${API}/api/health-news`);
         const json = await res.json();
-        if (!res.ok) {
-          if (mounted) setLoadError("Failed to load health feed.");
-          return;
-        }
+        if (!res.ok) return;
         const next = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
         const liveCount = next.filter((item) => String(item?.title || "").trim().length > 0).length;
         if (mounted) {
@@ -68,18 +65,11 @@ function Health() {
           setStories(next);
         }
       } catch {
-        if (mounted) setLoadError("Live health feed is unavailable.");
-      } finally {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadError("Live health feed is unavailable. Showing fallback content.");
       }
     }
 
-    if (API) {
-      loadHealth();
-    } else {
-      setLoadError("VITE_API_URL is missing.");
-      setLoading(false);
-    }
+    if (API) loadHealth();
     return () => {
       mounted = false;
     };
@@ -107,10 +97,6 @@ function Health() {
     ],
     [publishedCount, stories.length]
   );
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <MotionSection
